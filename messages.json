@@ -1,0 +1,5 @@
+{
+    "absence_request": "{staff_name}が本日欠勤となりました。\r\n代替出勤が可能でしたら「出勤できます」とメッセージしてください。\r\n\r\nよろしくお願いします。",
+    "substitute_confirmed": "{substitute_name}が出勤してくれることになりました。\r\n連絡が入りました。",
+    "absence_confirmed": "欠勤申請を受け付けました。\r\n\r\n理由: {reason}\r\n詳細: {details}\r\n\r\nご連絡ありがとうございます。\r\n代替スタッフへの連絡を行いました。無理せずお過ごしください。"
+}
