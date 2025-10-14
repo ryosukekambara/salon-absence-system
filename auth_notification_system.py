@@ -2,7 +2,7 @@ from flask import Flask, request, render_template_string, redirect, url_for, ses
 import requests
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from functools import wraps
 from dotenv import load_dotenv
 from collections import defaultdict
@@ -835,6 +835,18 @@ def admin():
 @admin_required
 def customer_list():
     mapping = load_mapping()
+    
+    # JST変換処理を追加
+    JST = timezone(timedelta(hours=9))
+    for customer_name, customer_data in mapping.items():
+        if isinstance(customer_data, dict) and 'registered_at' in customer_data:
+            try:
+                utc_time = datetime.fromisoformat(customer_data['registered_at'].replace('Z', '+00:00'))
+                jst_time = utc_time.astimezone(JST)
+                customer_data['registered_at'] = jst_time.strftime('%Y-%m-%d %H:%M:%S')
+            except:
+                pass
+    
     template = '''
     <!DOCTYPE html>
     <html>
