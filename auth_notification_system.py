@@ -10,7 +10,7 @@ import time
 import csv
 from io import StringIO
 from bs4 import BeautifulSoup
-from supabase import create_client  # ← この行を追加
+# from supabase import create_client の行は削除
 
 load_dotenv()
 app = Flask(__name__)
@@ -19,7 +19,7 @@ app.secret_key = os.urandom(24)
 # Supabase接続を追加（ここから）
 SUPABASE_URL = os.getenv('SUPABASE_URL')
 SUPABASE_KEY = os.getenv('SUPABASE_KEY')
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+# supabase = create_client の行は削除
 # Supabase接続を追加（ここまで）
 
 LINE_BOT_TOKEN = os.getenv('LINE_CHANNEL_ACCESS_TOKEN')
@@ -77,33 +77,57 @@ def admin_required(f):
 
 def load_mapping():
     try:
-        print(f"Supabase URL: {SUPABASE_URL}")  # デバッグ行
-        print(f"Supabase KEY: {SUPABASE_KEY[:20] if SUPABASE_KEY else 'None'}")  # デバッグ行
-        response = supabase.table('customers').select("*").execute()
-        print(f"取得データ: {response.data}")  # デバッグ行
-        result = {}
-        for row in response.data:
-            result[row['name']] = {
-                'user_id': row['line_user_id'],
-                'registered_at': row['registered_at']
-            }
-        return result
+        headers = {
+            'apikey': SUPABASE_KEY,
+            'Authorization': f'Bearer {SUPABASE_KEY}'
+        }
+        response = requests.get(
+            f'{SUPABASE_URL}/rest/v1/customers?select=*',
+            headers=headers
+        )
+        
+        if response.status_code == 200:
+            result = {}
+            for row in response.json():
+                result[row['name']] = {
+                    'user_id': row['line_user_id'],
+                    'registered_at': row['registered_at']
+                }
+            return result
+        return {}
     except Exception as e:
         print(f"Supabase読み込みエラー: {e}")
         return {}
 
 def save_mapping(customer_name, user_id):
     try:
+        headers = {
+            'apikey': SUPABASE_KEY,
+            'Authorization': f'Bearer {SUPABASE_KEY}',
+            'Content-Type': 'application/json'
+        }
+        
         # 既存チェック
-        existing = supabase.table('customers').select("*").eq('line_user_id', user_id).execute()
-        if not existing.data:
-            result = supabase.table('customers').insert({
+        check_response = requests.get(
+            f'{SUPABASE_URL}/rest/v1/customers?line_user_id=eq.{user_id}',
+            headers=headers
+        )
+        
+        if check_response.status_code == 200 and len(check_response.json()) == 0:
+            # 新規登録
+            data = {
                 'name': customer_name,
                 'line_user_id': user_id,
                 'registered_at': datetime.now().isoformat()
-            }).execute()
-            print(f"✓ {customer_name} をSupabaseに登録")
-            return True
+            }
+            insert_response = requests.post(
+                f'{SUPABASE_URL}/rest/v1/customers',
+                headers=headers,
+                json=data
+            )
+            if insert_response.status_code == 201:
+                print(f"✓ {customer_name} をSupabaseに登録")
+                return True
     except Exception as e:
         print(f"Supabase保存エラー: {e}")
     return False
@@ -113,7 +137,6 @@ def load_absences():
         with open(ABSENCE_FILE, 'r', encoding='utf-8') as f:
             return json.load(f)
     return []
-
 def save_absence(staff_name, reason, details, alternative_date):
     absences = load_absences()
     
