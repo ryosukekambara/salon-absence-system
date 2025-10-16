@@ -10,6 +10,8 @@ import time
 import csv
 from io import StringIO
 from bs4 import BeautifulSoup
+import schedule
+import threading
 # from supabase import create_client の行は削除
 
 load_dotenv()
@@ -127,6 +129,7 @@ def save_mapping(customer_name, user_id):
             )
             if insert_response.status_code == 201:
                 print(f"✓ {customer_name} をSupabaseに登録")
+                backup_customers()
                 return True
     except Exception as e:
         print(f"Supabase保存エラー: {e}")
@@ -137,6 +140,24 @@ def load_absences():
         with open(ABSENCE_FILE, 'r', encoding='utf-8') as f:
             return json.load(f)
     return []
+
+def backup_customers():
+    """顧客データをバックアップ"""
+    try:
+        mapping = load_mapping()
+        backup_file = f'backup_customers_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json'
+        with open(backup_file, 'w', encoding='utf-8') as f:
+            json.dump(mapping, f, ensure_ascii=False, indent=2)
+        print(f"✓ バックアップ作成: {backup_file}")
+    except Exception as e:
+        print(f"バックアップエラー: {e}")
+
+def run_scheduler():
+    """バックアップスケジューラーを実行"""
+    while True:
+        schedule.run_pending()
+        time.sleep(3600)
+
 def save_absence(staff_name, reason, details, alternative_date):
     absences = load_absences()
     
@@ -1398,7 +1419,16 @@ if __name__ == '__main__':
         }
         save_messages(default_messages)
     
-    print("\n" + "="*50)
+    # 24時間ごとにバックアップ
+    schedule.every(24).hours.do(backup_customers)
+    
+    # スケジューラーを別スレッドで開始
+    threading.Thread(target=run_scheduler, daemon=True).start()
+    
+    # 起動時に1回実行
+    backup_customers()
+    
+    print("="*50)
     print("✅ 認証機能付きシステム起動（即時反映対応）")
     print("="*50)
     print("ログインページ: http://localhost:5001/")
