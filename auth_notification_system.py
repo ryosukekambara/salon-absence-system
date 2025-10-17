@@ -1042,12 +1042,12 @@ def absence_list():
     </head>
     <body>
         <div class="header">
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <h1 style="margin: 0;">欠勤申請履歴</h1>
-                <a href="{{ url_for('export_absences') }}" style="background: #4caf50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: bold;">CSV出力</a>
-            </div>
-            <a href="{{ url_for('logout') }}" class="logout-btn">ログアウト</a>
-        </div>
+    <h1>欠勤申請履歴</h1>
+    <div style="display: flex; align-items: center; gap: 15px;">
+        <a href="{{ url_for('export_absences') }}" style="background: #4caf50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: bold;">CSV出力</a>
+        <a href="{{ url_for('logout') }}" class="logout-btn">ログアウト</a>
+    </div>
+</div>
         
         <div class="nav-wrapper">
             <div class="nav">
