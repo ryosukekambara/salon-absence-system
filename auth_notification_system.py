@@ -1394,8 +1394,10 @@ def line_webhook():
                     # 自動登録
                     mapping = load_mapping()
                     if display_name not in mapping:
-                        save_mapping(display_name, user_id)
-                        print(f"✅ 新規顧客登録: {display_name} ({user_id})")
+                        if save_mapping(display_name, user_id):
+                            print(f"✅ 新規顧客登録: {display_name} ({user_id})")
+                        else:
+                            print(f"❌ 顧客登録失敗: {display_name} ({user_id})")
         
         return jsonify({'status': 'ok'}), 200
     except Exception as e:
