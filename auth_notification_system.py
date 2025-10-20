@@ -185,19 +185,21 @@ def get_full_name(username):
         return STAFF_USERS[username]['full_name']
     return username
 
-def send_line_message(user_id, message, max_retries=3):
+def send_line_message(user_id, message, token=None, max_retries=3):
+    if token is None:
+        token = LINE_BOT_TOKEN
     """LINE送信（リトライ＋エラーログ機能付き）"""
     # テストモード：実際に送信しない
     if os.getenv("TEST_MODE", "false").lower() == "true":
         print(f"[テストモード] {user_id[:8]}... → {message[:30]}...")
         return True
     
-    if not LINE_BOT_TOKEN:
+    if not token:
         print("[エラー] LINE_BOT_TOKENが設定されていません")
         return False
     
     headers = {
-        'Authorization': f'Bearer {LINE_BOT_TOKEN}',
+        'Authorization': f'Bearer {token}',
         'Content-Type': 'application/json'
     }
     data = {
@@ -634,14 +636,14 @@ def submit_absence():
     absence_message = MESSAGES["absence_request"].format(staff_name=full_name)
     for username, info in STAFF_USERS.items():
         if username != staff_name:
-            send_line_message(info['line_id'], absence_message)
+            send_line_message(info['line_id'], absence_message, LINE_BOT_TOKEN_STAFF)
     
     # 欠勤スタッフ本人への確認通知
     confirmation_message = MESSAGES["absence_confirmed"].format(
         reason=reason,
         details=details
     )
-    send_line_message(STAFF_USERS[staff_name]['line_id'], confirmation_message)
+    send_line_message(STAFF_USERS[staff_name]['line_id'], confirmation_message, LINE_BOT_TOKEN_STAFF)
     
     return redirect(url_for('absence_success'))
 
