@@ -1388,11 +1388,8 @@ def line_webhook():
                 profile_response = requests.get(profile_url, headers=headers)
                 
                 if profile_response.status_code == 200:
-    profile = profile_response.json()
-    display_name = profile.get('displayName', 'Unknown')
-    # ... 登録処理
-else:
-    print(f"❌ プロフィール取得失敗: status_code={profile_response.status_code}, user_id={user_id}")
+                    profile = profile_response.json()
+                    display_name = profile.get('displayName', 'Unknown')
                     
                     # 自動登録
                     mapping = load_mapping()
@@ -1401,6 +1398,8 @@ else:
                             print(f"✅ 新規顧客登録: {display_name} ({user_id})")
                         else:
                             print(f"❌ 顧客登録失敗: {display_name} ({user_id})")
+                else:
+                    print(f"❌ プロフィール取得失敗: status_code={profile_response.status_code}, user_id={user_id}")
         
         return jsonify({'status': 'ok'}), 200
     except Exception as e:
