@@ -664,17 +664,26 @@ def absence_success():
             .success-icon { font-size: 48px; color: #4caf50; margin-bottom: 20px; }
             h2 { color: #333; margin-bottom: 15px; }
             p { color: #666; margin-bottom: 30px; line-height: 1.6; }
+            .buttons { display: flex; gap: 15px; justify-content: center; }
             .btn { 
                 display: inline-block;
                 padding: 12px 32px;
-                background: #6b5b47;
                 color: white;
                 text-decoration: none;
                 border-radius: 6px;
                 font-weight: bold;
             }
-            .btn:hover {
+            .btn-primary {
+                background: #6b5b47;
+            }
+            .btn-primary:hover {
                 background: #8b7355;
+            }
+            .btn-secondary {
+                background: #2196f3;
+            }
+            .btn-secondary:hover {
+                background: #1976d2;
             }
         </style>
     </head>
@@ -687,13 +696,124 @@ def absence_success():
                     他のスタッフおよびご自身のLINEに通知が送信されました。<br>
                     ご連絡ありがとうございます。
                 </p>
-                <a href="{{ url_for('logout') }}" class="btn">ログアウト</a>
+                <div class="buttons">
+                    <a href="{{ url_for('staff_my_absences') }}" class="btn btn-secondary">自分の申請履歴</a>
+                    <a href="{{ url_for('logout') }}" class="btn btn-primary">ログアウト</a>
+                </div>
             </div>
         </div>
     </body>
     </html>
     '''
     return render_template_string(template)
+
+@app.route('/staff/my_absences')
+@login_required
+def staff_my_absences():
+    if session.get('role') != 'staff':
+        return redirect(url_for('admin'))
+    
+    staff_name = session.get('username')
+    absences = load_absences()
+    
+    # 自分の申請のみフィルタリング
+    my_absences = [a for a in absences if a.get('staff_name') == staff_name]
+    my_absences.reverse()  # 新しい順
+    
+    template = '''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>自分の申請履歴</title>
+        <style>
+            body { font-family: Arial; padding: 20px; background: #f5f5f5; margin: 0; }
+            .container { max-width: 800px; margin: 0 auto; }
+            .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+            .content { background: white; padding: 30px; border-radius: 8px; }
+            .stats { background: #e3f2fd; padding: 20px; border-radius: 8px; margin-bottom: 30px; text-align: center; }
+            .stats-number { font-size: 48px; font-weight: bold; color: #1976d2; }
+            .stats-label { color: #666; margin-top: 10px; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e0e0e0; }
+            th { background: #f5f5f5; font-weight: bold; }
+            .reason-badge { 
+                background: #ffebee; 
+                color: #d32f2f; 
+                padding: 4px 8px; 
+                border-radius: 4px; 
+                font-size: 12px;
+                font-weight: 500;
+            }
+            .btn { 
+                padding: 10px 20px;
+                color: white;
+                text-decoration: none;
+                border-radius: 6px;
+                font-weight: bold;
+            }
+            .btn-back {
+                background: #6b5b47;
+            }
+            .btn-back:hover {
+                background: #8b7355;
+            }
+            .logout-btn { 
+                background: #d32f2f;
+            }
+            .logout-btn:hover {
+                background: #b71c1c;
+            }
+            .empty-message {
+                text-align: center;
+                color: #999;
+                padding: 40px 0;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>自分の申請履歴</h1>
+                <div>
+                    <a href="{{ url_for('staff_absence') }}" class="btn btn-back">新規申請</a>
+                    <a href="{{ url_for('logout') }}" class="btn logout-btn">ログアウト</a>
+                </div>
+            </div>
+            
+            <div class="content">
+                <div class="stats">
+                    <div class="stats-number">{{ my_absences|length }}</div>
+                    <div class="stats-label">合計申請回数</div>
+                </div>
+                
+                {% if my_absences %}
+                <table>
+                    <tr>
+                        <th>申請日時</th>
+                        <th>欠勤理由</th>
+                        <th>状況説明</th>
+                        <th>代替可能日時</th>
+                    </tr>
+                    {% for absence in my_absences %}
+                    <tr>
+                        <td>{{ absence.submitted_at[:10] }} {{ absence.submitted_at[11:16] }}</td>
+                        <td><span class="reason-badge">{{ absence.reason }}</span></td>
+                        <td>{{ absence.details }}</td>
+                        <td>{{ absence.alternative_date if absence.alternative_date else '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+                {% else %}
+                <div class="empty-message">まだ申請はありません</div>
+                {% endif %}
+            </div>
+        </div>
+    </body>
+    </html>
+    '''
+    return render_template_string(template, my_absences=my_absences)
 
 @app.route('/admin')
 @admin_required
