@@ -25,6 +25,7 @@ SUPABASE_KEY = os.getenv('SUPABASE_KEY')
 # Supabase接続を追加（ここまで）
 
 LINE_BOT_TOKEN = os.getenv('LINE_CHANNEL_ACCESS_TOKEN')
+LINE_BOT_TOKEN_STAFF = os.getenv('LINE_CHANNEL_ACCESS_TOKEN_STAFF')
 MAPPING_FILE = 'customer_mapping.json'
 ABSENCE_FILE = 'absence_log.json'
 MESSAGES_FILE = 'messages.json'
@@ -1404,6 +1405,43 @@ def line_webhook():
         return jsonify({'status': 'ok'}), 200
     except Exception as e:
         print(f"❌ Webhook エラー: {str(e)}")
+        return jsonify({'status': 'error'}), 500
+
+# LINE Webhook - スタッフ用
+@app.route('/webhook/staff', methods=['POST'])
+def line_webhook_staff():
+    try:
+        body = request.get_json()
+        events = body.get('events', [])
+        
+        for event in events:
+            if event['type'] == 'message':
+                user_id = event['source']['userId']
+                
+                # プロフィール取得（スタッフ用トークン使用）
+                headers = {'Authorization': f'Bearer {LINE_BOT_TOKEN_STAFF}'}
+                profile_url = f'https://api.line.me/v2/bot/profile/{user_id}'
+                profile_response = requests.get(profile_url, headers=headers)
+                
+                if profile_response.status_code == 200:
+                    profile = profile_response.json()
+                    display_name = profile.get('displayName', 'Unknown')
+                    
+                    # 自動登録
+                    mapping = load_mapping()
+                    if display_name not in mapping:
+                        if save_mapping(display_name, user_id):
+                            print(f"✅ 新規スタッフ登録: {display_name} ({user_id})")
+                        else:
+                            print(f"❌ スタッフ登録失敗: {display_name} ({user_id})")
+                    else:
+                        print(f"[情報] 既に登録済み（スタッフ）: {display_name} ({user_id})")
+                else:
+                    print(f"❌ プロフィール取得失敗（スタッフ）: status_code={profile_response.status_code}, user_id={user_id}")
+        
+        return jsonify({'status': 'ok'}), 200
+    except Exception as e:
+        print(f"❌ Webhook エラー（スタッフ）: {str(e)}")
         return jsonify({'status': 'error'}), 500
 
 if __name__ == '__main__':
