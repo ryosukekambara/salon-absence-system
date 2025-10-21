@@ -341,8 +341,8 @@ def login_page():
     <body>
         <div class="container">
             <div class="header">
-                <h1>スタッフ管理システム</h1>
-                <p>安全で効率的なスタッフ管理</p>
+                <h1>STAFF CONNECT</h1>
+                <p>スムーズなシフト調整を</p>
             </div>
             <div class="login-box">
                 <div class="tabs">
@@ -591,6 +591,9 @@ def confirm_absence():
             
             <div class="content">
                 <h2>この内容で送信しますか？</h2>
+                <p style="color: #ff9800; background: #fff3e0; padding: 12px; border-radius: 6px; margin: 20px 0; text-align: center;">
+                    ⚠️ 送信すると全スタッフに通知が送られます ⚠️
+                </p>
                 
                 <div class="confirm-item">
                     <div class="confirm-label">欠勤理由</div>
@@ -692,10 +695,10 @@ def absence_success():
                 background: #8b7355;
             }
             .btn-secondary {
-    background: #4caf50;  # 緑
+                background: #4caf50;  # 緑
             }
             .btn-secondary:hover {
-                background: #1976d2;
+                background: #45a049;
             }
         </style>
     </head>
@@ -759,7 +762,7 @@ def staff_my_absences():
                 font-weight: 500;
             }
             .btn { 
-                padding: 10px 20px;
+                padding: 12px 32px;
                 color: white;
                 text-decoration: none;
                 border-radius: 6px;
