@@ -446,12 +446,21 @@ def staff_absence():
             .submit-btn:hover {
                 background: #8b7355;
             }
-            .logout-btn { 
-                background: #d32f2f;
+            .btn { 
                 padding: 10px 20px;
                 color: white;
                 text-decoration: none;
                 border-radius: 6px;
+                margin-left: 10px;
+            }
+            .history-btn {
+                background: #4caf50;
+            }
+            .history-btn:hover {
+                background: #45a049;
+            }
+            .logout-btn { 
+                background: #d32f2f;
             }
             .logout-btn:hover {
                 background: #b71c1c;
@@ -467,7 +476,10 @@ def staff_absence():
         <div class="container">
             <div class="header">
                 <h1>欠勤申請</h1>
-                <a href="{{ url_for('logout') }}" class="logout-btn">ログアウト</a>
+                <div>
+                    <a href="{{ url_for('staff_my_absences') }}" class="btn history-btn">自分の申請履歴</a>
+                    <a href="{{ url_for('logout') }}" class="btn logout-btn">ログアウト</a>
+                </div>
             </div>
             
             <div class="content">
@@ -680,7 +692,7 @@ def absence_success():
                 background: #8b7355;
             }
             .btn-secondary {
-                background: #2196f3;
+    background: #4caf50;  # 緑
             }
             .btn-secondary:hover {
                 background: #1976d2;
