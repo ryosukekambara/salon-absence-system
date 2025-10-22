@@ -1,13 +1,9 @@
 services:
   - type: web
     name: salon-absence-system
-    env: python
-    plan: standard  # Professional plan
-    buildCommand: ./build.sh
-    startCommand: gunicorn --bind 0.0.0.0:$PORT auth_notification_system:app
+    env: docker
+    dockerfilePath: ./Dockerfile
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.9
       - key: LINE_CHANNEL_ACCESS_TOKEN
         sync: false
       - key: SUPABASE_URL
