@@ -1618,4 +1618,7 @@ if __name__ == '__main__':
     print("  ID: saori / パスワード: saori123")
     print("="*50)
     
-    app.run(debug=False, host='0.0.0.0', port=5001)
+    # Renderの環境変数PORTを使用（ローカルは5001）
+    import os
+    port = int(os.environ.get('PORT', 5001))
+    app.run(debug=False, host='0.0.0.0', port=port)
