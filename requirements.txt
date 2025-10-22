@@ -6,4 +6,5 @@ line-bot-sdk==3.5.0
 python-dotenv==1.0.0
 gunicorn==21.2.0
 Werkzeug==3.0.1
-playwright==1.40.0
+schedule==1.2.2
+playwright==1.40.0schedule==1.2.2
