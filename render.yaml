@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: salon-absence-system
+    env: python
+    plan: standard  # Professional plan
+    buildCommand: ./build.sh
+    startCommand: gunicorn --bind 0.0.0.0:$PORT auth_notification_system:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: LINE_CHANNEL_ACCESS_TOKEN
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: SALONBOARD_LOGIN_ID
+        sync: false
+      - key: SALONBOARD_LOGIN_PASSWORD
+        sync: false
+      - key: TEST_MODE
+        value: true
