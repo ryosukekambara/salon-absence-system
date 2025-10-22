@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: salon-absence-system
+    env: docker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: LINE_CHANNEL_ACCESS_TOKEN
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: SALONBOARD_LOGIN_ID
+        sync: false
+      - key: SALONBOARD_LOGIN_PASSWORD
+        sync: false
+      - key: TEST_MODE
+        value: true
