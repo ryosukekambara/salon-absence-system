@@ -1,0 +1,42 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info
+dist
+build
+.venv
+venv/
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Logs
+*.log
+server.log
+server.error.log
+
+# Test files
+test_*.py
+
+# Backup files
+*.backup
+*.backup_*
+
+# Environment
+.env
+.env.backup
+
+# Temporary files
+*.tmp
