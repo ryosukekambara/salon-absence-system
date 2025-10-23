@@ -1581,7 +1581,29 @@ def line_webhook_staff():
         print(f"❌ Webhook エラー（スタッフ）: {str(e)}")
         return jsonify({'status': 'error'}), 500
 
-if __name__ == '__main__':
+
+@app.route('/admin/test_playwright')
+@login_required
+@admin_required
+def test_playwright_route():
+    try:
+        from playwright.sync_api import sync_playwright
+        result = {'status': 'testing', 'steps': []}
+        with sync_playwright() as p:
+            result['steps'].append('✅ Playwright起動成功')
+            browser = p.chromium.launch(headless=True)
+            result['steps'].append('✅ Chromium起動成功')
+            page = browser.new_page()
+            result['steps'].append('✅ ページ作成成功')
+            page.goto('https://example.com', timeout=30000)
+            result['steps'].append(f'✅ example.comアクセス成功: {page.title()}')
+            browser.close()
+            result['steps'].append('✅ ブラウザ終了成功')
+        result['status'] = 'success'
+        return '<br>'.join(result['steps'])
+    except Exception as e:
+        return f'❌ エラー: {str(e)}'
+
     if not os.path.exists(MAPPING_FILE):
         with open(MAPPING_FILE, 'w') as f:
             json.dump({}, f)
@@ -1618,36 +1640,7 @@ if __name__ == '__main__':
     print("  ID: saori / パスワード: saori123")
     print("="*50)
     
-@app.route('/admin/test_playwright')
-@login_required
-@admin_required
-def test_playwright_route():
-    try:
-        from playwright.sync_api import sync_playwright
-        
-        result = {
-            'status': 'testing',
-            'steps': []
-        }
-        
-        with sync_playwright() as p:
-            result['steps'].append('✅ Playwright起動成功')
-            
-            browser = p.chromium.launch(headless=True)
-            result['steps'].append('✅ Chromium起動成功')
-            
-            page = browser.new_page()
-            result['steps'].append('✅ ページ作成成功')
-            
-            page.goto('https://example.com', timeout=30000)
-            result['steps'].append(f'✅ example.comアクセス成功: {page.title()}')
-            
-            browser.close()
-            result['steps'].append('✅ ブラウザ終了成功')
-            
-        result['status'] = 'success'
-        return '<br>'.join(result['steps'])
-        
-    except Exception as e:
-        return f'❌ エラー: {str(e)}'
-
+    # Renderの環境変数PORTを使用（ローカルは5001）
+    import os
+    port = int(os.environ.get('PORT', 5001))
+    app.run(debug=False, host='0.0.0.0', port=port)
