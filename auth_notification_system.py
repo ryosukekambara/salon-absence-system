@@ -1604,6 +1604,7 @@ def test_playwright_route():
     except Exception as e:
         return f'❌ エラー: {str(e)}'
 
+if __name__ == '__main__':
     if not os.path.exists(MAPPING_FILE):
         with open(MAPPING_FILE, 'w') as f:
             json.dump({}, f)
