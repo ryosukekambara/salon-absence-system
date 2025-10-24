@@ -1764,14 +1764,21 @@ def test_salonboard_login():
             json.dump({}, f)
     
     if not os.path.exists(ABSENCE_FILE):
+        if __name__ == '__main__':
+    # 初期ファイル作成
+    if not os.path.exists(MAPPING_FILE):
+        with open(MAPPING_FILE, 'w') as f:
+            json.dump({}, f)
+    
+    if not os.path.exists(ABSENCE_FILE):
         with open(ABSENCE_FILE, 'w') as f:
             json.dump([], f)
     
     if not os.path.exists(MESSAGES_FILE):
         default_messages = {
-            "absence_request": "{staff_name}が本日欠勤となりました。\n代替出勤が可能でしたら「出勤できます」とメッセージしてください。\n\nよろしくお願いします。",
-            "substitute_confirmed": "{substitute_name}が出勤してくれることになりました。\n連絡が入りました。",
-            "absence_confirmed": "欠勤申請を受け付けました。\n\n理由: {reason}\n詳細: {details}\n\nご連絡ありがとうございます。\n代替スタッフへの連絡を行いました。無理せずお過ごしください。"
+            "absence_request": "{staff_name}が本日欠勤となりました。",
+            "substitute_confirmed": "{substitute_name}が出勤してくれることになりました。",
+            "absence_confirmed": "欠勤申請を受け付けました。"
         }
         save_messages(default_messages)
     
@@ -1785,17 +1792,9 @@ def test_salonboard_login():
     backup_customers()
     
     print("="*50)
-    print("✅ 認証機能付きシステム起動（即時反映対応）")
-    print("="*50)
-    print("ログインページ: http://localhost:5001/")
-    print("\n管理者アカウント:")
-    print("  ID: admin / パスワード: admin123")
-    print("\nスタッフアカウント:")
-    print("  ID: kambara / パスワード: kambara123")
-    print("  ID: saori / パスワード: saori123")
+    print("✅ システム起動")
     print("="*50)
     
-    # Renderの環境変数PORTを使用（ローカルは5001）
-    import os
-    port = int(os.environ.get('PORT', 5001))
+    # Renderの環境変数PORTを使用
+    port = int(os.environ.get('PORT', 10000))
     app.run(debug=False, host='0.0.0.0', port=port)
