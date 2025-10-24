@@ -1776,9 +1776,9 @@ def test_salonboard_login():
     
     if not os.path.exists(MESSAGES_FILE):
         default_messages = {
-            "absence_request": "{staff_name}が本日欠勤となりました。",
-            "substitute_confirmed": "{substitute_name}が出勤してくれることになりました。",
-            "absence_confirmed": "欠勤申請を受け付けました。"
+            "absence_request": "{staff_name}が本日欠勤となりました。\n代替出勤が可能でしたら「出勤できます」とメッセージしてください。\n\nよろしくお願いします。",
+            "substitute_confirmed": "{substitute_name}が出勤してくれることになりました。\n連絡が入りました。",
+            "absence_confirmed": "欠勤申請を受け付けました。\n\n理由: {reason}\n詳細: {details}\n\nご連絡ありがとうございます。\n代替スタッフへの連絡を行いました。無理せずお過ごしください。"
         }
         save_messages(default_messages)
     
