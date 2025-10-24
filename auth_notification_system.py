@@ -1604,9 +1604,163 @@ def test_playwright_route():
     except Exception as e:
         return f'❌ エラー: {str(e)}'
 
-if __name__ == '__main__':
-    if not os.path.exists(MAPPING_FILE):
-        with open(MAPPING_FILE, 'w') as f:
+@app.route('/admin/test_salonboard_login', methods=['GET'])
+@login_required
+@admin_required
+def test_salonboard_login():
+    """SALON BOARDログインテスト（LINE送信なし）"""
+    try:
+        from playwright.sync_api import sync_playwright
+        
+        result = {
+            'success': False,
+            'message': '',
+            'screenshots': []
+        }
+        
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+            
+            # SALON BOARDログインページにアクセス
+            page.goto('https://salonboard.com/login/', timeout=30000)
+            result['message'] += 'ログインページにアクセス成功\n'
+            
+            # ログイン情報を入力
+            login_id = os.getenv('SALONBOARD_LOGIN_ID')
+            password = os.getenv('SALONBOARD_LOGIN_PASSWORD')
+            
+            page.fill('input[name="login_id"]', login_id)
+            page.fill('input[name="password"]', password)
+            result['message'] += 'ログイン情報を入力\n'
+            
+            # ログインボタンをクリック
+            page.click('button[type="submit"]')
+            page.wait_for_load_state('networkidle', timeout=30000)
+            result['message'] += 'ログインボタンをクリック\n'
+            
+            # ログイン後のURLを確認
+            current_url = page.url
+            result['message'] += f'現在のURL: {current_url}\n'
+            
+            if 'login' not in current_url:
+                result['success'] = True
+                result['message'] += '✅ ログイン成功！'
+            else:
+                result['message'] += '❌ ログイン失敗（ログインページのまま）'
+            
+            browser.close()
+            
+        return f"""
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>SALON BOARD ログインテスト</title>
+            <style>
+                body {{
+                    font-family: Arial, sans-serif;
+                    padding: 20px;
+                    max-width: 800px;
+                    margin: 0 auto;
+                }}
+                .success {{ color: green; }}
+                .error {{ color: red; }}
+                .warning {{
+                    background-color: #fff3cd;
+                    border: 1px solid #ffc107;
+                    padding: 10px;
+                    border-radius: 5px;
+                    margin: 20px 0;
+                }}
+                pre {{
+                    background-color: #f5f5f5;
+                    padding: 15px;
+                    border-radius: 5px;
+                    overflow-x: auto;
+                }}
+                a {{
+                    display: inline-block;
+                    margin-top: 20px;
+                    padding: 10px 20px;
+                    background-color: #007bff;
+                    color: white;
+                    text-decoration: none;
+                    border-radius: 5px;
+                }}
+                a:hover {{
+                    background-color: #0056b3;
+                }}
+            </style>
+        </head>
+        <body>
+            <h1>SALON BOARD ログインテスト結果</h1>
+            <div class="warning">
+                <strong>⚠️ 重要：</strong> このテストはLINE送信を一切行いません
+            </div>
+            <p class="{'success' if result['success'] else 'error'}">
+                <strong>ステータス:</strong> {'✅ 成功' if result['success'] else '❌ 失敗'}
+            </p>
+            <h2>実行ログ:</h2>
+            <pre>{result['message']}</pre>
+            <a href="/admin">← 管理画面に戻る</a>
+        </body>
+        </html>
+        """
+        
+    except Exception as e:
+        import traceback
+        error_detail = traceback.format_exc()
+        
+        return f"""
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>エラー</title>
+            <style>
+                body {{
+                    font-family: Arial, sans-serif;
+                    padding: 20px;
+                    max-width: 800px;
+                    margin: 0 auto;
+                }}
+                .error {{
+                    background-color: #f8d7da;
+                    border: 1px solid #f5c6cb;
+                    padding: 15px;
+                    border-radius: 5px;
+                    margin: 20px 0;
+                }}
+                pre {{
+                    background-color: #f5f5f5;
+                    padding: 15px;
+                    border-radius: 5px;
+                    overflow-x: auto;
+                }}
+                a {{
+                    display: inline-block;
+                    margin-top: 20px;
+                    padding: 10px 20px;
+                    background-color: #007bff;
+                    color: white;
+                    text-decoration: none;
+                    border-radius: 5px;
+                }}
+                a:hover {{
+                    background-color: #0056b3;
+                }}
+            </style>
+        </head>
+        <body>
+            <h1>エラーが発生しました</h1>
+            <div class="error">
+                <strong>エラー:</strong> {str(e)}
+            </div>
+            <h2>詳細:</h2>
+            <pre>{error_detail}</pre>
+            <a href="/admin">← 管理画面に戻る</a>
+        </body>
+        </html>
+        """
             json.dump({}, f)
     
     if not os.path.exists(ABSENCE_FILE):
