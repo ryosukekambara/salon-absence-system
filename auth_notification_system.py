@@ -1761,10 +1761,8 @@ def test_salonboard_login():
         </body>
         </html>
         """
-            json.dump({}, f)
-    
-    if not os.path.exists(ABSENCE_FILE):
-        if __name__ == '__main__':
+
+if __name__ == '__main__':
     # 初期ファイル作成
     if not os.path.exists(MAPPING_FILE):
         with open(MAPPING_FILE, 'w') as f:
@@ -1792,9 +1790,16 @@ def test_salonboard_login():
     backup_customers()
     
     print("="*50)
-    print("✅ システム起動")
+    print("✅ 認証機能付きシステム起動（即時反映対応）")
+    print("="*50)
+    print("ログインページ: http://localhost:5001/")
+    print("\n管理者アカウント:")
+    print("  ID: admin / パスワード: admin123")
+    print("\nスタッフアカウント:")
+    print("  ID: kambara / パスワード: kambara123")
+    print("  ID: saori / パスワード: saori123")
     print("="*50)
     
-    # Renderの環境変数PORTを使用
-    port = int(os.environ.get('PORT', 10000))
+    # Renderの環境変数PORTを使用（ローカルは5001）
+    port = int(os.environ.get('PORT', 5001))
     app.run(debug=False, host='0.0.0.0', port=port)
