@@ -1623,7 +1623,7 @@ def test_salonboard_login():
             page = browser.new_page()
             
             # SALON BOARDログインページにアクセス
-            page.goto('https://salonboard.com/login/', timeout=30000)
+            page.goto('https://salonboard.com/login/', timeout=120000)
             result['message'] += 'ログインページにアクセス成功\n'
             
             # ログイン情報を入力
@@ -1636,7 +1636,7 @@ def test_salonboard_login():
             
             # ログインボタンをクリック
             page.click('button[type="submit"]')
-            page.wait_for_load_state('networkidle', timeout=30000)
+            page.goto('https://salonboard.com/login/', timeout=120000)
             result['message'] += 'ログインボタンをクリック\n'
             
             # ログイン後のURLを確認
