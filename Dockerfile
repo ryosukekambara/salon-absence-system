@@ -7,7 +7,9 @@ WORKDIR /app
 # Python依存関係をコピーしてインストール
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir -r requirements.txt && \
+
+    playwright install chromium
 
 # アプリケーションのソースコードをコピー
 COPY . .
