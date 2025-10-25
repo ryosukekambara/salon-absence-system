@@ -1774,7 +1774,7 @@ def test_http_detailed():
     """
 
 
-@app.route('/admin/test_salonboard_login', methods=['GET'])
+@app.route('/test_salonboard_login', methods=['GET'])
 def test_salonboard_login():
     """SALONBOARD ログインテスト（Firefox使用）"""
     from playwright.sync_api import sync_playwright
