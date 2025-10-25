@@ -1604,163 +1604,231 @@ def test_playwright_route():
     except Exception as e:
         return f'❌ エラー: {str(e)}'
 
-@app.route('/admin/test_salonboard_login', methods=['GET'])
+@app.route('/admin/test_connection_step_by_step')
 @login_required
 @admin_required
-def test_salonboard_login():
-    """SALON BOARDログインテスト（LINE送信なし）"""
+def test_connection_step_by_step():
+    import socket
+    import time
+    import ssl
+    
+    results = []
+    all_success = True
+    
+    # ========================================
+    # Step 1: DNS解決テスト
+    # ========================================
+    results.append("<h2>Step 1: DNS解決テスト</h2>")
+    ip_address = None
     try:
-        from playwright.sync_api import sync_playwright
-        
-        result = {
-            'success': False,
-            'message': '',
-            'screenshots': []
-        }
-        
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            page = browser.new_page()
-            
-            # SALON BOARDログインページにアクセス
-            page.goto('https://salonboard.com/login/', timeout=120000)
-            result['message'] += 'ログインページにアクセス成功\n'
-            
-            # ログイン情報を入力
-            login_id = os.getenv('SALONBOARD_LOGIN_ID')
-            password = os.getenv('SALONBOARD_LOGIN_PASSWORD')
-            
-            page.fill('input[name="login_id"]', login_id)
-            page.fill('input[name="password"]', password)
-            result['message'] += 'ログイン情報を入力\n'
-            
-            # ログインボタンをクリック
-            page.click('button[type="submit"]')
-            page.goto('https://salonboard.com/login/', timeout=120000)
-            result['message'] += 'ログインボタンをクリック\n'
-            
-            # ログイン後のURLを確認
-            current_url = page.url
-            result['message'] += f'現在のURL: {current_url}\n'
-            
-            if 'login' not in current_url:
-                result['success'] = True
-                result['message'] += '✅ ログイン成功！'
-            else:
-                result['message'] += '❌ ログイン失敗（ログインページのまま）'
-            
-            browser.close()
-            
-        return f"""
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <title>SALON BOARD ログインテスト</title>
-            <style>
-                body {{
-                    font-family: Arial, sans-serif;
-                    padding: 20px;
-                    max-width: 800px;
-                    margin: 0 auto;
-                }}
-                .success {{ color: green; }}
-                .error {{ color: red; }}
-                .warning {{
-                    background-color: #fff3cd;
-                    border: 1px solid #ffc107;
-                    padding: 10px;
-                    border-radius: 5px;
-                    margin: 20px 0;
-                }}
-                pre {{
-                    background-color: #f5f5f5;
-                    padding: 15px;
-                    border-radius: 5px;
-                    overflow-x: auto;
-                }}
-                a {{
-                    display: inline-block;
-                    margin-top: 20px;
-                    padding: 10px 20px;
-                    background-color: #007bff;
-                    color: white;
-                    text-decoration: none;
-                    border-radius: 5px;
-                }}
-                a:hover {{
-                    background-color: #0056b3;
-                }}
-            </style>
-        </head>
-        <body>
-            <h1>SALON BOARD ログインテスト結果</h1>
-            <div class="warning">
-                <strong>⚠️ 重要：</strong> このテストはLINE送信を一切行いません
-            </div>
-            <p class="{'success' if result['success'] else 'error'}">
-                <strong>ステータス:</strong> {'✅ 成功' if result['success'] else '❌ 失敗'}
-            </p>
-            <h2>実行ログ:</h2>
-            <pre>{result['message']}</pre>
-            <a href="/admin">← 管理画面に戻る</a>
-        </body>
-        </html>
-        """
-        
+        start = time.time()
+        ip_address = socket.gethostbyname('salonboard.com')
+        elapsed = time.time() - start
+        results.append(f"✅ <strong>成功</strong>: salonboard.com → {ip_address}")
+        results.append(f"   所要時間: {elapsed:.3f}秒")
+    except socket.gaierror as e:
+        elapsed = time.time() - start if 'start' in locals() else 0
+        results.append(f"❌ <strong>失敗</strong>: DNS解決エラー")
+        results.append(f"   エラー内容: {str(e)}")
+        results.append(f"   所要時間: {elapsed:.3f}秒")
+        all_success = False
     except Exception as e:
-        import traceback
-        error_detail = traceback.format_exc()
-        
-        return f"""
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <title>エラー</title>
-            <style>
-                body {{
-                    font-family: Arial, sans-serif;
-                    padding: 20px;
-                    max-width: 800px;
-                    margin: 0 auto;
-                }}
-                .error {{
-                    background-color: #f8d7da;
-                    border: 1px solid #f5c6cb;
-                    padding: 15px;
-                    border-radius: 5px;
-                    margin: 20px 0;
-                }}
-                pre {{
-                    background-color: #f5f5f5;
-                    padding: 15px;
-                    border-radius: 5px;
-                    overflow-x: auto;
-                }}
-                a {{
-                    display: inline-block;
-                    margin-top: 20px;
-                    padding: 10px 20px;
-                    background-color: #007bff;
-                    color: white;
-                    text-decoration: none;
-                    border-radius: 5px;
-                }}
-                a:hover {{
-                    background-color: #0056b3;
-                }}
-            </style>
-        </head>
-        <body>
-            <h1>エラーが発生しました</h1>
-            <div class="error">
-                <strong>エラー:</strong> {str(e)}
-            </div>
-            <h2>詳細:</h2>
-            <pre>{error_detail}</pre>
-            <a href="/admin">← 管理画面に戻る</a>
-        </body>
-        </html>
-        """
+        results.append(f"❌ <strong>失敗</strong>: 予期しないエラー")
+        results.append(f"   エラー内容: {str(e)}")
+        all_success = False
+    
+    # ========================================
+    # Step 2: TCP接続テスト（HTTPS: port 443）
+    # ========================================
+    results.append("<h2>Step 2: TCP接続テスト (port 443)</h2>")
+    tcp_success = False
+    if ip_address:
+        try:
+            start = time.time()
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(30)
+            sock.connect((ip_address, 443))
+            elapsed = time.time() - start
+            results.append(f"✅ <strong>成功</strong>: TCP接続確立")
+            results.append(f"   所要時間: {elapsed:.3f}秒")
+            sock.close()
+            tcp_success = True
+        except socket.timeout:
+            results.append(f"❌ <strong>失敗</strong>: TCP接続タイムアウト（30秒）")
+            results.append(f"   → ネットワークレベルでブロックされている可能性")
+            all_success = False
+        except socket.error as e:
+            results.append(f"❌ <strong>失敗</strong>: TCP接続エラー")
+            results.append(f"   エラー内容: {str(e)}")
+            all_success = False
+        except Exception as e:
+            results.append(f"❌ <strong>失敗</strong>: 予期しないエラー")
+            results.append(f"   エラー内容: {str(e)}")
+            all_success = False
+    else:
+        results.append("⏭️ <strong>スキップ</strong>: DNS解決に失敗したため実行不可")
+        all_success = False
+    
+    # ========================================
+    # Step 3: SSL/TLS接続テスト
+    # ========================================
+    results.append("<h2>Step 3: SSL/TLS接続テスト</h2>")
+    if ip_address and tcp_success:
+        try:
+            start = time.time()
+            context = ssl.create_default_context()
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(30)
+            ssl_sock = context.wrap_socket(sock, server_hostname='salonboard.com')
+            ssl_sock.connect((ip_address, 443))
+            elapsed = time.time() - start
+            results.append(f"✅ <strong>成功</strong>: SSL/TLS接続確立")
+            results.append(f"   所要時間: {elapsed:.3f}秒")
+            
+            # SSL証明書情報を安全に取得
+            try:
+                cert = ssl_sock.getpeercert()
+                if cert and 'subject' in cert:
+                    subject = dict(x[0] for x in cert['subject'])
+                    results.append(f"   SSL証明書: CN={subject.get('commonName', 'N/A')}")
+                else:
+                    results.append(f"   SSL証明書: 情報取得不可")
+            except Exception:
+                results.append(f"   SSL証明書: 情報取得エラー")
+            
+            ssl_sock.close()
+        except ssl.SSLError as e:
+            results.append(f"❌ <strong>失敗</strong>: SSL/TLSエラー")
+            results.append(f"   エラー内容: {str(e)}")
+            all_success = False
+        except socket.timeout:
+            results.append(f"❌ <strong>失敗</strong>: SSL/TLS接続タイムアウト（30秒）")
+            all_success = False
+        except Exception as e:
+            results.append(f"❌ <strong>失敗</strong>: 予期しないエラー")
+            results.append(f"   エラー内容: {str(e)}")
+            all_success = False
+    else:
+        results.append("⏭️ <strong>スキップ</strong>: 前のステップに失敗したため実行不可")
+        all_success = False
+    
+    # ========================================
+    # Step 4: HTTPリクエストテスト（requests使用）
+    # ========================================
+    results.append("<h2>Step 4: HTTPリクエストテスト</h2>")
+    if all_success:
+        try:
+            import requests
+            start = time.time()
+            response = requests.get(
+                'https://salonboard.com/login/',
+                timeout=60,
+                allow_redirects=True
+            )
+            elapsed = time.time() - start
+            results.append(f"✅ <strong>成功</strong>: HTTPレスポンス受信")
+            results.append(f"   ステータスコード: {response.status_code}")
+            results.append(f"   所要時間: {elapsed:.3f}秒")
+            results.append(f"   レスポンスサイズ: {len(response.content)} bytes")
+            results.append(f"   Content-Type: {response.headers.get('Content-Type', 'N/A')}")
+            
+            # レスポンスの内容を確認
+            if response.status_code == 200:
+                results.append(f"   → <strong>正常にアクセスできました</strong>")
+            elif response.status_code == 403:
+                results.append(f"   → <strong>アクセス拒否（403 Forbidden）</strong>")
+                results.append(f"   → IPブロックまたはBot検出の可能性が高い")
+            elif response.status_code >= 400:
+                results.append(f"   → <strong>エラーレスポンス</strong>")
+                
+        except requests.exceptions.Timeout:
+            results.append(f"❌ <strong>失敗</strong>: HTTPリクエストタイムアウト（60秒）")
+            results.append(f"   → サーバーが応答しない、または非常に遅い")
+            all_success = False
+        except requests.exceptions.SSLError as e:
+            results.append(f"❌ <strong>失敗</strong>: SSL証明書エラー")
+            results.append(f"   エラー内容: {str(e)}")
+            all_success = False
+        except requests.exceptions.ConnectionError as e:
+            results.append(f"❌ <strong>失敗</strong>: 接続エラー")
+            results.append(f"   エラー内容: {str(e)}")
+            all_success = False
+        except Exception as e:
+            results.append(f"❌ <strong>失敗</strong>: 予期しないエラー")
+            results.append(f"   エラー内容: {str(e)}")
+            all_success = False
+    else:
+        results.append("⏭️ <strong>スキップ</strong>: 前のステップに失敗したため実行不可")
+    
+    # ========================================
+    # 結論
+    # ========================================
+    results.append("<hr>")
+    results.append("<h2>📊 診断結果</h2>")
+    
+    if all_success:
+        results.append("<p style='color: green; font-size: 18px;'><strong>✅ すべてのステップが成功しました</strong></p>")
+        results.append("<p>→ <strong>結論:</strong> 基本的なHTTP接続は問題ありません</p>")
+        results.append("<p>→ <strong>次の調査:</strong> Playwright特有の問題である可能性が高い</p>")
+    else:
+        results.append("<p style='color: red; font-size: 18px;'><strong>❌ 一部のステップが失敗しました</strong></p>")
+        results.append("<p>→ 上記の失敗箇所を確認してください</p>")
+    
+    return f"""
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>段階的接続診断テスト</title>
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                padding: 20px;
+                max-width: 900px;
+                margin: 0 auto;
+                background-color: #f5f5f5;
+            }}
+            h1 {{
+                color: #333;
+                border-bottom: 3px solid #007bff;
+                padding-bottom: 10px;
+            }}
+            h2 {{
+                color: #007bff;
+                margin-top: 30px;
+                border-left: 5px solid #007bff;
+                padding-left: 10px;
+            }}
+            .result {{
+                background-color: white;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                margin-bottom: 20px;
+            }}
+            a {{
+                display: inline-block;
+                margin-top: 20px;
+                padding: 10px 20px;
+                background-color: #007bff;
+                color: white;
+                text-decoration: none;
+                border-radius: 5px;
+            }}
+            a:hover {{
+                background-color: #0056b3;
+            }}
+        </style>
+    </head>
+    <body>
+        <h1>SALON BOARD 段階的接続診断</h1>
+        <p>各ステップで何が起きているかを確認します</p>
+        <div class="result">
+            {''.join(results)}
+        </div>
+        <a href="/admin">← 管理画面に戻る</a>
+    </body>
+    </html>
+    """
 
 if __name__ == '__main__':
     # 初期ファイル作成
