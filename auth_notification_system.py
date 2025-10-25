@@ -1582,203 +1582,146 @@ def line_webhook_staff():
         return jsonify({'status': 'error'}), 500
 
 
-@app.route('/admin/test_playwright')
+@app.route('/admin/test_http_detailed')
 @login_required
 @admin_required
-def test_playwright_route():
-    try:
-        from playwright.sync_api import sync_playwright
-        result = {'status': 'testing', 'steps': []}
-        with sync_playwright() as p:
-            result['steps'].append('✅ Playwright起動成功')
-            browser = p.chromium.launch(headless=True)
-            result['steps'].append('✅ Chromium起動成功')
-            page = browser.new_page()
-            result['steps'].append('✅ ページ作成成功')
-            page.goto('https://example.com', timeout=30000)
-            result['steps'].append(f'✅ example.comアクセス成功: {page.title()}')
-            browser.close()
-            result['steps'].append('✅ ブラウザ終了成功')
-        result['status'] = 'success'
-        return '<br>'.join(result['steps'])
-    except Exception as e:
-        return f'❌ エラー: {str(e)}'
-
-@app.route('/admin/test_connection_step_by_step')
-@login_required
-@admin_required
-def test_connection_step_by_step():
-    import socket
+def test_http_detailed():
+    import requests
     import time
-    import ssl
     
     results = []
-    all_success = True
     
     # ========================================
-    # Step 1: DNS解決テスト
+    # Test 1: 基本的なHTTPリクエスト（タイムアウト60秒）
     # ========================================
-    results.append("<h2>Step 1: DNS解決テスト</h2>")
-    ip_address = None
+    results.append("<h2>Test 1: 基本HTTPリクエスト（タイムアウト60秒）</h2>")
     try:
         start = time.time()
-        ip_address = socket.gethostbyname('salonboard.com')
+        response = requests.get(
+            'https://salonboard.com/login/',
+            timeout=60,  # ← 120秒から60秒に変更
+            allow_redirects=True
+        )
         elapsed = time.time() - start
-        results.append(f"✅ <strong>成功</strong>: salonboard.com → {ip_address}")
+        results.append(f"✅ <strong>成功</strong>")
+        results.append(f"   ステータスコード: {response.status_code}")
         results.append(f"   所要時間: {elapsed:.3f}秒")
-    except socket.gaierror as e:
-        elapsed = time.time() - start if 'start' in locals() else 0
-        results.append(f"❌ <strong>失敗</strong>: DNS解決エラー")
-        results.append(f"   エラー内容: {str(e)}")
-        results.append(f"   所要時間: {elapsed:.3f}秒")
-        all_success = False
+        results.append(f"   レスポンスサイズ: {len(response.content)} bytes")
+    except requests.exceptions.Timeout:
+        elapsed = time.time() - start
+        results.append(f"❌ <strong>失敗</strong>: タイムアウト（60秒）")
+        results.append(f"   実際の経過時間: {elapsed:.3f}秒")
     except Exception as e:
-        results.append(f"❌ <strong>失敗</strong>: 予期しないエラー")
-        results.append(f"   エラー内容: {str(e)}")
-        all_success = False
+        results.append(f"❌ <strong>失敗</strong>: {str(e)}")
     
     # ========================================
-    # Step 2: TCP接続テスト（HTTPS: port 443）
+    # Test 2: User-Agent追加
     # ========================================
-    results.append("<h2>Step 2: TCP接続テスト (port 443)</h2>")
-    tcp_success = False
-    if ip_address:
-        try:
-            start = time.time()
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(30)
-            sock.connect((ip_address, 443))
-            elapsed = time.time() - start
-            results.append(f"✅ <strong>成功</strong>: TCP接続確立")
-            results.append(f"   所要時間: {elapsed:.3f}秒")
-            sock.close()
-            tcp_success = True
-        except socket.timeout:
-            results.append(f"❌ <strong>失敗</strong>: TCP接続タイムアウト（30秒）")
-            results.append(f"   → ネットワークレベルでブロックされている可能性")
-            all_success = False
-        except socket.error as e:
-            results.append(f"❌ <strong>失敗</strong>: TCP接続エラー")
-            results.append(f"   エラー内容: {str(e)}")
-            all_success = False
-        except Exception as e:
-            results.append(f"❌ <strong>失敗</strong>: 予期しないエラー")
-            results.append(f"   エラー内容: {str(e)}")
-            all_success = False
-    else:
-        results.append("⏭️ <strong>スキップ</strong>: DNS解決に失敗したため実行不可")
-        all_success = False
+    results.append("<h2>Test 2: User-Agent追加</h2>")
+    try:
+        start = time.time()
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
+        response = requests.get(
+            'https://salonboard.com/login/',
+            headers=headers,
+            timeout=60,  # ← 120秒から60秒に変更
+            allow_redirects=True
+        )
+        elapsed = time.time() - start
+        results.append(f"✅ <strong>成功</strong>")
+        results.append(f"   ステータスコード: {response.status_code}")
+        results.append(f"   所要時間: {elapsed:.3f}秒")
+        results.append(f"   レスポンスサイズ: {len(response.content)} bytes")
+        results.append(f"   最終URL: {response.url}")
+    except requests.exceptions.Timeout:
+        elapsed = time.time() - start
+        results.append(f"❌ <strong>失敗</strong>: タイムアウト（60秒）")
+        results.append(f"   実際の経過時間: {elapsed:.3f}秒")
+    except Exception as e:
+        results.append(f"❌ <strong>失敗</strong>: {str(e)}")
     
     # ========================================
-    # Step 3: SSL/TLS接続テスト
+    # Test 3: ブラウザに近いヘッダー
     # ========================================
-    results.append("<h2>Step 3: SSL/TLS接続テスト</h2>")
-    if ip_address and tcp_success:
-        try:
-            start = time.time()
-            context = ssl.create_default_context()
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(30)
-            ssl_sock = context.wrap_socket(sock, server_hostname='salonboard.com')
-            ssl_sock.connect((ip_address, 443))
-            elapsed = time.time() - start
-            results.append(f"✅ <strong>成功</strong>: SSL/TLS接続確立")
-            results.append(f"   所要時間: {elapsed:.3f}秒")
-            
-            # SSL証明書情報を安全に取得
-            try:
-                cert = ssl_sock.getpeercert()
-                if cert and 'subject' in cert:
-                    subject = dict(x[0] for x in cert['subject'])
-                    results.append(f"   SSL証明書: CN={subject.get('commonName', 'N/A')}")
-                else:
-                    results.append(f"   SSL証明書: 情報取得不可")
-            except Exception:
-                results.append(f"   SSL証明書: 情報取得エラー")
-            
-            ssl_sock.close()
-        except ssl.SSLError as e:
-            results.append(f"❌ <strong>失敗</strong>: SSL/TLSエラー")
-            results.append(f"   エラー内容: {str(e)}")
-            all_success = False
-        except socket.timeout:
-            results.append(f"❌ <strong>失敗</strong>: SSL/TLS接続タイムアウト（30秒）")
-            all_success = False
-        except Exception as e:
-            results.append(f"❌ <strong>失敗</strong>: 予期しないエラー")
-            results.append(f"   エラー内容: {str(e)}")
-            all_success = False
-    else:
-        results.append("⏭️ <strong>スキップ</strong>: 前のステップに失敗したため実行不可")
-        all_success = False
+    results.append("<h2>Test 3: 完全なブラウザヘッダー</h2>")
+    try:
+        start = time.time()
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'ja,en-US;q=0.9,en;q=0.8',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1'
+        }
+        response = requests.get(
+            'https://salonboard.com/login/',
+            headers=headers,
+            timeout=60,  # ← 120秒から60秒に変更
+            allow_redirects=True
+        )
+        elapsed = time.time() - start
+        results.append(f"✅ <strong>成功</strong>")
+        results.append(f"   ステータスコード: {response.status_code}")
+        results.append(f"   所要時間: {elapsed:.3f}秒")
+        results.append(f"   レスポンスサイズ: {len(response.content)} bytes")
+        results.append(f"   Content-Type: {response.headers.get('Content-Type', 'N/A')}")
+        results.append(f"   Server: {response.headers.get('Server', 'N/A')}")
+    except requests.exceptions.Timeout:
+        elapsed = time.time() - start
+        results.append(f"❌ <strong>失敗</strong>: タイムアウト（60秒）")
+        results.append(f"   実際の経過時間: {elapsed:.3f}秒")
+    except Exception as e:
+        results.append(f"❌ <strong>失敗</strong>: {str(e)}")
     
     # ========================================
-    # Step 4: HTTPリクエストテスト（requests使用）
+    # Test 4: セッション使用（Cookie保持）
     # ========================================
-    results.append("<h2>Step 4: HTTPリクエストテスト</h2>")
-    if all_success:
-        try:
-            import requests
-            start = time.time()
-            response = requests.get(
-                'https://salonboard.com/login/',
-                timeout=60,
-                allow_redirects=True
-            )
-            elapsed = time.time() - start
-            results.append(f"✅ <strong>成功</strong>: HTTPレスポンス受信")
-            results.append(f"   ステータスコード: {response.status_code}")
-            results.append(f"   所要時間: {elapsed:.3f}秒")
-            results.append(f"   レスポンスサイズ: {len(response.content)} bytes")
-            results.append(f"   Content-Type: {response.headers.get('Content-Type', 'N/A')}")
-            
-            # レスポンスの内容を確認
-            if response.status_code == 200:
-                results.append(f"   → <strong>正常にアクセスできました</strong>")
-            elif response.status_code == 403:
-                results.append(f"   → <strong>アクセス拒否（403 Forbidden）</strong>")
-                results.append(f"   → IPブロックまたはBot検出の可能性が高い")
-            elif response.status_code >= 400:
-                results.append(f"   → <strong>エラーレスポンス</strong>")
-                
-        except requests.exceptions.Timeout:
-            results.append(f"❌ <strong>失敗</strong>: HTTPリクエストタイムアウト（60秒）")
-            results.append(f"   → サーバーが応答しない、または非常に遅い")
-            all_success = False
-        except requests.exceptions.SSLError as e:
-            results.append(f"❌ <strong>失敗</strong>: SSL証明書エラー")
-            results.append(f"   エラー内容: {str(e)}")
-            all_success = False
-        except requests.exceptions.ConnectionError as e:
-            results.append(f"❌ <strong>失敗</strong>: 接続エラー")
-            results.append(f"   エラー内容: {str(e)}")
-            all_success = False
-        except Exception as e:
-            results.append(f"❌ <strong>失敗</strong>: 予期しないエラー")
-            results.append(f"   エラー内容: {str(e)}")
-            all_success = False
-    else:
-        results.append("⏭️ <strong>スキップ</strong>: 前のステップに失敗したため実行不可")
+    results.append("<h2>Test 4: セッション使用</h2>")
+    try:
+        start = time.time()
+        session = requests.Session()
+        session.headers.update({
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        })
+        response = session.get(
+            'https://salonboard.com/login/',
+            timeout=60,  # ← 120秒から60秒に変更
+            allow_redirects=True
+        )
+        elapsed = time.time() - start
+        results.append(f"✅ <strong>成功</strong>")
+        results.append(f"   ステータスコード: {response.status_code}")
+        results.append(f"   所要時間: {elapsed:.3f}秒")
+        results.append(f"   Cookie数: {len(response.cookies)}")
+        results.append(f"   リダイレクト回数: {len(response.history)}")
+    except requests.exceptions.Timeout:
+        elapsed = time.time() - start
+        results.append(f"❌ <strong>失敗</strong>: タイムアウト（60秒）")
+        results.append(f"   実際の経過時間: {elapsed:.3f}秒")
+    except Exception as e:
+        results.append(f"❌ <strong>失敗</strong>: {str(e)}")
     
     # ========================================
     # 結論
     # ========================================
     results.append("<hr>")
     results.append("<h2>📊 診断結果</h2>")
-    
-    if all_success:
-        results.append("<p style='color: green; font-size: 18px;'><strong>✅ すべてのステップが成功しました</strong></p>")
-        results.append("<p>→ <strong>結論:</strong> 基本的なHTTP接続は問題ありません</p>")
-        results.append("<p>→ <strong>次の調査:</strong> Playwright特有の問題である可能性が高い</p>")
-    else:
-        results.append("<p style='color: red; font-size: 18px;'><strong>❌ 一部のステップが失敗しました</strong></p>")
-        results.append("<p>→ 上記の失敗箇所を確認してください</p>")
+    results.append("<p>どのテストが成功したかで、問題の原因を特定できます</p>")
+    results.append("<ul>")
+    results.append("<li>すべて失敗 → SALON BOARDサーバー側の問題</li>")
+    results.append("<li>User-Agent追加で成功 → Bot検出の可能性</li>")
+    results.append("<li>完全ヘッダーで成功 → ヘッダー不足</li>")
+    results.append("<li>セッション使用で成功 → Cookie/セッション管理の問題</li>")
+    results.append("</ul>")
     
     return f"""
     <html>
     <head>
         <meta charset="UTF-8">
-        <title>段階的接続診断テスト</title>
+        <title>HTTP詳細診断テスト</title>
         <style>
             body {{
                 font-family: Arial, sans-serif;
@@ -1820,8 +1763,8 @@ def test_connection_step_by_step():
         </style>
     </head>
     <body>
-        <h1>SALON BOARD 段階的接続診断</h1>
-        <p>各ステップで何が起きているかを確認します</p>
+        <h1>HTTP詳細診断テスト</h1>
+        <p>様々な方法でHTTPリクエストを試します（各テスト最大60秒）</p>
         <div class="result">
             {''.join(results)}
         </div>
