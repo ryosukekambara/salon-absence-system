@@ -1814,3 +1814,61 @@ if __name__ == '__main__':
     # Renderの環境変数PORTを使用（ローカルは5001）
     port = int(os.environ.get('PORT', 5001))
     app.run(debug=False, host='0.0.0.0', port=port)
+
+@app.route('/admin/test_salonboard_login', methods=['GET'])
+def test_salonboard_login():
+    """SALONBOARD ログインテスト（Firefox使用）"""
+    from playwright.sync_api import sync_playwright
+    import os
+    
+    try:
+        login_id = os.getenv('SALONBOARD_LOGIN_ID')
+        password = os.getenv('SALONBOARD_LOGIN_PASSWORD')
+        
+        if not login_id or not password:
+            return jsonify({
+                'success': False,
+                'error': '環境変数が設定されていません'
+            }), 500
+        
+        with sync_playwright() as p:
+            browser = p.firefox.launch(headless=True)
+            page = browser.new_page()
+            page.set_default_timeout(120000)
+            
+            # ログインページアクセス
+            page.goto('https://salonboard.com/login/')
+            
+            # フォーム待機
+            page.wait_for_selector('input[name="userId"]', timeout=60000)
+            
+            # ログイン情報入力
+            page.fill('input[name="userId"]', login_id)
+            page.fill('input[name="password"]', password)
+            
+            # Enter送信
+            page.press('input[name="password"]', 'Enter')
+            
+            # ログイン後のページ待機
+            page.wait_for_url('**/KLP/**', timeout=60000)
+            
+            final_url = page.url
+            success = '/KLP/' in final_url
+            
+            browser.close()
+            
+            return jsonify({
+                'success': success,
+                'message': 'ログイン成功' if success else 'ログイン失敗',
+                'final_url': final_url,
+                'browser': 'firefox',
+                'timestamp': datetime.now().isoformat()
+            })
+            
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'error_type': type(e).__name__,
+            'timestamp': datetime.now().isoformat()
+        }), 500
