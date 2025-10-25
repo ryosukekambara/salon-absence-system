@@ -1582,29 +1582,199 @@ def line_webhook_staff():
         return jsonify({'status': 'error'}), 500
 
 
-@app.route('/admin/test_playwright')
+@app.route('/admin/test_http_detailed')
 @login_required
 @admin_required
-def test_playwright_route():
+def test_http_detailed():
+    import requests
+    import time
+    
+    results = []
+    
+    # ========================================
+    # Test 1: 基本的なHTTPリクエスト（タイムアウト60秒）
+    # ========================================
+    results.append("<h2>Test 1: 基本HTTPリクエスト（タイムアウト60秒）</h2>")
     try:
-        from playwright.sync_api import sync_playwright
-        result = {'status': 'testing', 'steps': []}
-        with sync_playwright() as p:
-            result['steps'].append('✅ Playwright起動成功')
-            browser = p.chromium.launch(headless=True)
-            result['steps'].append('✅ Chromium起動成功')
-            page = browser.new_page()
-            result['steps'].append('✅ ページ作成成功')
-            page.goto('https://example.com', timeout=30000)
-            result['steps'].append(f'✅ example.comアクセス成功: {page.title()}')
-            browser.close()
-            result['steps'].append('✅ ブラウザ終了成功')
-        result['status'] = 'success'
-        return '<br>'.join(result['steps'])
+        start = time.time()
+        response = requests.get(
+            'https://salonboard.com/login/',
+            timeout=60,  # ← 120秒から60秒に変更
+            allow_redirects=True
+        )
+        elapsed = time.time() - start
+        results.append(f"✅ <strong>成功</strong>")
+        results.append(f"   ステータスコード: {response.status_code}")
+        results.append(f"   所要時間: {elapsed:.3f}秒")
+        results.append(f"   レスポンスサイズ: {len(response.content)} bytes")
+    except requests.exceptions.Timeout:
+        elapsed = time.time() - start
+        results.append(f"❌ <strong>失敗</strong>: タイムアウト（60秒）")
+        results.append(f"   実際の経過時間: {elapsed:.3f}秒")
     except Exception as e:
-        return f'❌ エラー: {str(e)}'
+        results.append(f"❌ <strong>失敗</strong>: {str(e)}")
+    
+    # ========================================
+    # Test 2: User-Agent追加
+    # ========================================
+    results.append("<h2>Test 2: User-Agent追加</h2>")
+    try:
+        start = time.time()
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
+        response = requests.get(
+            'https://salonboard.com/login/',
+            headers=headers,
+            timeout=60,  # ← 120秒から60秒に変更
+            allow_redirects=True
+        )
+        elapsed = time.time() - start
+        results.append(f"✅ <strong>成功</strong>")
+        results.append(f"   ステータスコード: {response.status_code}")
+        results.append(f"   所要時間: {elapsed:.3f}秒")
+        results.append(f"   レスポンスサイズ: {len(response.content)} bytes")
+        results.append(f"   最終URL: {response.url}")
+    except requests.exceptions.Timeout:
+        elapsed = time.time() - start
+        results.append(f"❌ <strong>失敗</strong>: タイムアウト（60秒）")
+        results.append(f"   実際の経過時間: {elapsed:.3f}秒")
+    except Exception as e:
+        results.append(f"❌ <strong>失敗</strong>: {str(e)}")
+    
+    # ========================================
+    # Test 3: ブラウザに近いヘッダー
+    # ========================================
+    results.append("<h2>Test 3: 完全なブラウザヘッダー</h2>")
+    try:
+        start = time.time()
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'ja,en-US;q=0.9,en;q=0.8',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1'
+        }
+        response = requests.get(
+            'https://salonboard.com/login/',
+            headers=headers,
+            timeout=60,  # ← 120秒から60秒に変更
+            allow_redirects=True
+        )
+        elapsed = time.time() - start
+        results.append(f"✅ <strong>成功</strong>")
+        results.append(f"   ステータスコード: {response.status_code}")
+        results.append(f"   所要時間: {elapsed:.3f}秒")
+        results.append(f"   レスポンスサイズ: {len(response.content)} bytes")
+        results.append(f"   Content-Type: {response.headers.get('Content-Type', 'N/A')}")
+        results.append(f"   Server: {response.headers.get('Server', 'N/A')}")
+    except requests.exceptions.Timeout:
+        elapsed = time.time() - start
+        results.append(f"❌ <strong>失敗</strong>: タイムアウト（60秒）")
+        results.append(f"   実際の経過時間: {elapsed:.3f}秒")
+    except Exception as e:
+        results.append(f"❌ <strong>失敗</strong>: {str(e)}")
+    
+    # ========================================
+    # Test 4: セッション使用（Cookie保持）
+    # ========================================
+    results.append("<h2>Test 4: セッション使用</h2>")
+    try:
+        start = time.time()
+        session = requests.Session()
+        session.headers.update({
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        })
+        response = session.get(
+            'https://salonboard.com/login/',
+            timeout=60,  # ← 120秒から60秒に変更
+            allow_redirects=True
+        )
+        elapsed = time.time() - start
+        results.append(f"✅ <strong>成功</strong>")
+        results.append(f"   ステータスコード: {response.status_code}")
+        results.append(f"   所要時間: {elapsed:.3f}秒")
+        results.append(f"   Cookie数: {len(response.cookies)}")
+        results.append(f"   リダイレクト回数: {len(response.history)}")
+    except requests.exceptions.Timeout:
+        elapsed = time.time() - start
+        results.append(f"❌ <strong>失敗</strong>: タイムアウト（60秒）")
+        results.append(f"   実際の経過時間: {elapsed:.3f}秒")
+    except Exception as e:
+        results.append(f"❌ <strong>失敗</strong>: {str(e)}")
+    
+    # ========================================
+    # 結論
+    # ========================================
+    results.append("<hr>")
+    results.append("<h2>📊 診断結果</h2>")
+    results.append("<p>どのテストが成功したかで、問題の原因を特定できます</p>")
+    results.append("<ul>")
+    results.append("<li>すべて失敗 → SALON BOARDサーバー側の問題</li>")
+    results.append("<li>User-Agent追加で成功 → Bot検出の可能性</li>")
+    results.append("<li>完全ヘッダーで成功 → ヘッダー不足</li>")
+    results.append("<li>セッション使用で成功 → Cookie/セッション管理の問題</li>")
+    results.append("</ul>")
+    
+    return f"""
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>HTTP詳細診断テスト</title>
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                padding: 20px;
+                max-width: 900px;
+                margin: 0 auto;
+                background-color: #f5f5f5;
+            }}
+            h1 {{
+                color: #333;
+                border-bottom: 3px solid #007bff;
+                padding-bottom: 10px;
+            }}
+            h2 {{
+                color: #007bff;
+                margin-top: 30px;
+                border-left: 5px solid #007bff;
+                padding-left: 10px;
+            }}
+            .result {{
+                background-color: white;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                margin-bottom: 20px;
+            }}
+            a {{
+                display: inline-block;
+                margin-top: 20px;
+                padding: 10px 20px;
+                background-color: #007bff;
+                color: white;
+                text-decoration: none;
+                border-radius: 5px;
+            }}
+            a:hover {{
+                background-color: #0056b3;
+            }}
+        </style>
+    </head>
+    <body>
+        <h1>HTTP詳細診断テスト</h1>
+        <p>様々な方法でHTTPリクエストを試します（各テスト最大60秒）</p>
+        <div class="result">
+            {''.join(results)}
+        </div>
+        <a href="/admin">← 管理画面に戻る</a>
+    </body>
+    </html>
+    """
 
 if __name__ == '__main__':
+    # 初期ファイル作成
     if not os.path.exists(MAPPING_FILE):
         with open(MAPPING_FILE, 'w') as f:
             json.dump({}, f)
@@ -1642,6 +1812,5 @@ if __name__ == '__main__':
     print("="*50)
     
     # Renderの環境変数PORTを使用（ローカルは5001）
-    import os
     port = int(os.environ.get('PORT', 5001))
     app.run(debug=False, host='0.0.0.0', port=port)

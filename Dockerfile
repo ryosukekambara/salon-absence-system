@@ -12,4 +12,5 @@ COPY . .
 
 ENV PORT=10000
 
-CMD gunicorn --bind 0.0.0.0:$PORT auth_notification_system:app
+# Gunicornでアプリケーションを起動
+CMD ["gunicorn", "-b", "0.0.0.0:10000", "--timeout", "300", "--workers", "1", "auth_notification_system:app"]
