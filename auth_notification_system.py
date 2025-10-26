@@ -1790,7 +1790,7 @@ def test_salonboard_login():
             }), 500
         
         with sync_playwright() as p:
-            browser = p.firefox.launch(headless=True)
+            browser = p.firefox.launch(headless=True, args=["--no-sandbox", "--disable-dev-shm-usage"])
             page = browser.new_page()
             page.set_default_timeout(120000)
             
