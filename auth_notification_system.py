@@ -1792,14 +1792,14 @@ def test_salonboard_login():
         with sync_playwright() as p:
             browser = p.firefox.launch(headless=True, args=["--no-sandbox", "--disable-dev-shm-usage"])
             page = browser.new_page()
-            page.set_default_timeout(120000)
+            page.set_default_timeout(30000)
             
             page.goto('https://salonboard.com/login/')
-            page.wait_for_selector('input[name="userId"]', timeout=60000)
+            page.wait_for_selector('input[name="userId"]', timeout=20000)
             page.fill('input[name="userId"]', login_id)
             page.fill('input[name="password"]', password)
             page.press('input[name="password"]', 'Enter')
-            page.wait_for_url('**/KLP/**', timeout=60000)
+            page.wait_for_url('**/KLP/**', timeout=20000)
             
             final_url = page.url
             success = '/KLP/' in final_url
