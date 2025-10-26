@@ -1863,3 +1863,17 @@ if __name__ == '__main__':
     # Renderの環境変数PORTを使用（ローカルは5001）
     port = int(os.environ.get('PORT', 5001))
     app.run(debug=False, host='0.0.0.0', port=port)
+
+@app.route('/health_check', methods=['GET'])
+def health_check():
+    """環境確認用エンドポイント"""
+    import sys
+    import os
+    
+    return jsonify({
+        'status': 'ok',
+        'python_version': sys.version,
+        'salonboard_id_set': bool(os.getenv('SALONBOARD_LOGIN_ID')),
+        'salonboard_pwd_set': bool(os.getenv('SALONBOARD_LOGIN_PASSWORD')),
+        'timestamp': datetime.now().isoformat()
+    })
