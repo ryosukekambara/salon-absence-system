@@ -1599,7 +1599,7 @@ def test_http_detailed():
         start = time.time()
         response = requests.get(
             'https://salonboard.com/login/',
-            timeout=60,  # ← 120秒から60秒に変更
+            timeout=180,  # ← 120秒から60秒に変更
             allow_redirects=True
         )
         elapsed = time.time() - start
@@ -1626,7 +1626,7 @@ def test_http_detailed():
         response = requests.get(
             'https://salonboard.com/login/',
             headers=headers,
-            timeout=60,  # ← 120秒から60秒に変更
+            timeout=180,  # ← 120秒から60秒に変更
             allow_redirects=True
         )
         elapsed = time.time() - start
@@ -1659,7 +1659,7 @@ def test_http_detailed():
         response = requests.get(
             'https://salonboard.com/login/',
             headers=headers,
-            timeout=60,  # ← 120秒から60秒に変更
+            timeout=180,  # ← 120秒から60秒に変更
             allow_redirects=True
         )
         elapsed = time.time() - start
@@ -1688,7 +1688,7 @@ def test_http_detailed():
         })
         response = session.get(
             'https://salonboard.com/login/',
-            timeout=60,  # ← 120秒から60秒に変更
+            timeout=180,  # ← 120秒から60秒に変更
             allow_redirects=True
         )
         elapsed = time.time() - start
@@ -1840,10 +1840,6 @@ def health_check():
     })
 
 @app.route('/test_async', methods=['GET'])
-
-@app.route('/test_async', methods=['GET'])
-
-@app.route('/test_async', methods=['GET'])
 def test_async():
     """subprocess版非同期ログインテスト"""
     import subprocess
@@ -1853,12 +1849,12 @@ def test_async():
         try:
             print(f"[SUBPROCESS] タスク開始: {task_id}", flush=True)
             
-            # 完全に独立したプロセスとして実行
+            # 完全に独立したプロセスとして実行（180秒タイムアウト）
             result = subprocess.run(
                 ['python3', 'salonboard_login.py', task_id],
                 capture_output=True,
                 text=True,
-                timeout=60,
+                timeout=180,
                 env=os.environ.copy()
             )
             
@@ -1882,6 +1878,14 @@ def test_async():
                         'stderr': result.stderr
                     }
                     
+        except subprocess.TimeoutExpired:
+            print(f"[SUBPROCESS] タイムアウト（180秒）: {task_id}", flush=True)
+            with login_lock:
+                login_results[task_id] = {
+                    'success': False,
+                    'error': 'Subprocess timeout after 180 seconds',
+                    'error_type': 'TimeoutExpired'
+                }
         except Exception as e:
             print(f"[SUBPROCESS] エラー: {str(e)}", flush=True)
             with login_lock:
@@ -1896,8 +1900,9 @@ def test_async():
         'status': 'processing',
         'task_id': task_id,
         'check_url': f'/result/{task_id}',
-        'message': 'subprocess版ログイン処理を開始しました'
+        'message': 'subprocess版ログイン処理を開始しました（タイムアウト180秒）'
     }), 202
+
 @app.route('/result/<task_id>', methods=['GET'])
 def get_result(task_id):
     """結果確認"""
