@@ -1851,9 +1851,10 @@ def test_async():
         import traceback
         from playwright.sync_api import sync_playwright
         
+        print(f"[BG_LOGIN] タスク開始: {task_id}", flush=True)
+        
         max_retries = 3
         retry_count = 0
-        timings = {}
         current_step = 'init'
         
         while retry_count < max_retries:
@@ -1861,11 +1862,13 @@ def test_async():
                 start_total = time.time()
                 
                 current_step = 'playwright_start'
+                print(f"[BG_LOGIN] {task_id} - Playwright起動中...", flush=True)
                 step_start = time.time()
                 p = sync_playwright().start()
                 timings['playwright_start'] = round(time.time() - step_start, 2)
                 
                 current_step = 'browser_launch'
+                print(f"[BG_LOGIN] {task_id} - Firefox起動中...", flush=True)
                 step_start = time.time()
                 browser = p.firefox.launch(headless=True, args=['--no-sandbox', '--disable-dev-shm-usage'])
                 timings['browser_launch'] = round(time.time() - step_start, 2)
@@ -1883,11 +1886,13 @@ def test_async():
                 timings['page_create'] = round(time.time() - step_start, 2)
                 
                 current_step = 'page_goto'
+                print(f"[BG_LOGIN] {task_id} - ページ移動中...", flush=True)
                 step_start = time.time()
                 page.goto('https://salonboard.com/login/', wait_until='domcontentloaded', timeout=15000)
                 timings['page_goto'] = round(time.time() - step_start, 2)
                 
                 current_step = 'wait_selector'
+                print(f"[BG_LOGIN] {task_id} - フォーム待機中...", flush=True)
                 step_start = time.time()
                 page.wait_for_selector('input[name="userId"]', timeout=10000)
                 timings['wait_selector'] = round(time.time() - step_start, 2)
@@ -1904,6 +1909,7 @@ def test_async():
                 timings['submit'] = round(time.time() - step_start, 2)
                 
                 current_step = 'wait_url'
+                print(f"[BG_LOGIN] {task_id} - ログイン遷移待機中...", flush=True)
                 step_start = time.time()
                 page.wait_for_url('**/KLP/**', timeout=15000)
                 timings['wait_url'] = round(time.time() - step_start, 2)
@@ -1914,6 +1920,7 @@ def test_async():
                 browser.close()
                 p.stop()
                 
+                print(f"[BG_LOGIN] {task_id} - 成功！結果を保存", flush=True)
                 with login_lock:
                     login_results[task_id] = {
                         'success': True,
@@ -1926,7 +1933,9 @@ def test_async():
                 
             except Exception as e:
                 retry_count += 1
+                print(f"[BG_LOGIN] {task_id} - エラー: {str(e)}, リトライ {retry_count}/{max_retries}", flush=True)
                 if retry_count >= max_retries:
+                print(f"[BG_LOGIN] {task_id} - 成功！結果を保存", flush=True)
                     with login_lock:
                         login_results[task_id] = {
                             'success': False,
@@ -1952,6 +1961,7 @@ def test_async():
 @app.route('/result/<task_id>', methods=['GET'])
 def get_result(task_id):
     """結果確認"""
+                print(f"[BG_LOGIN] {task_id} - 成功！結果を保存", flush=True)
     with login_lock:
         return jsonify(login_results.get(task_id, {'status': 'processing'}))
 
