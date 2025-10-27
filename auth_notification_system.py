@@ -1950,3 +1950,331 @@ if __name__ == '__main__':
     # Renderの環境変数PORTを使用（ローカルは5001）
     port = int(os.environ.get('PORT', 5001))
     app.run(debug=False, host='0.0.0.0', port=port)
+
+@app.route('/debug/check_files', methods=['GET'])
+
+def debug_check_files():
+
+    """Dockerコンテナ内のファイル確認"""
+
+    import subprocess
+
+    import os
+
+    
+
+    checks = {}
+
+    
+
+    # 1. カレントディレクトリ
+
+    checks['current_dir'] = os.getcwd()
+
+    
+
+    # 2. salonboard_login.py存在確認
+
+    checks['salonboard_login_exists'] = os.path.exists('salonboard_login.py')
+
+    checks['salonboard_login_path'] = os.path.abspath('salonboard_login.py') if checks['salonboard_login_exists'] else None
+
+    
+
+    # 3. 実行権限確認
+
+    if checks['salonboard_login_exists']:
+
+        checks['salonboard_login_executable'] = os.access('salonboard_login.py', os.X_OK)
+
+        checks['salonboard_login_size'] = os.path.getsize('salonboard_login.py')
+
+    
+
+    # 4. /app ディレクトリ内容
+
+    try:
+
+        checks['app_dir_contents'] = subprocess.run(['ls', '-la', '/app'], capture_output=True, text=True, timeout=5).stdout
+
+    except:
+
+        checks['app_dir_contents'] = 'ERROR'
+
+    
+
+    # 5. Python実行確認
+
+    try:
+
+        checks['python3_version'] = subprocess.run(['python3', '--version'], capture_output=True, text=True, timeout=5).stdout
+
+    except:
+
+        checks['python3_version'] = 'ERROR'
+
+    
+
+    # 6. /tmpへの書き込み確認
+
+    try:
+
+        test_file = '/tmp/test_write.txt'
+
+        with open(test_file, 'w') as f:
+
+            f.write('test')
+
+        checks['tmp_writable'] = os.path.exists(test_file)
+
+        os.remove(test_file)
+
+    except:
+
+        checks['tmp_writable'] = False
+
+    
+
+    # 7. 環境変数確認
+
+    checks['env_salonboard_id'] = bool(os.getenv('SALONBOARD_LOGIN_ID'))
+
+    checks['env_salonboard_pwd'] = bool(os.getenv('SALONBOARD_LOGIN_PASSWORD'))
+
+    
+
+    # 8. メモリ情報
+
+    try:
+
+        checks['memory_info'] = subprocess.run(['free', '-h'], capture_output=True, text=True, timeout=5).stdout
+
+    except:
+
+        checks['memory_info'] = 'ERROR'
+
+    
+
+    # 9. Playwrightブラウザ確認
+
+    try:
+
+        checks['playwright_browsers'] = subprocess.run(['ls', '-la', '/ms-playwright'], capture_output=True, text=True, timeout=5).stdout
+
+    except:
+
+        checks['playwright_browsers'] = 'ERROR'
+
+    
+
+    # 10. salonboard_login.pyの内容（最初の50行）
+
+    if checks['salonboard_login_exists']:
+
+        try:
+
+            with open('salonboard_login.py', 'r') as f:
+
+                checks['salonboard_login_content'] = ''.join(f.readlines()[:50])
+
+        except:
+
+            checks['salonboard_login_content'] = 'ERROR'
+
+    
+
+    return jsonify(checks), 200
+
+@app.route('/debug/test_subprocess', methods=['GET'])
+
+def debug_test_subprocess():
+
+    """subprocessテスト"""
+
+    import subprocess
+
+    
+
+    results = {}
+
+    
+
+    # 1. 単純なコマンド
+
+    try:
+
+        result = subprocess.run(['echo', 'test'], capture_output=True, text=True, timeout=5)
+
+        results['echo_test'] = {'stdout': result.stdout, 'stderr': result.stderr, 'returncode': result.returncode}
+
+    except Exception as e:
+
+        results['echo_test'] = {'error': str(e)}
+
+    
+
+    # 2. python3テスト
+
+    try:
+
+        result = subprocess.run(['python3', '-c', 'print("hello")'], capture_output=True, text=True, timeout=5)
+
+        results['python3_test'] = {'stdout': result.stdout, 'stderr': result.stderr, 'returncode': result.returncode}
+
+    except Exception as e:
+
+        results['python3_test'] = {'error': str(e)}
+
+    
+
+    # 3. salonboard_login.py実行テスト（短時間）
+
+    try:
+
+        result = subprocess.run(
+
+            ['python3', 'salonboard_login.py', 'test_debug'],
+
+            capture_output=True,
+
+            text=True,
+
+            timeout=10,
+
+            env=os.environ.copy()
+
+        )
+
+        results['salonboard_login_test'] = {
+
+            'stdout': result.stdout[:1000],
+
+            'stderr': result.stderr[:1000],
+
+            'returncode': result.returncode
+
+        }
+
+    except subprocess.TimeoutExpired:
+
+        results['salonboard_login_test'] = {'error': 'Timeout after 10 seconds'}
+
+    except Exception as e:
+
+        results['salonboard_login_test'] = {'error': str(e), 'type': type(e).__name__}
+
+    
+
+    return jsonify(results), 200
+
+
+@app.route('/debug/check_files', methods=['GET'])
+def debug_check_files():
+    """Dockerコンテナ内のファイル確認"""
+    import subprocess
+    import os
+    
+    checks = {}
+    
+    # 1. カレントディレクトリ
+    checks['current_dir'] = os.getcwd()
+    
+    # 2. salonboard_login.py存在確認
+    checks['salonboard_login_exists'] = os.path.exists('salonboard_login.py')
+    checks['salonboard_login_path'] = os.path.abspath('salonboard_login.py') if checks['salonboard_login_exists'] else None
+    
+    # 3. 実行権限確認
+    if checks['salonboard_login_exists']:
+        checks['salonboard_login_executable'] = os.access('salonboard_login.py', os.X_OK)
+        checks['salonboard_login_size'] = os.path.getsize('salonboard_login.py')
+    
+    # 4. /app ディレクトリ内容
+    try:
+        checks['app_dir_contents'] = subprocess.run(['ls', '-la', '/app'], capture_output=True, text=True, timeout=5).stdout
+    except:
+        checks['app_dir_contents'] = 'ERROR'
+    
+    # 5. Python実行確認
+    try:
+        checks['python3_version'] = subprocess.run(['python3', '--version'], capture_output=True, text=True, timeout=5).stdout
+    except:
+        checks['python3_version'] = 'ERROR'
+    
+    # 6. /tmpへの書き込み確認
+    try:
+        test_file = '/tmp/test_write.txt'
+        with open(test_file, 'w') as f:
+            f.write('test')
+        checks['tmp_writable'] = os.path.exists(test_file)
+        os.remove(test_file)
+    except:
+        checks['tmp_writable'] = False
+    
+    # 7. 環境変数確認
+    checks['env_salonboard_id'] = bool(os.getenv('SALONBOARD_LOGIN_ID'))
+    checks['env_salonboard_pwd'] = bool(os.getenv('SALONBOARD_LOGIN_PASSWORD'))
+    
+    # 8. メモリ情報
+    try:
+        checks['memory_info'] = subprocess.run(['free', '-h'], capture_output=True, text=True, timeout=5).stdout
+    except:
+        checks['memory_info'] = 'ERROR'
+    
+    # 9. Playwrightブラウザ確認
+    try:
+        checks['playwright_browsers'] = subprocess.run(['ls', '-la', '/ms-playwright'], capture_output=True, text=True, timeout=5).stdout
+    except:
+        checks['playwright_browsers'] = 'ERROR'
+    
+    # 10. salonboard_login.pyの内容（最初の50行）
+    if checks['salonboard_login_exists']:
+        try:
+            with open('salonboard_login.py', 'r') as f:
+                checks['salonboard_login_content'] = ''.join(f.readlines()[:50])
+        except:
+            checks['salonboard_login_content'] = 'ERROR'
+    
+    return jsonify(checks), 200
+
+@app.route('/debug/test_subprocess', methods=['GET'])
+def debug_test_subprocess():
+    """subprocessテスト"""
+    import subprocess
+    
+    results = {}
+    
+    # 1. 単純なコマンド
+    try:
+        result = subprocess.run(['echo', 'test'], capture_output=True, text=True, timeout=5)
+        results['echo_test'] = {'stdout': result.stdout, 'stderr': result.stderr, 'returncode': result.returncode}
+    except Exception as e:
+        results['echo_test'] = {'error': str(e)}
+    
+    # 2. python3テスト
+    try:
+        result = subprocess.run(['python3', '-c', 'print("hello")'], capture_output=True, text=True, timeout=5)
+        results['python3_test'] = {'stdout': result.stdout, 'stderr': result.stderr, 'returncode': result.returncode}
+    except Exception as e:
+        results['python3_test'] = {'error': str(e)}
+    
+    # 3. salonboard_login.py実行テスト（短時間）
+    try:
+        result = subprocess.run(
+            ['python3', 'salonboard_login.py', 'test_debug'],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            env=os.environ.copy()
+        )
+        results['salonboard_login_test'] = {
+            'stdout': result.stdout[:1000],
+            'stderr': result.stderr[:1000],
+            'returncode': result.returncode
+        }
+    except subprocess.TimeoutExpired:
+        results['salonboard_login_test'] = {'error': 'Timeout after 10 seconds'}
+    except Exception as e:
+        results['salonboard_login_test'] = {'error': str(e), 'type': type(e).__name__}
+    
+    return jsonify(results), 200
+
