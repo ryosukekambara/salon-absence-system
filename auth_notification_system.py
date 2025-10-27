@@ -1842,121 +1842,62 @@ def health_check():
 @app.route('/test_async', methods=['GET'])
 
 @app.route('/test_async', methods=['GET'])
+
+@app.route('/test_async', methods=['GET'])
 def test_async():
-    """非同期ログインテスト（ログ・エラー詳細付き）"""
+    """subprocess版非同期ログインテスト"""
+    import subprocess
     task_id = datetime.now().strftime('%Y%m%d%H%M%S%f')
     
     def bg_login():
-        import time
-        import traceback
-        from playwright.sync_api import sync_playwright
-        
-        print(f"[BG_LOGIN] タスク開始: {task_id}", flush=True)
-        
-        max_retries = 3
-        retry_count = 0
-        current_step = 'init'
-        
-        while retry_count < max_retries:
-            try:
-                start_total = time.time()
-                
-                current_step = 'playwright_start'
-                print(f"[BG_LOGIN] {task_id} - Playwright起動中...", flush=True)
-                step_start = time.time()
-                p = sync_playwright().start()
-                timings['playwright_start'] = round(time.time() - step_start, 2)
-                
-                current_step = 'browser_launch'
-                print(f"[BG_LOGIN] {task_id} - Firefox起動中...", flush=True)
-                step_start = time.time()
-                browser = p.firefox.launch(headless=True, args=['--no-sandbox', '--disable-dev-shm-usage'])
-                timings['browser_launch'] = round(time.time() - step_start, 2)
-                
-                current_step = 'page_create'
-                step_start = time.time()
-                current_step = 'page_create'
-                step_start = time.time()
-                page = browser.new_page()
-                page.set_default_timeout(15000)
-                
-                # 不要なリソースをブロック（高速化）
-                page.route("**/*.{png,jpg,jpeg,gif,svg,css,woff,woff2}", lambda route: route.abort())
-                
-                timings['page_create'] = round(time.time() - step_start, 2)
-                
-                current_step = 'page_goto'
-                print(f"[BG_LOGIN] {task_id} - ページ移動中...", flush=True)
-                step_start = time.time()
-                page.goto('https://salonboard.com/login/', wait_until='domcontentloaded', timeout=15000)
-                timings['page_goto'] = round(time.time() - step_start, 2)
-                
-                current_step = 'wait_selector'
-                print(f"[BG_LOGIN] {task_id} - フォーム待機中...", flush=True)
-                step_start = time.time()
-                page.wait_for_selector('input[name="userId"]', timeout=10000)
-                timings['wait_selector'] = round(time.time() - step_start, 2)
-                
-                current_step = 'fill_form'
-                step_start = time.time()
-                page.fill('input[name="userId"]', os.getenv('SALONBOARD_LOGIN_ID'))
-                page.fill('input[name="password"]', os.getenv('SALONBOARD_LOGIN_PASSWORD'))
-                timings['fill_form'] = round(time.time() - step_start, 2)
-                
-                current_step = 'submit'
-                step_start = time.time()
-                page.press('input[name="password"]', 'Enter')
-                timings['submit'] = round(time.time() - step_start, 2)
-                
-                current_step = 'wait_url'
-                print(f"[BG_LOGIN] {task_id} - ログイン遷移待機中...", flush=True)
-                step_start = time.time()
-                page.wait_for_url('**/KLP/**', timeout=15000)
-                timings['wait_url'] = round(time.time() - step_start, 2)
-                
-                final_url = page.url
-                timings['total'] = round(time.time() - start_total, 2)
-                
-                browser.close()
-                p.stop()
-                
-                print(f"[BG_LOGIN] {task_id} - 成功！結果を保存", flush=True)
+        try:
+            print(f"[SUBPROCESS] タスク開始: {task_id}", flush=True)
+            
+            # 完全に独立したプロセスとして実行
+            result = subprocess.run(
+                ['python3', 'salonboard_login.py', task_id],
+                capture_output=True,
+                text=True,
+                timeout=60,
+                env=os.environ.copy()
+            )
+            
+            print(f"[SUBPROCESS] stdout: {result.stdout}", flush=True)
+            print(f"[SUBPROCESS] stderr: {result.stderr}", flush=True)
+            
+            # 結果ファイルから読み込み
+            result_file = f"/tmp/login_result_{task_id}.json"
+            if os.path.exists(result_file):
+                with open(result_file, 'r') as f:
+                    result_data = json.load(f)
+                with login_lock:
+                    login_results[task_id] = result_data
+                os.remove(result_file)
+            else:
                 with login_lock:
                     login_results[task_id] = {
-                        'success': True,
-                        'url': final_url,
-                        'timings': timings,
-                        'retry_count': retry_count,
-                        'timestamp': datetime.now().isoformat()
+                        'success': False,
+                        'error': 'Result file not found',
+                        'stdout': result.stdout,
+                        'stderr': result.stderr
                     }
-                return
-                
-            except Exception as e:
-                retry_count += 1
-                print(f"[BG_LOGIN] {task_id} - エラー: {str(e)}, リトライ {retry_count}/{max_retries}", flush=True)
-                if retry_count >= max_retries:
-                    with login_lock:
-                        login_results[task_id] = {
-                            'success': False,
-                            'error': str(e),
-                            'error_type': type(e).__name__,
-                            'failed_at_step': current_step,
-                            'timings': timings,
-                            'retry_count': retry_count,
-                            'traceback': traceback.format_exc(),
-                            'timestamp': datetime.now().isoformat()
-                        }
-                else:
-                    time.sleep(2)
+                    
+        except Exception as e:
+            print(f"[SUBPROCESS] エラー: {str(e)}", flush=True)
+            with login_lock:
+                login_results[task_id] = {
+                    'success': False,
+                    'error': str(e),
+                    'error_type': type(e).__name__
+                }
     
     threading.Thread(target=bg_login, daemon=True).start()
     return jsonify({
         'status': 'processing',
         'task_id': task_id,
         'check_url': f'/result/{task_id}',
-        'message': 'ログイン処理を開始しました'
+        'message': 'subprocess版ログイン処理を開始しました'
     }), 202
-
 @app.route('/result/<task_id>', methods=['GET'])
 def get_result(task_id):
     """結果確認"""
