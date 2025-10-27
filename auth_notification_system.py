@@ -1822,6 +1822,139 @@ def test_salonboard_login():
             'timestamp': datetime.now().isoformat()
         }), 500
 
+
+# グローバル変数
+login_results = {}
+login_lock = threading.Lock()
+
+@app.route('/health_check', methods=['GET'])
+def health_check():
+    """環境確認用"""
+    import sys
+    return jsonify({
+        'status': 'ok',
+        'python_version': sys.version,
+        'salonboard_id_set': bool(os.getenv('SALONBOARD_LOGIN_ID')),
+        'salonboard_pwd_set': bool(os.getenv('SALONBOARD_LOGIN_PASSWORD')),
+        'timestamp': datetime.now().isoformat()
+    })
+
+@app.route('/test_async', methods=['GET'])
+
+@app.route('/test_async', methods=['GET'])
+def test_async():
+    """非同期ログインテスト（ログ・エラー詳細付き）"""
+    task_id = datetime.now().strftime('%Y%m%d%H%M%S%f')
+    
+    def bg_login():
+        import time
+        import traceback
+        from playwright.sync_api import sync_playwright
+        
+        max_retries = 3
+        retry_count = 0
+        timings = {}
+        current_step = 'init'
+        
+        while retry_count < max_retries:
+            try:
+                start_total = time.time()
+                
+                current_step = 'playwright_start'
+                step_start = time.time()
+                p = sync_playwright().start()
+                timings['playwright_start'] = round(time.time() - step_start, 2)
+                
+                current_step = 'browser_launch'
+                step_start = time.time()
+                browser = p.firefox.launch(headless=True, args=['--no-sandbox', '--disable-dev-shm-usage'])
+                timings['browser_launch'] = round(time.time() - step_start, 2)
+                
+                current_step = 'page_create'
+                step_start = time.time()
+                current_step = 'page_create'
+                step_start = time.time()
+                page = browser.new_page()
+                page.set_default_timeout(15000)
+                
+                # 不要なリソースをブロック（高速化）
+                page.route("**/*.{png,jpg,jpeg,gif,svg,css,woff,woff2}", lambda route: route.abort())
+                
+                timings['page_create'] = round(time.time() - step_start, 2)
+                
+                current_step = 'page_goto'
+                step_start = time.time()
+                page.goto('https://salonboard.com/login/', wait_until='domcontentloaded', timeout=15000)
+                timings['page_goto'] = round(time.time() - step_start, 2)
+                
+                current_step = 'wait_selector'
+                step_start = time.time()
+                page.wait_for_selector('input[name="userId"]', timeout=10000)
+                timings['wait_selector'] = round(time.time() - step_start, 2)
+                
+                current_step = 'fill_form'
+                step_start = time.time()
+                page.fill('input[name="userId"]', os.getenv('SALONBOARD_LOGIN_ID'))
+                page.fill('input[name="password"]', os.getenv('SALONBOARD_LOGIN_PASSWORD'))
+                timings['fill_form'] = round(time.time() - step_start, 2)
+                
+                current_step = 'submit'
+                step_start = time.time()
+                page.press('input[name="password"]', 'Enter')
+                timings['submit'] = round(time.time() - step_start, 2)
+                
+                current_step = 'wait_url'
+                step_start = time.time()
+                page.wait_for_url('**/KLP/**', timeout=15000)
+                timings['wait_url'] = round(time.time() - step_start, 2)
+                
+                final_url = page.url
+                timings['total'] = round(time.time() - start_total, 2)
+                
+                browser.close()
+                p.stop()
+                
+                with login_lock:
+                    login_results[task_id] = {
+                        'success': True,
+                        'url': final_url,
+                        'timings': timings,
+                        'retry_count': retry_count,
+                        'timestamp': datetime.now().isoformat()
+                    }
+                return
+                
+            except Exception as e:
+                retry_count += 1
+                if retry_count >= max_retries:
+                    with login_lock:
+                        login_results[task_id] = {
+                            'success': False,
+                            'error': str(e),
+                            'error_type': type(e).__name__,
+                            'failed_at_step': current_step,
+                            'timings': timings,
+                            'retry_count': retry_count,
+                            'traceback': traceback.format_exc(),
+                            'timestamp': datetime.now().isoformat()
+                        }
+                else:
+                    time.sleep(2)
+    
+    threading.Thread(target=bg_login, daemon=True).start()
+    return jsonify({
+        'status': 'processing',
+        'task_id': task_id,
+        'check_url': f'/result/{task_id}',
+        'message': 'ログイン処理を開始しました'
+    }), 202
+
+@app.route('/result/<task_id>', methods=['GET'])
+def get_result(task_id):
+    """結果確認"""
+    with login_lock:
+        return jsonify(login_results.get(task_id, {'status': 'processing'}))
+
 if __name__ == '__main__':
     # 初期ファイル作成
     if not os.path.exists(MAPPING_FILE):
@@ -1863,17 +1996,3 @@ if __name__ == '__main__':
     # Renderの環境変数PORTを使用（ローカルは5001）
     port = int(os.environ.get('PORT', 5001))
     app.run(debug=False, host='0.0.0.0', port=port)
-
-@app.route('/health_check', methods=['GET'])
-def health_check():
-    """環境確認用エンドポイント"""
-    import sys
-    import os
-    
-    return jsonify({
-        'status': 'ok',
-        'python_version': sys.version,
-        'salonboard_id_set': bool(os.getenv('SALONBOARD_LOGIN_ID')),
-        'salonboard_pwd_set': bool(os.getenv('SALONBOARD_LOGIN_PASSWORD')),
-        'timestamp': datetime.now().isoformat()
-    })
