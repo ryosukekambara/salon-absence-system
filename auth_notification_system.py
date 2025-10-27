@@ -1935,7 +1935,6 @@ def test_async():
                 retry_count += 1
                 print(f"[BG_LOGIN] {task_id} - エラー: {str(e)}, リトライ {retry_count}/{max_retries}", flush=True)
                 if retry_count >= max_retries:
-                print(f"[BG_LOGIN] {task_id} - 成功！結果を保存", flush=True)
                     with login_lock:
                         login_results[task_id] = {
                             'success': False,
@@ -1961,7 +1960,6 @@ def test_async():
 @app.route('/result/<task_id>', methods=['GET'])
 def get_result(task_id):
     """結果確認"""
-                print(f"[BG_LOGIN] {task_id} - 成功！結果を保存", flush=True)
     with login_lock:
         return jsonify(login_results.get(task_id, {'status': 'processing'}))
 
