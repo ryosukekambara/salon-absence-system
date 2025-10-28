@@ -2064,3 +2064,40 @@ def debug_test_subprocess():
     
     return jsonify(results), 200
 
+
+@app.route('/debug/test_playwright_import', methods=['GET'])
+def debug_test_playwright_import():
+    """Playwrightインポートテスト"""
+    import subprocess
+    
+    try:
+        result = subprocess.run(
+            ['python3', 'test_playwright_import.py'],
+            capture_output=True,
+            text=True,
+            timeout=60,
+            env=os.environ.copy()
+        )
+        
+        return jsonify({
+            'success': True,
+            'stdout': result.stdout,
+            'stderr': result.stderr,
+            'returncode': result.returncode
+        }), 200
+        
+    except subprocess.TimeoutExpired as e:
+        return jsonify({
+            'success': False,
+            'error': 'Timeout after 60 seconds',
+            'stdout': e.stdout.decode() if e.stdout else '',
+            'stderr': e.stderr.decode() if e.stderr else ''
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'error_type': type(e).__name__
+        }), 500
+
