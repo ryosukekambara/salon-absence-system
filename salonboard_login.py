@@ -53,7 +53,7 @@ def login_salonboard(task_id):
 
             step_start = time.time()
 
-            browser = p.firefox.launch(
+            browser = p.chromium.launch(
 
                 headless=True,
 
