@@ -2075,7 +2075,7 @@ def debug_test_playwright_import():
             ['python3', 'test_playwright_import.py'],
             capture_output=True,
             text=True,
-            timeout=60,
+            timeout=300,
             env=os.environ.copy()
         )
         
@@ -2112,7 +2112,7 @@ def debug_test_salonboard_direct():
             ['python3', 'salonboard_login.py', 'test_render_debug'],
             capture_output=True,
             text=True,
-            timeout=60,
+            timeout=300,
             env=os.environ.copy()
         )
         
