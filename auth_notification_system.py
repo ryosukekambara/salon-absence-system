@@ -2022,6 +2022,7 @@ def debug_check_files():
     return jsonify(checks), 200
 
 
+@app.route('/debug/test_subprocess', methods=['GET'])
 def debug_test_subprocess():
     """subprocessテスト"""
     import subprocess
