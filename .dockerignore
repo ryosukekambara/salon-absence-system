@@ -28,7 +28,6 @@ server.log
 server.error.log
 
 # Test files
-test_*.py
 
 # Backup files
 *.backup
