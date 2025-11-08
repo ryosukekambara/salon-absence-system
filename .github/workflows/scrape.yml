@@ -1,0 +1,39 @@
+name: Salon Board Scraper
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # 毎日11時（日本時間）に実行
+  workflow_dispatch:  # 手動実行も可能
+
+jobs:
+  scrape:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install playwright python-dotenv requests beautifulsoup4
+        playwright install chromium
+    
+    - name: Run scraper
+      env:
+        SALONBOARD_LOGIN_ID: ${{ secrets.SALONBOARD_LOGIN_ID }}
+        SALONBOARD_LOGIN_PASSWORD: ${{ secrets.SALONBOARD_LOGIN_PASSWORD }}
+      run: |
+        python salonboard_login.py
+    
+    - name: Upload results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: scrape-results
+        path: '*.json'
