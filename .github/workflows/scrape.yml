@@ -21,7 +21,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install playwright python-dotenv requests beautifulsoup4
+        pip install playwright python-dotenv
         playwright install chromium
     
     - name: Run scraper
@@ -29,7 +29,7 @@ jobs:
         SALONBOARD_LOGIN_ID: ${{ secrets.SALONBOARD_LOGIN_ID }}
         SALONBOARD_LOGIN_PASSWORD: ${{ secrets.SALONBOARD_LOGIN_PASSWORD }}
       run: |
-        python salonboard_login.py
+        python github_scraper.py
     
     - name: Upload results
       uses: actions/upload-artifact@v4
