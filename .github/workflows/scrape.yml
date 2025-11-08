@@ -2,8 +2,8 @@ name: Salon Board Scraper
 
 on:
   schedule:
-    - cron: '0 2 * * *'  # 毎日11時（日本時間）に実行
-  workflow_dispatch:  # 手動実行も可能
+    - cron: '0 2 * * *'
+  workflow_dispatch:
 
 jobs:
   scrape:
@@ -32,7 +32,7 @@ jobs:
         python salonboard_login.py
     
     - name: Upload results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: scrape-results
