@@ -102,6 +102,28 @@ def load_mapping():
         print(f"Supabase読み込みエラー: {e}")
         return {}
 
+
+def find_phone_from_bookings(name):
+    """bookingsテーブルから電話番号を検索"""
+    try:
+        headers = {
+            'apikey': SUPABASE_KEY,
+            'Authorization': f'Bearer {SUPABASE_KEY}'
+        }
+        response = requests.get(f'{SUPABASE_URL}/rest/v1/bookings?select=*', headers=headers)
+        if response.status_code == 200:
+            for booking in response.json():
+                booking_name = booking.get('customer_name', '')
+                if name in booking_name or booking_name in name:
+                    phone = booking.get('phone')
+                    customer_number = booking.get('customer_number')
+                    if phone:
+                        return phone, customer_number
+        return None, None
+    except Exception as e:
+        print(f"電話番号検索エラー: {e}")
+        return None, None
+
 def save_mapping(customer_name, user_id):
     try:
         headers = {
@@ -117,11 +139,15 @@ def save_mapping(customer_name, user_id):
         )
         
         if check_response.status_code == 200 and len(check_response.json()) == 0:
+            # 電話番号を検索
+            phone, customer_number = find_phone_from_bookings(customer_name)
             # 新規登録
             data = {
                 'name': customer_name,
                 'line_user_id': user_id,
-                'registered_at': datetime.now().isoformat()
+                'registered_at': datetime.now().isoformat(),
+                'phone': phone,
+                'customer_number': customer_number
             }
             insert_response = requests.post(
                 f'{SUPABASE_URL}/rest/v1/customers',
