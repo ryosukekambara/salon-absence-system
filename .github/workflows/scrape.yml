@@ -1,10 +1,8 @@
 name: Salon Board Scraper
-
 on:
   schedule:
     - cron: '0 2 * * *'
   workflow_dispatch:
-
 jobs:
   scrape:
     runs-on: macos-latest
@@ -37,3 +35,11 @@ jobs:
       with:
         name: scrape-results
         path: '*.json'
+    
+    - name: Upload to VPS
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H 153.120.1.43 >> ~/.ssh/known_hosts
+        scp scrape_result_3days.json scrape_result_7days.json ubuntu@153.120.1.43:~/
