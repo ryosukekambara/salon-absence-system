@@ -2164,3 +2164,27 @@ def debug_test_salonboard_direct():
             'error_type': type(e).__name__
         }), 500
 
+
+@app.route('/api/scrape_daily', methods=['GET'])
+def scrape_daily():
+    """毎日のスクレイピング実行"""
+    try:
+        import subprocess
+        result = subprocess.run(
+            ['python3', 'scrape_and_upload.py'],
+            capture_output=True,
+            text=True,
+            timeout=300
+        )
+        
+        return jsonify({
+            "success": True,
+            "stdout": result.stdout,
+            "stderr": result.stderr,
+            "returncode": result.returncode
+        })
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500

@@ -1,0 +1,247 @@
+[
+  {
+    "url": "https://salonboard.com/login/",
+    "method": "GET",
+    "headers": {
+      "upgrade-insecure-requests": "1",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not=A?Brand\";v=\"24\", \"Chromium\";v=\"140\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"macOS\""
+    },
+    "post_data": null
+  },
+  {
+    "url": "https://imgbp.salonboard.com/CNC/img/bg_login_header_01.png",
+    "method": "GET",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://imgbp.salonboard.com/CNC/css/CNCcommon.css?switch=20250227",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not=A?Brand\";v=\"24\", \"Chromium\";v=\"140\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "post_data": null
+  },
+  {
+    "url": "https://imgbp.salonboard.com/CNC/img/btn_login_01.png",
+    "method": "GET",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://imgbp.salonboard.com/CNC/css/CNCcommon.css?switch=20250227",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not=A?Brand\";v=\"24\", \"Chromium\";v=\"140\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "post_data": null
+  },
+  {
+    "url": "https://salonboard.com/DEV/DEV_OPEN/SYSTEM_INFORMATION/img/btn_login_01.png",
+    "method": "GET",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://salonboard.com/DEV/DEV_OPEN/SYSTEM_INFORMATION/css/Sashikomi_Parts_bt.css",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not=A?Brand\";v=\"24\", \"Chromium\";v=\"140\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "post_data": null
+  },
+  {
+    "url": "https://cnt.fout.jp/6516/cnt?id=6516&url=https%3A%2F%2Fsalonboard.com%2Flogin%2F&rurl=&siteid=&segid=&price=&dat=&params=&encoding=&bc=1&eids=&cachebuster=6136420085388",
+    "method": "GET",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://salonboard.com/",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not=A?Brand\";v=\"24\", \"Chromium\";v=\"140\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "post_data": null
+  },
+  {
+    "url": "https://googleads.g.doubleclick.net/pagead/viewthroughconversion/973594165/?random=1762578230566&cv=9&fst=1762578230566&num=1&guid=ON&resp=GooglemKTybQhCsO&eid=375603260%2C466465925%2C512247838%2C658953496&u_h=720&u_w=1280&ig=1&frm=0&url=https%3A%2F%2Fsalonboard.com%2Flogin%2F&tiba=%E3%83%AD%E3%82%B0%E3%82%A4%E3%83%B3%EF%BC%9ASALON%20BOARD&hn=www.googleadservices.com&rfmt=3&fmt=4",
+    "method": "GET",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://salonboard.com/",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not=A?Brand\";v=\"24\", \"Chromium\";v=\"140\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "post_data": null
+  },
+  {
+    "url": "https://analytics.google.com/g/collect?v=2&tid=G-6JN6VMPTB9&gtm=45je5b60h2v895039896z879522402za200zb79522402zd79522402&_p=1762578229585&_gaz=1&gcd=13l3l3l3l1l1&npa=0&dma=0&cid=2057902143.1762578232&ul=ja&sr=1280x720&uaa=x86&uab=64&uafvl=Not%253DA%253FBrand%3B24.0.0.0%7CChromium%3B140.0.7339.16&uamb=0&uam=&uap=macOS&uapv=15.6.1&uaw=0&are=1&frm=0&pscdl=noapi&_s=1&tag_exp=101509157~103116026~103200004~103233427~104527906~104528501~104684208~104684211~104948813~115480709~115583767~115938465~115938469~116217636~116217638&sid=1762578231&sct=1&seg=0&dl=https%3A%2F%2Fsalonboard.com%2Flogin%2F&dt=%E3%83%AD%E3%82%B0%E3%82%A4%E3%83%B3%EF%BC%9ASALON%20BOARD&en=page_view&_fv=1&_nsi=1&_ss=1&ep.cd07_hierarchy2=%2Flogin&ep.cd08_hierarchy3=%2Flogin&ep.cd14_day=sat&ep.cd71_store_id=&ep.cd73_device=desktop&ep.content_group=%E3%83%AD%E3%82%B0%E3%82%A4%E3%83%B3&ep.content_group1=%E3%83%AD%E3%82%B0%E3%82%A4%E3%83%B3&ep.content_group2=&ep.content_view=beauty&ep.virtual_path=&ep.browser_version=140.0.0.0&ep.page_path_all=%2Flogin%2F&up.userId=&tfd=2977",
+    "method": "POST",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://salonboard.com/",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not=A?Brand\";v=\"24\", \"Chromium\";v=\"140\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "post_data": null
+  },
+  {
+    "url": "https://www.google.com/pagead/1p-user-list/973594165/?random=1762578230566&cv=9&fst=1762578000000&num=1&guid=ON&resp=GooglemKTybQhCsO&eid=375603260%2C466465925%2C512247838%2C658953496&u_h=720&u_w=1280&ig=1&frm=0&url=https%3A%2F%2Fsalonboard.com%2Flogin%2F&tiba=%E3%83%AD%E3%82%B0%E3%82%A4%E3%83%B3%EF%BC%9ASALON%20BOARD&hn=www.googleadservices.com&rfmt=3&fmt=3&is_vtc=1&cid=CAQSiwEAwksa0eE3_4xNiy1PCKWD4EFpkMbaMx5axdDHtLzX3x6pdissCFc-IDGf7zsUMpFS5KOGm-aGGgvNI13vrEw6eOsPK43pPfSzT1YyKoK9Kb2Hpp79mi2mTo_GbOZx4HDLB3lsytG7wWXZRs4-YnXMv04oLxbm7vXgT2426oJcnCd-Tb0PyE6BB5O_&random=2302454788&resp=GooglemKTybQhCsO&rmt_tld=0&ipr=y",
+    "method": "GET",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://salonboard.com/",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not=A?Brand\";v=\"24\", \"Chromium\";v=\"140\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "post_data": null
+  },
+  {
+    "url": "https://www.google.co.jp/pagead/1p-user-list/973594165/?random=1762578230566&cv=9&fst=1762578000000&num=1&guid=ON&resp=GooglemKTybQhCsO&eid=375603260%2C466465925%2C512247838%2C658953496&u_h=720&u_w=1280&ig=1&frm=0&url=https%3A%2F%2Fsalonboard.com%2Flogin%2F&tiba=%E3%83%AD%E3%82%B0%E3%82%A4%E3%83%B3%EF%BC%9ASALON%20BOARD&hn=www.googleadservices.com&rfmt=3&fmt=3&is_vtc=1&cid=CAQSiwEAwksa0eE3_4xNiy1PCKWD4EFpkMbaMx5axdDHtLzX3x6pdissCFc-IDGf7zsUMpFS5KOGm-aGGgvNI13vrEw6eOsPK43pPfSzT1YyKoK9Kb2Hpp79mi2mTo_GbOZx4HDLB3lsytG7wWXZRs4-YnXMv04oLxbm7vXgT2426oJcnCd-Tb0PyE6BB5O_&random=2302454788&resp=GooglemKTybQhCsO&rmt_tld=1&ipr=y",
+    "method": "GET",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://salonboard.com/",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not=A?Brand\";v=\"24\", \"Chromium\";v=\"140\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "post_data": null
+  },
+  {
+    "url": "https://www.google-analytics.com/j/collect?v=1&_v=j102&a=2089220251&t=pageview&_s=1&dl=https%3A%2F%2Fsalonboard.com%2Flogin%2F&ul=ja&dt=%E3%83%AD%E3%82%B0%E3%82%A4%E3%83%B3%EF%BC%9ASALON%20BOARD&sr=1280x720&vp=1280x720&_u=aCDAAEAjAAAAACAAI~&jid=597651704&gjid=1822627943&cid=2057902143.1762578232&uid=&tid=UA-44492408-1&_gid=601398310.1762578232&_r=1&_slc=1&gtm=45He5b60h2n81ND78GW6v79522402za200zd79522402&cg1=%E3%83%AD%E3%82%B0%E3%82%A4%E3%83%B3&cg2=&cd1=&cd3=RLS&cd4=%E3%82%B5%E3%83%AD%E3%83%B3%E3%83%9C%E3%83%BC%E3%83%89&cd5=Mozilla%2F5.0%20(Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7)%20AppleWebKit%2F537.36%20(KHTML%2C%20like%20Gecko)%20Chrome%2F140.0.0.0%20Safari%2F537.36&cd6=salonboard.com&cd7=%2Flogin&cd8=%2Flogin&cd9=%E3%83%AD%E3%82%B0%E3%82%A4%E3%83%B3&cd10=https%3A%2F%2Fsalonboard.com%2Flogin%2F&cd11=https%3A%2F%2Fsalonboard.com%2Flogin%2F&cd12=2025%2F11%2F08&cd13=14&cd14=sat&cd15=&cd16=&cd71=&cd72=&cd73=desktop&gcd=13l3l3l3l1l1&dma=0&tag_exp=101509157~103116026~103200004~103233427~104527906~104528501~104684208~104684211~104948813~105446120~115480710~115583767~115616985~115938465~115938468~116217636~116217638&z=1043958829",
+    "method": "POST",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://salonboard.com/",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not=A?Brand\";v=\"24\", \"Chromium\";v=\"140\"",
+      "content-type": "text/plain",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "post_data": null
+  },
+  {
+    "url": "https://salonboard.com/CNC/login/doLogin/",
+    "method": "POST",
+    "headers": {
+      "content-type": "application/x-www-form-urlencoded",
+      "origin": "https://salonboard.com",
+      "referer": "https://salonboard.com/login/",
+      "upgrade-insecure-requests": "1",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not=A?Brand\";v=\"24\", \"Chromium\";v=\"140\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"macOS\""
+    },
+    "post_data": "userId=CD18317&password=Ne8T2Hhi%21"
+  },
+  {
+    "url": "https://analytics.google.com/g/collect?v=2&tid=G-6JN6VMPTB9&gtm=45je5b60h2v895039896za200zb79522402zd79522402&_p=1762578229585&gcd=13l3l3l3l1l1&npa=0&dma=0&cid=2057902143.1762578232&ul=ja&sr=1280x720&uaa=x86&uab=64&uafvl=Not%253DA%253FBrand%3B24.0.0.0%7CChromium%3B140.0.7339.16&uamb=0&uam=&uap=macOS&uapv=15.6.1&uaw=0&are=1&frm=0&pscdl=noapi&_eu=AAAAAAQ&_s=2&tag_exp=101509157~103116026~103200004~103233427~104527906~104528501~104684208~104684211~104948813~115480709~115583767~115938465~115938469~116217636~116217638&sid=1762578231&sct=1&seg=1&dl=https%3A%2F%2Fsalonboard.com%2Flogin%2F&dt=%E3%83%AD%E3%82%B0%E3%82%A4%E3%83%B3%EF%BC%9ASALON%20BOARD&en=user_engagement&ep.cd07_hierarchy2=%2Flogin&ep.cd08_hierarchy3=%2Flogin&ep.cd14_day=sat&ep.cd71_store_id=&ep.cd73_device=desktop&ep.content_group=%E3%83%AD%E3%82%B0%E3%82%A4%E3%83%B3&ep.content_group1=%E3%83%AD%E3%82%B0%E3%82%A4%E3%83%B3&ep.content_group2=&ep.content_view=beauty&ep.virtual_path=&ep.browser_version=140.0.0.0&ep.page_path_all=%2Flogin%2F&_et=20956&tfd=23935",
+    "method": "POST",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://salonboard.com/",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not=A?Brand\";v=\"24\", \"Chromium\";v=\"140\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "post_data": null
+  },
+  {
+    "url": "https://www.google-analytics.com/j/collect?v=1&_v=j102&a=1657965095&t=pageview&_s=1&dl=https%3A%2F%2Fsalonboard.com%2FCNC%2Flogin%2FdoLogin%2F&ul=ja&sr=1280x720&vp=1280x720&_u=SCCAAEAjAAAAACAAI~&jid=&gjid=&cid=2057902143.1762578232&uid=CD18317&tid=UA-44492408-1&_gid=601398310.1762578232&_slc=1&gtm=45He5b60h2n81ND78GW6v79522402za200zd79522402&cg1=%E3%83%AD%E3%82%B0%E3%82%A4%E3%83%B3&cg2=&cd1=&cd3=RLS&cd4=%E3%82%B5%E3%83%AD%E3%83%B3%E3%83%9C%E3%83%BC%E3%83%89&cd5=Mozilla%2F5.0%20(Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7)%20AppleWebKit%2F537.36%20(KHTML%2C%20like%20Gecko)%20Chrome%2F140.0.0.0%20Safari%2F537.36&cd6=salonboard.com&cd7=%2FCNC&cd8=%2FCNC%2Flogin&cd9=%E3%83%AD%E3%82%B0%E3%82%A4%E3%83%B3&cd10=https%3A%2F%2Fsalonboard.com%2FCNC%2Flogin%2FdoLogin%2F&cd11=https%3A%2F%2Fsalonboard.com%2FCNC%2Flogin%2FdoLogin%2F&cd12=2025%2F11%2F08&cd13=14&cd14=sat&cd15=&cd16=&cd71=H000537368&cd72=CD18317&cd73=desktop&gcd=13l3l3l3l1l1&dma=0&tag_exp=101509157~103116026~103200004~103233427~104527907~104528500~104684208~104684211~104948813~105446120~115480709~115583767~115616985~115938466~115938469~116217636~116217638&z=1244494542",
+    "method": "POST",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://salonboard.com/",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not=A?Brand\";v=\"24\", \"Chromium\";v=\"140\"",
+      "content-type": "text/plain",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "post_data": null
+  },
+  {
+    "url": "https://analytics.google.com/g/collect?v=2&tid=G-6JN6VMPTB9&gtm=45je5b60h2v895039896z879522402za200zb79522402zd79522402&_p=1762578252648&gcd=13l3l3l3l1l1&npa=0&dma=0&cid=2057902143.1762578232&ul=ja&sr=1280x720&uaa=x86&uab=64&uafvl=Not%253DA%253FBrand%3B24.0.0.0%7CChromium%3B140.0.7339.16&uamb=0&uam=&uap=macOS&uapv=15.6.1&uaw=0&are=1&frm=0&pscdl=noapi&_eu=AAAAAAQ&_s=1&tag_exp=101509157~103116026~103200004~103233427~104527907~104528500~104684208~104684211~104948813~115480709~115583767~115938466~115938469~116217636~116217638&sid=1762578231&sct=1&seg=1&dl=https%3A%2F%2Fsalonboard.com%2FCNC%2Flogin%2FdoLogin%2F&dr=https%3A%2F%2Fsalonboard.com%2Flogin%2F&dt=&en=page_view&ep.cd07_hierarchy2=%2FCNC&ep.cd08_hierarchy3=%2FCNC%2Flogin&ep.cd14_day=sat&ep.cd71_store_id=H000537368&ep.cd73_device=desktop&ep.content_group=%E3%83%AD%E3%82%B0%E3%82%A4%E3%83%B3&ep.content_group1=%E3%83%AD%E3%82%B0%E3%82%A4%E3%83%B3&ep.content_group2=&ep.content_view=beauty&ep.virtual_path=&ep.browser_version=140.0.0.0&ep.page_path_all=%2FCNC%2Flogin%2FdoLogin%2F&up.userId=CD18317&tfd=23218",
+    "method": "POST",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://salonboard.com/",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not=A?Brand\";v=\"24\", \"Chromium\";v=\"140\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "post_data": null
+  },
+  {
+    "url": "https://analytics.google.com/g/collect?v=2&tid=G-6JN6VMPTB9&gtm=45je5b60h2v895039896za200zb79522402zd79522402&_p=1762578252648&gcd=13l3l3l3l1l1&npa=0&dma=0&cid=2057902143.1762578232&ul=ja&sr=1280x720&uaa=x86&uab=64&uafvl=Not%253DA%253FBrand%3B24.0.0.0%7CChromium%3B140.0.7339.16&uamb=0&uam=&uap=macOS&uapv=15.6.1&uaw=0&are=1&frm=0&pscdl=noapi&_eu=AAAAAAQ&_s=2&tag_exp=101509157~103116026~103200004~103233427~104527907~104528500~104684208~104684211~104948813~115480709~115583767~115938466~115938469~116217636~116217638&sid=1762578231&sct=1&seg=1&dl=https%3A%2F%2Fsalonboard.com%2FCNC%2Flogin%2FdoLogin%2F&dr=https%3A%2F%2Fsalonboard.com%2Flogin%2F&dt=&en=user_engagement&ep.cd07_hierarchy2=%2FCNC&ep.cd08_hierarchy3=%2FCNC%2Flogin&ep.cd14_day=sat&ep.cd71_store_id=H000537368&ep.cd73_device=desktop&ep.content_group=%E3%83%AD%E3%82%B0%E3%82%A4%E3%83%B3&ep.content_group1=%E3%83%AD%E3%82%B0%E3%82%A4%E3%83%B3&ep.content_group2=&ep.content_view=beauty&ep.virtual_path=&ep.browser_version=140.0.0.0&ep.page_path_all=%2FCNC%2Flogin%2FdoLogin%2F&_et=10508&tfd=28730",
+    "method": "POST",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://salonboard.com/",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not=A?Brand\";v=\"24\", \"Chromium\";v=\"140\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "post_data": null
+  },
+  {
+    "url": "https://imgbp.salonboard.com/KLP/img/btn_login_02.png?switch=2025102910",
+    "method": "GET",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://imgbp.salonboard.com/KLP/css/common.css?switch=2025102910",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not=A?Brand\";v=\"24\", \"Chromium\";v=\"140\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "post_data": null
+  },
+  {
+    "url": "https://imgbp.salonboard.com/KLP/img/bg_login_01.gif?switch=2025102910",
+    "method": "GET",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://imgbp.salonboard.com/KLP/css/common.css?switch=2025102910",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not=A?Brand\";v=\"24\", \"Chromium\";v=\"140\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "post_data": null
+  },
+  {
+    "url": "https://imgbp.salonboard.com/KLP/img/bg_login_04.gif?switch=2025102910",
+    "method": "GET",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://imgbp.salonboard.com/KLP/css/common.css?switch=2025102910",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not=A?Brand\";v=\"24\", \"Chromium\";v=\"140\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "post_data": null
+  },
+  {
+    "url": "https://imgbp.salonboard.com/KLP/img/bg_login_02.gif?switch=2025102910",
+    "method": "GET",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://imgbp.salonboard.com/KLP/css/common.css?switch=2025102910",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not=A?Brand\";v=\"24\", \"Chromium\";v=\"140\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "post_data": null
+  },
+  {
+    "url": "https://imgbp.salonboard.com/KLP/img/bg_login_03.gif?switch=2025102910",
+    "method": "GET",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://imgbp.salonboard.com/KLP/css/common.css?switch=2025102910",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Not=A?Brand\";v=\"24\", \"Chromium\";v=\"140\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "post_data": null
+  }
+]

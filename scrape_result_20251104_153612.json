@@ -1,0 +1,7 @@
+{
+  "success": true,
+  "login_url": "https://salonboard.com/login/",
+  "after_login_url": "https://salonboard.com/KLP/top/",
+  "message": "予約ページのURLとHTML構造を確認してください",
+  "timestamp": "2025-11-04T15:37:30.822832"
+}

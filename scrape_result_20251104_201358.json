@@ -1,0 +1,6 @@
+{
+  "success": false,
+  "error": "Page.goto: Timeout 180000ms exceeded.\nCall log:\n  - navigating to \"https://salonboard.com/KLP/schedule/salonSchedule/\", waiting until \"networkidle\"\n",
+  "error_type": "TimeoutError",
+  "timestamp": "2025-11-04T20:17:46.393087"
+}
