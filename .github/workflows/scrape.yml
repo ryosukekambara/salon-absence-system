@@ -1,14 +1,12 @@
 name: Daily Scrape
-
 on:
   schedule:
     - cron: '50 22 * * *'  # 毎日22:50 UTC (日本時間7:50)
   workflow_dispatch:  # 手動実行も可能
-
 jobs:
   scrape:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Railway scrape
         run: |
-          curl -X GET "https://salon-absence-system-production.up.railway.app/test_salonboard_login"
+          curl -X GET "https://salon-absence-system-production.up.railway.app/api/scrape_daily"
