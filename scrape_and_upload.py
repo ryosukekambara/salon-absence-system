@@ -5,6 +5,7 @@ import json
 from datetime import datetime, timedelta
 import os
 import tempfile
+import base64
 
 async def main():
     print(f"[{datetime.now()}] スクレイピング開始")
@@ -30,11 +31,14 @@ async def main():
     if result_7.stderr:
         print(f"7日後エラー: {result_7.stderr}")
     
-    # SSH鍵を環境変数から取得して一時ファイルに書き込む
-    ssh_key = os.environ.get("VPS_SSH_PRIVATE_KEY")
-    if not ssh_key:
-        print("エラー: VPS_SSH_PRIVATE_KEY が設定されていません")
+    # SSH鍵をBase64環境変数から取得してデコード
+    ssh_key_base64 = os.environ.get("VPS_SSH_PRIVATE_KEY_BASE64")
+    if not ssh_key_base64:
+        print("エラー: VPS_SSH_PRIVATE_KEY_BASE64 が設定されていません")
         return {"success": False, "message": "SSH鍵が未設定"}
+    
+    # Base64デコード
+    ssh_key = base64.b64decode(ssh_key_base64).decode('utf-8')
     
     # 一時ファイルにSSH鍵を保存
     with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='_key') as f:
