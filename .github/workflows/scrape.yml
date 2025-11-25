@@ -1,7 +1,7 @@
 name: Daily Scrape
 on:
   schedule:
-    - cron: '35 06 * * *'
+    
   workflow_dispatch:
 jobs:
   scrape:
