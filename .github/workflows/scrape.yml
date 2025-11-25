@@ -1,7 +1,7 @@
 name: Daily Scrape
 on:
   schedule:
-    - cron: '50 23 * * *'  # 毎日 23:50 UTC = 日本時間 8:50
+    - cron: '35 06 * * *'
   workflow_dispatch:
 jobs:
   scrape:
