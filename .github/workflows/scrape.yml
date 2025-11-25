@@ -2,19 +2,55 @@ name: Daily Scrape
 on:
   schedule:
     - cron: '50 22 * * *'  # 毎日22:50 UTC (日本時間7:50)
-  workflow_dispatch:  # 手動実行も可能
+  workflow_dispatch:
 jobs:
   scrape:
     runs-on: ubuntu-latest
     steps:
-      - name: Setup SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H 153.120.1.43 >> ~/.ssh/known_hosts
+      - name: Checkout repository
+        uses: actions/checkout@v4
       
-      - name: Trigger Railway scrape and transfer
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
         run: |
-          # Railwayでスクレイピング実行
-          curl -X GET "https://salon-absence-system-production.up.railway.app/api/scrape_daily"
+          pip install playwright python-dotenv
+          playwright install chromium
+      
+      - name: Run scrape test
+        env:
+          SALONBOARD_LOGIN_ID: ${{ secrets.SALONBOARD_LOGIN_ID }}
+          SALONBOARD_LOGIN_PASSWORD: ${{ secrets.SALONBOARD_LOGIN_PASSWORD }}
+        run: |
+          python -c "
+          from playwright.sync_api import sync_playwright
+          import os
+
+          print('=== GitHub Actions スクレイピングテスト ===')
+          
+          with sync_playwright() as p:
+              browser = p.chromium.launch(headless=True)
+              page = browser.new_page()
+              
+              print('サロンボードにアクセス中...')
+              page.goto('https://salonboard.com/login/')
+              print(f'ページタイトル: {page.title()}')
+              
+              # ログイン
+              page.fill('input[name=\"login_id\"]', os.environ['SALONBOARD_LOGIN_ID'])
+              page.fill('input[name=\"login_password\"]', os.environ['SALONBOARD_LOGIN_PASSWORD'])
+              page.click('button[type=\"submit\"]')
+              
+              page.wait_for_timeout(5000)
+              print(f'ログイン後URL: {page.url}')
+              
+              if 'top' in page.url or 'KLP' in page.url:
+                  print('✅ ログイン成功！Bot検知されませんでした')
+              else:
+                  print('❌ ログイン失敗またはBot検知された可能性')
+              
+              browser.close()
+          "  
