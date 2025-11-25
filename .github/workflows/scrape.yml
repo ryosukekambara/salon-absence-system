@@ -7,6 +7,14 @@ jobs:
   scrape:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Railway scrape
+      - name: Setup SSH key
         run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H 153.120.1.43 >> ~/.ssh/known_hosts
+      
+      - name: Trigger Railway scrape and transfer
+        run: |
+          # Railwayでスクレイピング実行
           curl -X GET "https://salon-absence-system-production.up.railway.app/api/scrape_daily"
