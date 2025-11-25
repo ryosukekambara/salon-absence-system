@@ -1,7 +1,7 @@
 name: Daily Scrape
 on:
   schedule:
-    - cron: '50 22 * * *'  # 毎日22:50 UTC (日本時間7:50)
+    - cron: '50 22 * * *'  # 毎日 22:50 UTC = 日本時間 7:50
   workflow_dispatch:
 jobs:
   scrape:
@@ -17,8 +17,8 @@ jobs:
       
       - name: Install dependencies
         run: |
-          pip install playwright python-dotenv
-          playwright install chromium
+          pip install playwright python-dotenv playwright-stealth
+          playwright install firefox
       
       - name: Run scrape test
         env:
@@ -27,16 +27,18 @@ jobs:
         run: |
           python -c "
           from playwright.sync_api import sync_playwright
+          from playwright_stealth import stealth_sync
           import os
 
-          print('=== GitHub Actions スクレイピングテスト ===')
+          print('=== GitHub Actions スクレイピングテスト (Firefox + Stealth) ===')
           
           with sync_playwright() as p:
-              browser = p.chromium.launch(headless=True)
+              browser = p.firefox.launch(headless=True)
               page = browser.new_page()
+              stealth_sync(page)
               
               print('サロンボードにアクセス中...')
-              page.goto('https://salonboard.com/login/')
+              page.goto('https://salonboard.com/login/', timeout=60000)
               print(f'ページタイトル: {page.title()}')
               
               # ログイン
@@ -53,4 +55,4 @@ jobs:
                   print('❌ ログイン失敗またはBot検知された可能性')
               
               browser.close()
-          "  
+          "
