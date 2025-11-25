@@ -2,7 +2,7 @@
 import json
 import re
 from playwright.sync_api import sync_playwright
-from datetime import datetime
+from datetime import datetime, timedelta
 
 with sync_playwright() as p:
     browser = p.chromium.launch(headless=False)
@@ -14,7 +14,7 @@ with sync_playwright() as p:
     context.add_cookies(cookies)
     page = context.new_page()
     
-    today = '20251124'
+    today = (datetime.now() + timedelta(days=7)).strftime('%Y%m%d')
     url = f'https://salonboard.com/KLP/reserve/reserveList/searchDate?date={today}'
     
     print(f"[SCRAPE] 本日の予約にアクセス（{today}）...")
@@ -117,7 +117,7 @@ with sync_playwright() as p:
         "timestamp": datetime.now().isoformat()
     }
     
-    result_file = f"scrape_result_with_phone_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    result_file = f"scrape_result_7days.json"
     with open(result_file, 'w', encoding='utf-8') as f:
         json.dump(result, f, ensure_ascii=False, indent=2)
     
