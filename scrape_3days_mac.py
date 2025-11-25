@@ -18,7 +18,7 @@ with sync_playwright() as p:
     url = f'https://salonboard.com/KLP/reserve/reserveList/searchDate?date={today}'
     
     print(f"[SCRAPE] 本日の予約にアクセス（{today}）...")
-    page.goto(url)
+    page.goto(url, timeout=90000)
     page.wait_for_timeout(3000)
     
     # 第1段階：予約IDと基本情報を取得
