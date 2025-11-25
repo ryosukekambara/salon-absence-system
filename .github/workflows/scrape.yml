@@ -7,7 +7,7 @@ jobs:
   scrape:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
       
       - name: Setup Python
@@ -15,63 +15,35 @@ jobs:
         with:
           python-version: '3.11'
       
-      - name: Install dependencies
+      - name: Install
         run: |
-          pip install playwright python-dotenv
+          pip install playwright
           playwright install chromium
       
-      - name: Run scrape test
+      - name: Test
         env:
-          SALONBOARD_LOGIN_ID: ${{ secrets.SALONBOARD_LOGIN_ID }}
-          SALONBOARD_LOGIN_PASSWORD: ${{ secrets.SALONBOARD_LOGIN_PASSWORD }}
+          ID: ${{ secrets.SALONBOARD_LOGIN_ID }}
+          PW: ${{ secrets.SALONBOARD_LOGIN_PASSWORD }}
         run: |
-          python << 'EOF'
+          cat > test.py << 'ENDPY'
           from playwright.sync_api import sync_playwright
           import os
-
-          print('=== GitHub Actions scrape test ===')
-          
           with sync_playwright() as p:
-              browser = p.chromium.launch(
-                  headless=True,
-                  args=['--disable-blink-features=AutomationControlled']
-              )
-              context = browser.new_context(
-                  viewport={'width': 1920, 'height': 1080},
-                  user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-              )
-              page = context.new_page()
-              
-              page.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
-              
-              print('Accessing salonboard...')
-              page.goto('https://salonboard.com/login/', timeout=60000)
-              print(f'Title: {page.title()}')
-              
-              print('Waiting 30 seconds...')
-              page.wait_for_timeout(30000)
-              
-              page.screenshot(path='login.png')
-              
-              html = page.content()
-              if 'login_id' in html:
-                  print('Login form found')
-                  page.fill('input[name="login_id"]', os.environ['SALONBOARD_LOGIN_ID'])
-                  page.fill('input[name="login_password"]', os.environ['SALONBOARD_LOGIN_PASSWORD'])
-                  page.click('button[type="submit"]')
-                  page.wait_for_timeout(5000)
-                  print(f'After login: {page.url}')
-                  if 'top' in page.url or 'KLP' in page.url:
-                      print('SUCCESS: Login OK')
-                  else:
-                      print('FAIL: Login failed')
+              b = p.chromium.launch(headless=True)
+              pg = b.new_page()
+              pg.goto('https://salonboard.com/login/', timeout=60000)
+              print(pg.title())
+              pg.wait_for_timeout(30000)
+              h = pg.content()
+              if 'login_id' in h:
+                  print('Form found')
+                  pg.fill('input[name="login_id"]', os.environ['ID'])
+                  pg.fill('input[name="login_password"]', os.environ['PW'])
+                  pg.click('button[type="submit"]')
+                  pg.wait_for_timeout(5000)
+                  print(pg.url)
               else:
-                  print('FAIL: Form not found')
-              
-              browser.close()
-          EOF
-```
-
-保存後、実行リンク：
-```
-https://github.com/ryosukekambara/salon-absence-system/actions/workflows/scrape.yml
+                  print('No form')
+              b.close()
+          ENDPY
+          python test.py
