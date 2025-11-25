@@ -5,6 +5,7 @@ import json
 from datetime import datetime, timedelta
 import os
 import requests
+import glob
 
 async def main():
     print(f"[{datetime.now()}] スクレイピング開始")
@@ -48,16 +49,30 @@ async def main():
     
     # 3日後のデータを読み込み
     try:
-        with open("scrape_result_3days.json", "r") as f:
-            data_3days_content = json.load(f)
+        files_3 = glob.glob("scrape_result_with_phone_*.json") + glob.glob("*3days*.json")
+        files_3 = [f for f in files_3 if "3days" in f or date_3days in f]
+        if files_3:
+            with open(files_3[0], "r") as f:
+                data_3days_content = json.load(f)
+            print(f"3日後ファイル読み込み成功: {files_3[0]}")
+        else:
+            data_3days_content = []
+            print("3日後ファイルが見つかりません")
     except Exception as e:
         print(f"3日後ファイル読み込みエラー: {e}")
         data_3days_content = []
     
     # 7日後のデータを読み込み
     try:
-        with open("scrape_result_7days.json", "r") as f:
-            data_7days_content = json.load(f)
+        files_7 = glob.glob("scrape_result_with_phone_*.json") + glob.glob("*7days*.json")
+        files_7 = [f for f in files_7 if "7days" in f or date_7days in f]
+        if files_7:
+            with open(files_7[0], "r") as f:
+                data_7days_content = json.load(f)
+            print(f"7日後ファイル読み込み成功: {files_7[0]}")
+        else:
+            data_7days_content = []
+            print("7日後ファイルが見つかりません")
     except Exception as e:
         print(f"7日後ファイル読み込みエラー: {e}")
         data_7days_content = []
@@ -102,3 +117,10 @@ async def main():
 if __name__ == "__main__":
     result = asyncio.run(main())
     print(json.dumps(result, ensure_ascii=False))
+```
+
+**Commit changes** をクリック
+
+デプロイ完了後、再度テスト：
+```
+https://salon-absence-system-production.up.railway.app/api/scrape_daily
