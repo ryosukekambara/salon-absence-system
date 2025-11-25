@@ -5,7 +5,7 @@ from playwright.sync_api import sync_playwright
 from datetime import datetime, timedelta
 
 with sync_playwright() as p:
-    browser = p.chromium.launch(headless=False)
+    browser = p.chromium.launch(headless=True)
     
     with open('session_cookies.json', 'r') as f:
         cookies = json.load(f)
