@@ -18,7 +18,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install playwright python-dotenv
-          playwright install firefox
+          playwright install chromium
       
       - name: Run scrape test
         env:
@@ -28,52 +28,62 @@ jobs:
           python -c "
           from playwright.sync_api import sync_playwright
           import os
-          import time
 
-          print('=== GitHub Actions スクレイピングテスト (Firefox) ===')
+          print('=== GitHub Actions スクレイピングテスト (Chromium + 待機) ===')
           
           with sync_playwright() as p:
-              browser = p.firefox.launch(
+              browser = p.chromium.launch(
                   headless=True,
-                  firefox_user_prefs={
-                      'dom.webdriver.enabled': False,
-                      'useAutomationExtension': False
-                  }
+                  args=['--disable-blink-features=AutomationControlled']
               )
               context = browser.new_context(
                   viewport={'width': 1920, 'height': 1080},
-                  user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0'
+                  user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
               )
               page = context.new_page()
               
+              # webdriver検知を回避
+              page.add_init_script('''
+                  Object.defineProperty(navigator, 'webdriver', {get: () => undefined})
+              ''')
+              
               print('サロンボードにアクセス中...')
-              page.goto('https://salonboard.com/login/', timeout=60000, wait_until='networkidle')
+              page.goto('https://salonboard.com/login/', timeout=60000)
               print(f'ページタイトル: {page.title()}')
               
-              # 少し待機
-              page.wait_for_timeout(3000)
+              # 30秒待機
+              print('30秒待機中...')
+              page.wait_for_timeout(30000)
               
-              # ページのHTMLを確認
+              # スクリーンショット撮影
+              page.screenshot(path='login_page.png')
+              print('スクリーンショット保存: login_page.png')
+              
+              # HTMLを確認
               html = page.content()
               if 'login_id' in html:
                   print('✅ ログインフォームが見つかりました')
+                  
+                  # ログイン試行
+                  page.fill('input[name=\"login_id\"]', os.environ['SALONBOARD_LOGIN_ID'])
+                  page.fill('input[name=\"login_password\"]', os.environ['SALONBOARD_LOGIN_PASSWORD'])
+                  page.click('button[type=\"submit\"]')
+                  
+                  page.wait_for_timeout(5000)
+                  print(f'ログイン後URL: {page.url}')
+                  
+                  if 'top' in page.url or 'KLP' in page.url:
+                      print('✅ ログイン成功！Bot検知されませんでした')
+                  else:
+                      print('❌ ログイン失敗またはBot検知された可能性')
               else:
                   print('❌ ログインフォームが見つかりません')
-                  print('HTML抜粋:', html[:500])
-              
-              # ログイン試行
-              page.wait_for_selector('input[name=\"login_id\"]', timeout=10000)
-              page.fill('input[name=\"login_id\"]', os.environ['SALONBOARD_LOGIN_ID'])
-              page.fill('input[name=\"login_password\"]', os.environ['SALONBOARD_LOGIN_PASSWORD'])
-              page.click('button[type=\"submit\"]')
-              
-              page.wait_for_timeout(5000)
-              print(f'ログイン後URL: {page.url}')
-              
-              if 'top' in page.url or 'KLP' in page.url:
-                  print('✅ ログイン成功！Bot検知されませんでした')
-              else:
-                  print('❌ ログイン失敗またはBot検知された可能性')
+                  print('HTML一部:', html[:1000])
               
               browser.close()
           "
+```
+
+保存後、実行リンク：
+```
+https://github.com/ryosukekambara/salon-absence-system/actions/workflows/scrape.yml
