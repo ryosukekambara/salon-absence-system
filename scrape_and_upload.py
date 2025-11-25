@@ -117,10 +117,3 @@ async def main():
 if __name__ == "__main__":
     result = asyncio.run(main())
     print(json.dumps(result, ensure_ascii=False))
-```
-
-**Commit changes** をクリック
-
-デプロイ完了後、再度テスト：
-```
-https://salon-absence-system-production.up.railway.app/api/scrape_daily
