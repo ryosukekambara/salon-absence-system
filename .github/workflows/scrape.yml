@@ -17,7 +17,7 @@ jobs:
       
       - name: Install dependencies
         run: |
-          pip install playwright python-dotenv playwright-stealth
+          pip install playwright python-dotenv
           playwright install firefox
       
       - name: Run scrape test
@@ -27,15 +27,23 @@ jobs:
         run: |
           python -c "
           from playwright.sync_api import sync_playwright
-          from playwright_stealth import stealth_sync
           import os
 
-          print('=== GitHub Actions スクレイピングテスト (Firefox + Stealth) ===')
+          print('=== GitHub Actions スクレイピングテスト (Firefox) ===')
           
           with sync_playwright() as p:
-              browser = p.firefox.launch(headless=True)
-              page = browser.new_page()
-              stealth_sync(page)
+              browser = p.firefox.launch(
+                  headless=True,
+                  firefox_user_prefs={
+                      'dom.webdriver.enabled': False,
+                      'useAutomationExtension': False
+                  }
+              )
+              context = browser.new_context(
+                  viewport={'width': 1920, 'height': 1080},
+                  user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0'
+              )
+              page = context.new_page()
               
               print('サロンボードにアクセス中...')
               page.goto('https://salonboard.com/login/', timeout=60000)
