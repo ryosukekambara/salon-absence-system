@@ -5,14 +5,22 @@ from playwright.sync_api import sync_playwright
 from datetime import datetime, timedelta
 
 with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True)
+    browser = p.chromium.launch(
+        headless=True,
+        args=['--disable-blink-features=AutomationControlled']
+    )
+    
+    context = browser.new_context(
+        user_agent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        viewport={'width': 1920, 'height': 1080},
+        locale='ja-JP',
+        timezone_id='Asia/Tokyo'
+    )
     
     with open('session_cookies.json', 'r') as f:
         cookies = json.load(f)
     
-    context = browser.new_context()
     context.add_cookies(cookies)
-    page = context.new_page()
     
     today = (datetime.now() + timedelta(days=3)).strftime('%Y%m%d')
     url = f'https://salonboard.com/KLP/reserve/reserveList/searchDate?date={today}'
