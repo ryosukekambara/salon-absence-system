@@ -16,6 +16,7 @@ with sync_playwright() as p:
         locale='ja-JP',
         timezone_id='Asia/Tokyo'
     )
+    page = context.new_page()
     
     with open('session_cookies.json', 'r') as f:
         cookies = json.load(f)
