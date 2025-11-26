@@ -23,7 +23,7 @@ with sync_playwright() as p:
     
     context.add_cookies(cookies)
     
-    today = (datetime.now() + timedelta(days=7)).strftime('%Y%m%d')
+    today = (datetime.now() + timedelta(days=6)).strftime('%Y%m%d')
     url = f'https://salonboard.com/KLP/reserve/reserveList/searchDate?date={today}'
     
     print(f"[SCRAPE] 本日の予約にアクセス（{today}）...")
