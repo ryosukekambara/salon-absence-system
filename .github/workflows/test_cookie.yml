@@ -1,0 +1,56 @@
+name: Test Cookie Method
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-cookie:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Playwright
+        run: |
+          pip install playwright
+          playwright install chromium
+          playwright install-deps
+
+      - name: Test with Cookie
+        env:
+          SESSION_COOKIES: ${{ secrets.SESSION_COOKIES }}
+        run: |
+          python << 'PYTHON'
+          import os
+          import json
+          from playwright.sync_api import sync_playwright
+
+          cookies_json = os.environ.get('SESSION_COOKIES')
+          cookies = json.loads(cookies_json)
+          print(f"[TEST] クッキー数: {len(cookies)}個")
+
+          with sync_playwright() as p:
+              browser = p.chromium.launch(headless=True)
+              context = browser.new_context()
+              context.add_cookies(cookies)
+              page = context.new_page()
+
+              print("[1] 予約ページにアクセス...")
+              try:
+                  page.goto('https://salonboard.com/KLP/reserve/reserveList/', timeout=60000)
+                  page.wait_for_timeout(5000)
+                  print(f"    URL: {page.url}")
+                  
+                  if 'login' in page.url.lower():
+                      print("❌ ログインページにリダイレクト。クッキー無効。")
+                  elif 'reserve' in page.url.lower():
+                      print("✅ 成功！クッキー方式でアクセスできました！")
+                  else:
+                      print(f"⚠️ 不明な結果: {page.url}")
+              except Exception as e:
+                  print(f"❌ アクセス失敗: {e}")
+
+              browser.close()
+          PYTHON
