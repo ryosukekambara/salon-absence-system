@@ -1,0 +1,64 @@
+name: Test SalonBoard Access
+
+on:
+  workflow_dispatch:  # 手動実行
+
+jobs:
+  test-login:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Playwright
+        run: |
+          pip install playwright
+          playwright install chromium
+          playwright install-deps
+
+      - name: Test SalonBoard Login
+        env:
+          SALONBOARD_LOGIN_ID: ${{ secrets.SALONBOARD_LOGIN_ID }}
+          SALONBOARD_LOGIN_PASSWORD: ${{ secrets.SALONBOARD_LOGIN_PASSWORD }}
+        run: |
+          python << 'PYTHON'
+          import os
+          from playwright.sync_api import sync_playwright
+
+          login_id = os.environ.get('SALONBOARD_LOGIN_ID')
+          login_password = os.environ.get('SALONBOARD_LOGIN_PASSWORD')
+
+          print(f"[TEST] ログインID: {login_id[:2]}***")
+
+          with sync_playwright() as p:
+              browser = p.chromium.launch(headless=True)
+              page = browser.new_page()
+
+              print("[1] ログインページにアクセス...")
+              page.goto('https://salonboard.com/login/', timeout=60000)
+              page.wait_for_timeout(3000)
+              print(f"    URL: {page.url}")
+
+              print("[2] ID入力...")
+              page.fill('input[name="userId"]', login_id)
+              page.wait_for_timeout(500)
+
+              print("[3] パスワード入力...")
+              page.fill('input[name="password"]', login_password)
+              page.wait_for_timeout(500)
+
+              print("[4] ログインボタンクリック...")
+              page.click('a:has-text("ログイン")')
+              page.wait_for_timeout(10000)
+
+              print(f"[5] 現在のURL: {page.url}")
+
+              if 'login' not in page.url.lower():
+                  print("✅ ログイン成功！GitHub Actionsからサロンボードにアクセスできます！")
+              else:
+                  print("❌ ログイン失敗。IPがブロックされている可能性があります。")
+
+              browser.close()
+          PYTHON
