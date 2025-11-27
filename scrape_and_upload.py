@@ -2,7 +2,7 @@
 import asyncio
 import subprocess
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import os
 import requests
 import glob
@@ -11,7 +11,7 @@ async def main():
     print(f"[{datetime.now()}] スクレイピング開始")
     
     # 3日後と7日後の日付
-    today = datetime.now()
+    JST = timezone(timedelta(hours=9)); today = datetime.now(JST)
     date_3days = (today + timedelta(days=3)).strftime("%Y%m%d")
     date_7days = (today + timedelta(days=7)).strftime("%Y%m%d")
     

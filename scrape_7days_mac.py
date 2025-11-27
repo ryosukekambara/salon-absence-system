@@ -2,7 +2,7 @@
 import json
 import re
 from playwright.sync_api import sync_playwright
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 with sync_playwright() as p:
     browser = p.chromium.launch(
@@ -23,7 +23,7 @@ with sync_playwright() as p:
     
     context.add_cookies(cookies)
     
-    today = (datetime.now() + timedelta(days=7)).strftime('%Y%m%d')
+    JST = timezone(timedelta(hours=9)); today = (datetime.now(JST) + timedelta(days=7)).strftime('%Y%m%d')
     url = f'https://salonboard.com/KLP/reserve/reserveList/searchDate?date={today}'
     
     print(f"[SCRAPE] 本日の予約にアクセス（{today}）...")
