@@ -66,7 +66,7 @@ STAFF_USERS = {
 }
 
 staff_mapping = {
-    "U3dafc1648cc64b066ca1c5b3f4a67f8e": {"name": "神原さん"},
+    # "U3dafc1648cc64b066ca1c5b3f4a67f8e": {"name": "神原さん"},  # テスト用に一時コメントアウト
     "U1ad150fa84a287c095eb98186a8cdc45": {"name": "Saoriさん"}
 }
 
