@@ -1380,13 +1380,13 @@ def webhook():
                             break
                     
                     # 新規でも既存でも名前更新を試みる
-                    print(f"[DEBUG] 顧客メッセージ受信: user_id={user_id}, text={text}")
+                    print(f"[DEBUG] 顧客メッセージ受信: user_id={user_id}, text={text}", flush=True)
                     if len(text) >= 2:
                         cleaned_name = clean_customer_name(text)
-                        print(f"[DEBUG] 正規化後: cleaned_name={cleaned_name}")
+                        print(f"[DEBUG] 正規化後: cleaned_name={cleaned_name}", flush=True)
                         if cleaned_name and len(cleaned_name) >= 2:
                             result = save_mapping(cleaned_name, user_id)
-                            print(f"[DEBUG] save_mapping結果: {result}")
+                            print(f"[DEBUG] save_mapping結果: {result}", flush=True)
                         
         return 'OK', 200
     except Exception as e:
