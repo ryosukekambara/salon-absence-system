@@ -1379,8 +1379,11 @@ def webhook():
                             existing = name
                             break
                     
-                    if not existing and len(text) >= 2:
-                        save_mapping(text, user_id)
+                    # 新規でも既存でも名前更新を試みる
+                    if len(text) >= 2:
+                        cleaned_name = clean_customer_name(text)
+                        if cleaned_name and len(cleaned_name) >= 2:
+                            save_mapping(cleaned_name, user_id)
                         
         return 'OK', 200
     except Exception as e:
