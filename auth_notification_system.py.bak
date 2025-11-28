@@ -15,6 +15,32 @@ import threading
 # from supabase import create_client の行は削除
 
 load_dotenv()
+
+def clean_customer_name(text):
+    """名前を正規化（スペース除去、★除去、余計な文字除去）"""
+    import re
+    # 改行以降を除去（予約IDなど）
+    name = text.split("\n")[0].strip()
+    # 除去パターン
+    remove_patterns = [
+        r"★+",
+        r"です[。\.]*$",
+        r"でーす[。\.]*$",
+        r"よろしく.*$",
+        r"お願い.*$",
+        r"初めまして.*$",
+        r"はじめまして.*$",
+        r"こんにちは.*$",
+        r"こんばんは.*$",
+        r"おはよう.*$",
+        r"[。、\.!！\?？]+$",
+    ]
+    for pattern in remove_patterns:
+        name = re.sub(pattern, "", name)
+    # スペース除去（半角・全角両方）
+    name = re.sub(r"[\s　]+", "", name)
+    return name.strip()
+
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
@@ -102,7 +128,30 @@ def load_mapping():
         print(f"Supabase読み込みエラー: {e}")
         return {}
 
+
+def find_phone_from_bookings(name):
+    """bookingsテーブルから電話番号を検索"""
+    try:
+        headers = {
+            'apikey': SUPABASE_KEY,
+            'Authorization': f'Bearer {SUPABASE_KEY}'
+        }
+        response = requests.get(f'{SUPABASE_URL}/rest/v1/bookings?select=*', headers=headers)
+        if response.status_code == 200:
+            for booking in response.json():
+                booking_name = booking.get('customer_name', '')
+                if name in booking_name or booking_name in name:
+                    phone = booking.get('phone')
+                    customer_number = booking.get('customer_number')
+                    if phone:
+                        return phone, customer_number
+        return None, None
+    except Exception as e:
+        print(f"電話番号検索エラー: {e}")
+        return None, None
+
 def save_mapping(customer_name, user_id):
+    customer_name = clean_customer_name(customer_name)
     try:
         headers = {
             'apikey': SUPABASE_KEY,
@@ -116,22 +165,40 @@ def save_mapping(customer_name, user_id):
             headers=headers
         )
         
-        if check_response.status_code == 200 and len(check_response.json()) == 0:
-            # 新規登録
-            data = {
-                'name': customer_name,
-                'line_user_id': user_id,
-                'registered_at': datetime.now().isoformat()
-            }
-            insert_response = requests.post(
-                f'{SUPABASE_URL}/rest/v1/customers',
-                headers=headers,
-                json=data
-            )
-            if insert_response.status_code == 201:
-                print(f"✓ {customer_name} をSupabaseに登録")
-                backup_customers()
-                return True
+        if check_response.status_code == 200:
+            existing_data = check_response.json()
+            if len(existing_data) == 0:
+                # 電話番号を検索
+                phone, customer_number = find_phone_from_bookings(customer_name)
+                # 新規登録
+                data = {
+                    'name': customer_name,
+                    'line_user_id': user_id,
+                    'registered_at': datetime.now().isoformat(),
+                    'phone': phone,
+                    'customer_number': customer_number
+                }
+                insert_response = requests.post(
+                    f'{SUPABASE_URL}/rest/v1/customers',
+                    headers=headers,
+                    json=data
+                )
+                if insert_response.status_code == 201:
+                    print(f"✓ {customer_name} をSupabaseに登録")
+                    backup_customers()
+                    return True
+            else:
+                # 既存ユーザーの名前を更新（フルネームで上書き）
+                current_name = existing_data[0].get("name", "")
+                if current_name != customer_name and len(customer_name) >= 2:
+                    update_response = requests.patch(
+                        f"{SUPABASE_URL}/rest/v1/customers?line_user_id=eq.{user_id}",
+                        headers=headers,
+                        json={"name": customer_name}
+                    )
+                    if update_response.status_code in [200, 204]:
+                        print(f"✓ {current_name} → {customer_name} に更新")
+                        return True
     except Exception as e:
         print(f"Supabase保存エラー: {e}")
     return False
@@ -1519,25 +1586,27 @@ def line_webhook():
         for event in events:
             if event['type'] == 'message':
                 user_id = event['source']['userId']
+                message_text = event.get('message', {}).get('text', '')
                 
-                # プロフィール取得
-                headers = {'Authorization': f'Bearer {LINE_BOT_TOKEN}'}
-                profile_url = f'https://api.line.me/v2/bot/profile/{user_id}'
-                profile_response = requests.get(profile_url, headers=headers)
-                
-                if profile_response.status_code == 200:
-                    profile = profile_response.json()
-                    display_name = profile.get('displayName', 'Unknown')
-                    
-                    # 自動登録
-                    mapping = load_mapping()
-                    if display_name not in mapping:
-                        if save_mapping(display_name, user_id):
-                            print(f"✅ 新規顧客登録: {display_name} ({user_id})")
-                        else:
-                            print(f"❌ 顧客登録失敗: {display_name} ({user_id})")
+                # メッセージ本文が名前っぽい場合は名前として処理
+                if message_text and 2 <= len(message_text) <= 20 and not any(c in message_text for c in ['http', '予約', '確認', 'キャンセル']):
+                    # メッセージを名前として登録/更新
+                    if save_mapping(message_text, user_id):
+                        print(f"✅ 顧客名更新: {message_text} ({user_id})")
                 else:
-                    print(f"❌ プロフィール取得失敗: status_code={profile_response.status_code}, user_id={user_id}")
+                    # プロフィール取得で新規登録
+                    headers = {'Authorization': f'Bearer {LINE_BOT_TOKEN}'}
+                    profile_url = f'https://api.line.me/v2/bot/profile/{user_id}'
+                    profile_response = requests.get(profile_url, headers=headers)
+                    
+                    if profile_response.status_code == 200:
+                        profile = profile_response.json()
+                        display_name = profile.get('displayName', 'Unknown')
+                        
+                        mapping = load_mapping()
+                        if display_name not in mapping:
+                            if save_mapping(display_name, user_id):
+                                print(f"✅ 新規顧客登録: {display_name} ({user_id})")
         
         return jsonify({'status': 'ok'}), 200
     except Exception as e:
@@ -1599,7 +1668,7 @@ def test_http_detailed():
         start = time.time()
         response = requests.get(
             'https://salonboard.com/login/',
-            timeout=60,  # ← 120秒から60秒に変更
+            timeout=180,  # ← 120秒から60秒に変更
             allow_redirects=True
         )
         elapsed = time.time() - start
@@ -1626,7 +1695,7 @@ def test_http_detailed():
         response = requests.get(
             'https://salonboard.com/login/',
             headers=headers,
-            timeout=60,  # ← 120秒から60秒に変更
+            timeout=180,  # ← 120秒から60秒に変更
             allow_redirects=True
         )
         elapsed = time.time() - start
@@ -1659,7 +1728,7 @@ def test_http_detailed():
         response = requests.get(
             'https://salonboard.com/login/',
             headers=headers,
-            timeout=60,  # ← 120秒から60秒に変更
+            timeout=180,  # ← 120秒から60秒に変更
             allow_redirects=True
         )
         elapsed = time.time() - start
@@ -1688,7 +1757,7 @@ def test_http_detailed():
         })
         response = session.get(
             'https://salonboard.com/login/',
-            timeout=60,  # ← 120秒から60秒に変更
+            timeout=180,  # ← 120秒から60秒に変更
             allow_redirects=True
         )
         elapsed = time.time() - start
@@ -1774,7 +1843,7 @@ def test_http_detailed():
     """
 
 
-@app.route('/admin/test_salonboard_login', methods=['GET'])
+@app.route('/test_salonboard_login', methods=['GET'])
 def test_salonboard_login():
     """SALONBOARD ログインテスト（Firefox使用）"""
     from playwright.sync_api import sync_playwright
@@ -1790,16 +1859,16 @@ def test_salonboard_login():
             }), 500
         
         with sync_playwright() as p:
-            browser = p.firefox.launch(headless=True)
+            browser = p.firefox.launch(headless=True, args=["--no-sandbox", "--disable-dev-shm-usage"])
             page = browser.new_page()
-            page.set_default_timeout(120000)
+            page.set_default_timeout(30000)
             
             page.goto('https://salonboard.com/login/')
-            page.wait_for_selector('input[name="userId"]', timeout=60000)
+            page.wait_for_selector('input[name="userId"]', timeout=20000)
             page.fill('input[name="userId"]', login_id)
             page.fill('input[name="password"]', password)
             page.press('input[name="password"]', 'Enter')
-            page.wait_for_url('**/KLP/**', timeout=60000)
+            page.wait_for_url('**/KLP/**', timeout=20000)
             
             final_url = page.url
             success = '/KLP/' in final_url
@@ -1821,6 +1890,93 @@ def test_salonboard_login():
             'error_type': type(e).__name__,
             'timestamp': datetime.now().isoformat()
         }), 500
+
+
+# グローバル変数
+login_results = {}
+login_lock = threading.Lock()
+
+@app.route('/health_check', methods=['GET'])
+def health_check():
+    """環境確認用"""
+    import sys
+    return jsonify({
+        'status': 'ok',
+        'python_version': sys.version,
+        'salonboard_id_set': bool(os.getenv('SALONBOARD_LOGIN_ID')),
+        'salonboard_pwd_set': bool(os.getenv('SALONBOARD_LOGIN_PASSWORD')),
+        'timestamp': datetime.now().isoformat()
+    })
+
+@app.route('/test_async', methods=['GET'])
+def test_async():
+    """subprocess版非同期ログインテスト"""
+    import subprocess
+    task_id = datetime.now().strftime('%Y%m%d%H%M%S%f')
+    
+    def bg_login():
+        try:
+            print(f"[SUBPROCESS] タスク開始: {task_id}", flush=True)
+            
+            # 完全に独立したプロセスとして実行（180秒タイムアウト）
+            result = subprocess.run(
+                ['python3', 'salonboard_login.py', task_id],
+                capture_output=True,
+                text=True,
+                timeout=180,
+                env=os.environ.copy()
+            )
+            
+            print(f"[SUBPROCESS] stdout: {result.stdout}", flush=True)
+            print(f"[SUBPROCESS] stderr: {result.stderr}", flush=True)
+            
+            # 結果ファイルから読み込み
+            result_file = f"/tmp/login_result_{task_id}.json"
+            if os.path.exists(result_file):
+                with open(result_file, 'r') as f:
+                    result_data = json.load(f)
+                with login_lock:
+                    login_results[task_id] = result_data
+                os.remove(result_file)
+            else:
+                with login_lock:
+                    login_results[task_id] = {
+                        'success': False,
+                        'error': 'Result file not found',
+                        'stdout': result.stdout,
+                        'stderr': result.stderr
+                    }
+                    
+        except subprocess.TimeoutExpired:
+            print(f"[SUBPROCESS] タイムアウト（180秒）: {task_id}", flush=True)
+            with login_lock:
+                login_results[task_id] = {
+                    'success': False,
+                    'error': 'Subprocess timeout after 180 seconds',
+                    'error_type': 'TimeoutExpired'
+                }
+        except Exception as e:
+            print(f"[SUBPROCESS] エラー: {str(e)}", flush=True)
+            with login_lock:
+                login_results[task_id] = {
+                    'success': False,
+                    'error': str(e),
+                    'error_type': type(e).__name__
+                }
+    
+    threading.Thread(target=bg_login, daemon=True).start()
+    return jsonify({
+        'status': 'processing',
+        'task_id': task_id,
+        'check_url': f'/result/{task_id}',
+        'message': 'subprocess版ログイン処理を開始しました（タイムアウト180秒）'
+    }), 202
+
+@app.route('/result/<task_id>', methods=['GET'])
+def get_result(task_id):
+    """結果確認"""
+    with login_lock:
+        return jsonify(login_results.get(task_id, {'status': 'processing'}))
 
 if __name__ == '__main__':
     # 初期ファイル作成
@@ -1863,3 +2019,215 @@ if __name__ == '__main__':
     # Renderの環境変数PORTを使用（ローカルは5001）
     port = int(os.environ.get('PORT', 5001))
     app.run(debug=False, host='0.0.0.0', port=port)
+
+@app.route('/debug/check_files', methods=['GET'])
+
+@app.route('/debug/check_files', methods=['GET'])
+def debug_check_files():
+    """Dockerコンテナ内のファイル確認"""
+    import subprocess
+    import os
+    
+    checks = {}
+    
+    # 1. カレントディレクトリ
+    checks['current_dir'] = os.getcwd()
+    
+    # 2. salonboard_login.py存在確認
+    checks['salonboard_login_exists'] = os.path.exists('salonboard_login.py')
+    checks['salonboard_login_path'] = os.path.abspath('salonboard_login.py') if checks['salonboard_login_exists'] else None
+    
+    # 3. 実行権限確認
+    if checks['salonboard_login_exists']:
+        checks['salonboard_login_executable'] = os.access('salonboard_login.py', os.X_OK)
+        checks['salonboard_login_size'] = os.path.getsize('salonboard_login.py')
+    
+    # 4. /app ディレクトリ内容
+    try:
+        checks['app_dir_contents'] = subprocess.run(['ls', '-la', '/app'], capture_output=True, text=True, timeout=5).stdout
+    except:
+        checks['app_dir_contents'] = 'ERROR'
+    
+    # 5. Python実行確認
+    try:
+        checks['python3_version'] = subprocess.run(['python3', '--version'], capture_output=True, text=True, timeout=5).stdout
+    except:
+        checks['python3_version'] = 'ERROR'
+    
+    # 6. /tmpへの書き込み確認
+    try:
+        test_file = '/tmp/test_write.txt'
+        with open(test_file, 'w') as f:
+            f.write('test')
+        checks['tmp_writable'] = os.path.exists(test_file)
+        os.remove(test_file)
+    except:
+        checks['tmp_writable'] = False
+    
+    # 7. 環境変数確認
+    checks['env_salonboard_id'] = bool(os.getenv('SALONBOARD_LOGIN_ID'))
+    checks['env_salonboard_pwd'] = bool(os.getenv('SALONBOARD_LOGIN_PASSWORD'))
+    
+    # 8. メモリ情報
+    try:
+        checks['memory_info'] = subprocess.run(['free', '-h'], capture_output=True, text=True, timeout=5).stdout
+    except:
+        checks['memory_info'] = 'ERROR'
+    
+    # 9. Playwrightブラウザ確認
+    try:
+        checks['playwright_browsers'] = subprocess.run(['ls', '-la', '/ms-playwright'], capture_output=True, text=True, timeout=5).stdout
+    except:
+        checks['playwright_browsers'] = 'ERROR'
+    
+    # 10. salonboard_login.pyの内容（最初の50行）
+    if checks['salonboard_login_exists']:
+        try:
+            with open('salonboard_login.py', 'r') as f:
+                checks['salonboard_login_content'] = ''.join(f.readlines()[:50])
+        except:
+            checks['salonboard_login_content'] = 'ERROR'
+    
+    return jsonify(checks), 200
+
+
+@app.route('/debug/test_subprocess', methods=['GET'])
+def debug_test_subprocess():
+    """subprocessテスト"""
+    import subprocess
+    
+    results = {}
+    
+    # 1. 単純なコマンド
+    try:
+        result = subprocess.run(['echo', 'test'], capture_output=True, text=True, timeout=5)
+        results['echo_test'] = {'stdout': result.stdout, 'stderr': result.stderr, 'returncode': result.returncode}
+    except Exception as e:
+        results['echo_test'] = {'error': str(e)}
+    
+    # 2. python3テスト
+    try:
+        result = subprocess.run(['python3', '-c', 'print("hello")'], capture_output=True, text=True, timeout=5)
+        results['python3_test'] = {'stdout': result.stdout, 'stderr': result.stderr, 'returncode': result.returncode}
+    except Exception as e:
+        results['python3_test'] = {'error': str(e)}
+    
+    # 3. salonboard_login.py実行テスト（短時間）
+    try:
+        result = subprocess.run(
+            ['python3', 'salonboard_login.py', 'test_debug'],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            env=os.environ.copy()
+        )
+        results['salonboard_login_test'] = {
+            'stdout': result.stdout[:1000],
+            'stderr': result.stderr[:1000],
+            'returncode': result.returncode
+        }
+    except subprocess.TimeoutExpired:
+        results['salonboard_login_test'] = {'error': 'Timeout after 10 seconds'}
+    except Exception as e:
+        results['salonboard_login_test'] = {'error': str(e), 'type': type(e).__name__}
+    
+    return jsonify(results), 200
+
+
+@app.route('/debug/test_playwright_import', methods=['GET'])
+def debug_test_playwright_import():
+    """Playwrightインポートテスト"""
+    import subprocess
+    
+    try:
+        result = subprocess.run(
+            ['python3', 'test_playwright_import.py'],
+            capture_output=True,
+            text=True,
+            timeout=300,
+            env=os.environ.copy()
+        )
+        
+        return jsonify({
+            'success': True,
+            'stdout': result.stdout,
+            'stderr': result.stderr,
+            'returncode': result.returncode
+        }), 200
+        
+    except subprocess.TimeoutExpired as e:
+        return jsonify({
+            'success': False,
+            'error': 'Timeout after 60 seconds',
+            'stdout': e.stdout.decode() if e.stdout else '',
+            'stderr': e.stderr.decode() if e.stderr else ''
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'error_type': type(e).__name__
+        }), 500
+
+
+@app.route('/debug/test_salonboard_direct', methods=['GET'])
+def debug_test_salonboard_direct():
+    """salonboard_login.pyを直接実行"""
+    import subprocess
+    
+    try:
+        result = subprocess.run(
+            ['python3', 'salonboard_login.py', 'test_render_debug'],
+            capture_output=True,
+            text=True,
+            timeout=300,
+            env=os.environ.copy()
+        )
+        
+        return jsonify({
+            'success': True,
+            'stdout': result.stdout,
+            'stderr': result.stderr,
+            'returncode': result.returncode
+        }), 200
+        
+    except subprocess.TimeoutExpired as e:
+        return jsonify({
+            'success': False,
+            'error': 'Timeout after 60 seconds',
+            'stdout': e.stdout.decode() if e.stdout else '',
+            'stderr': e.stderr.decode() if e.stderr else ''
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'error_type': type(e).__name__
+        }), 500
+
+
+@app.route('/api/scrape_daily', methods=['GET'])
+def scrape_daily():
+    """毎日のスクレイピング実行"""
+    try:
+        import subprocess
+        result = subprocess.run(
+            ['python3', 'scrape_and_upload.py'],
+            capture_output=True,
+            text=True,
+            timeout=300
+        )
+        
+        return jsonify({
+            "success": True,
+            "stdout": result.stdout,
+            "stderr": result.stderr,
+            "returncode": result.returncode
+        })
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
