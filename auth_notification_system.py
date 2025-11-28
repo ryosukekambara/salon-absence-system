@@ -152,6 +152,7 @@ def find_phone_from_bookings(name):
 
 def save_mapping(customer_name, user_id):
     customer_name = clean_customer_name(customer_name)
+    print(f"[DEBUG save_mapping] customer_name={customer_name}, user_id={user_id}", flush=True)
     try:
         headers = {
             'apikey': SUPABASE_KEY,
@@ -164,9 +165,11 @@ def save_mapping(customer_name, user_id):
             f'{SUPABASE_URL}/rest/v1/customers?line_user_id=eq.{user_id}',
             headers=headers
         )
+        print(f"[DEBUG save_mapping] check_response.status_code={check_response.status_code}", flush=True)
         
         if check_response.status_code == 200:
             existing_data = check_response.json()
+            print(f"[DEBUG save_mapping] existing_data={existing_data}", flush=True)
             if len(existing_data) == 0:
                 # 電話番号を検索
                 phone, customer_number = find_phone_from_bookings(customer_name)
