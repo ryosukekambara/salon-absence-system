@@ -15,6 +15,32 @@ import threading
 # from supabase import create_client の行は削除
 
 load_dotenv()
+
+def clean_customer_name(text):
+    """名前を正規化（スペース除去、★除去、余計な文字除去）"""
+    import re
+    # 改行以降を除去（予約IDなど）
+    name = text.split("\n")[0].strip()
+    # 除去パターン
+    remove_patterns = [
+        r"★+",
+        r"です[。\.]*$",
+        r"でーす[。\.]*$",
+        r"よろしく.*$",
+        r"お願い.*$",
+        r"初めまして.*$",
+        r"はじめまして.*$",
+        r"こんにちは.*$",
+        r"こんばんは.*$",
+        r"おはよう.*$",
+        r"[。、\.!！\?？]+$",
+    ]
+    for pattern in remove_patterns:
+        name = re.sub(pattern, "", name)
+    # スペース除去（半角・全角両方）
+    name = re.sub(r"[\s　]+", "", name)
+    return name.strip()
+
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
@@ -125,6 +151,7 @@ def find_phone_from_bookings(name):
         return None, None
 
 def save_mapping(customer_name, user_id):
+    customer_name = clean_customer_name(customer_name)
     try:
         headers = {
             'apikey': SUPABASE_KEY,
@@ -138,26 +165,40 @@ def save_mapping(customer_name, user_id):
             headers=headers
         )
         
-        if check_response.status_code == 200 and len(check_response.json()) == 0:
-            # 電話番号を検索
-            phone, customer_number = find_phone_from_bookings(customer_name)
-            # 新規登録
-            data = {
-                'name': customer_name,
-                'line_user_id': user_id,
-                'registered_at': datetime.now().isoformat(),
-                'phone': phone,
-                'customer_number': customer_number
-            }
-            insert_response = requests.post(
-                f'{SUPABASE_URL}/rest/v1/customers',
-                headers=headers,
-                json=data
-            )
-            if insert_response.status_code == 201:
-                print(f"✓ {customer_name} をSupabaseに登録")
-                backup_customers()
-                return True
+        if check_response.status_code == 200:
+            existing_data = check_response.json()
+            if len(existing_data) == 0:
+                # 電話番号を検索
+                phone, customer_number = find_phone_from_bookings(customer_name)
+                # 新規登録
+                data = {
+                    'name': customer_name,
+                    'line_user_id': user_id,
+                    'registered_at': datetime.now().isoformat(),
+                    'phone': phone,
+                    'customer_number': customer_number
+                }
+                insert_response = requests.post(
+                    f'{SUPABASE_URL}/rest/v1/customers',
+                    headers=headers,
+                    json=data
+                )
+                if insert_response.status_code == 201:
+                    print(f"✓ {customer_name} をSupabaseに登録")
+                    backup_customers()
+                    return True
+            else:
+                # 既存ユーザーの名前を更新（フルネームで上書き）
+                current_name = existing_data[0].get("name", "")
+                if current_name != customer_name and len(customer_name) >= 2:
+                    update_response = requests.patch(
+                        f"{SUPABASE_URL}/rest/v1/customers?line_user_id=eq.{user_id}",
+                        headers=headers,
+                        json={"name": customer_name}
+                    )
+                    if update_response.status_code in [200, 204]:
+                        print(f"✓ {current_name} → {customer_name} に更新")
+                        return True
     except Exception as e:
         print(f"Supabase保存エラー: {e}")
     return False
@@ -1961,6 +2002,18 @@ if __name__ == '__main__':
     
     # 起動時に1回実行
     backup_customers()
+        else:
+            # 既存ユーザーの名前を更新（フルネームで上書き）
+            current_name = existing_data[0].get("name", "")
+            if current_name != customer_name and len(customer_name) >= 2:
+                update_response = requests.patch(
+                    f"{SUPABASE_URL}/rest/v1/customers?line_user_id=eq.{user_id}",
+                    headers=headers,
+                    json={"name": customer_name}
+                )
+                if update_response.status_code in [200, 204]:
+                    print(f"✓ {current_name} → {customer_name} に更新")
+                    return True
     
     print("="*50)
     print("✅ 認証機能付きシステム起動（即時反映対応）")
