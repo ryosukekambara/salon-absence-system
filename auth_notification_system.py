@@ -1586,25 +1586,27 @@ def line_webhook():
         for event in events:
             if event['type'] == 'message':
                 user_id = event['source']['userId']
+                message_text = event.get('message', {}).get('text', '')
                 
-                # プロフィール取得
-                headers = {'Authorization': f'Bearer {LINE_BOT_TOKEN}'}
-                profile_url = f'https://api.line.me/v2/bot/profile/{user_id}'
-                profile_response = requests.get(profile_url, headers=headers)
-                
-                if profile_response.status_code == 200:
-                    profile = profile_response.json()
-                    display_name = profile.get('displayName', 'Unknown')
-                    
-                    # 自動登録
-                    mapping = load_mapping()
-                    if display_name not in mapping:
-                        if save_mapping(display_name, user_id):
-                            print(f"✅ 新規顧客登録: {display_name} ({user_id})")
-                        else:
-                            print(f"❌ 顧客登録失敗: {display_name} ({user_id})")
+                # メッセージ本文が名前っぽい場合は名前として処理
+                if message_text and 2 <= len(message_text) <= 20 and not any(c in message_text for c in ['http', '予約', '確認', 'キャンセル']):
+                    # メッセージを名前として登録/更新
+                    if save_mapping(message_text, user_id):
+                        print(f"✅ 顧客名更新: {message_text} ({user_id})")
                 else:
-                    print(f"❌ プロフィール取得失敗: status_code={profile_response.status_code}, user_id={user_id}")
+                    # プロフィール取得で新規登録
+                    headers = {'Authorization': f'Bearer {LINE_BOT_TOKEN}'}
+                    profile_url = f'https://api.line.me/v2/bot/profile/{user_id}'
+                    profile_response = requests.get(profile_url, headers=headers)
+                    
+                    if profile_response.status_code == 200:
+                        profile = profile_response.json()
+                        display_name = profile.get('displayName', 'Unknown')
+                        
+                        mapping = load_mapping()
+                        if display_name not in mapping:
+                            if save_mapping(display_name, user_id):
+                                print(f"✅ 新規顧客登録: {display_name} ({user_id})")
         
         return jsonify({'status': 'ok'}), 200
     except Exception as e:
