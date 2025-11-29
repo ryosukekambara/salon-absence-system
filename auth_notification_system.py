@@ -2278,23 +2278,22 @@ def send_reminder_notifications():
         
         # salon_bookingsから該当日の予約を取得
         book_response = requests.get(
-            f'{SUPABASE_URL}/rest/v1/salon_bookings?scrape_date=eq.{scrape_date_str}&days_ahead=eq.{days}&select=booking_data',
+            f'{SUPABASE_URL}/rest/v1/salon_bookings?scrape_date=eq.{scrape_date_str}&days_ahead=eq.{days}&select=booking_data&order=id.desc&limit=1',
             headers=headers
         )
         if book_response.status_code != 200:
             continue
         
         result = book_response.json()
-        booking_data = result[0].get('booking_data', {}) if result else {}
-        bookings = booking_data.get('bookings', []) if isinstance(booking_data, dict) else []
+        bookings = result[0]['booking_data'] if result and result[0].get('booking_data') else []
         
         for booking in bookings:
-            customer_name = booking.get('お客様名', '').split('\n')[0].replace('★', '').strip()
-            phone = booking.get('電話番号', '')
-            visit_dt = booking.get('来店日時', '')
+            customer_name = booking.get('customer_name', '')
+            phone = booking.get('phone', '')
+            visit_dt = booking.get('visit_datetime', '')
             # 時間を抽出 (例: "11/1117:20" -> "17:20")
             time = re.sub(r'^\d{1,2}/\d{1,2}', '', visit_dt) if visit_dt else ''
-            menu = booking.get('メニュー', '')
+            menu = booking.get('menu', '')
             
             # 顧客を検索
             customer = None
@@ -2310,124 +2309,24 @@ def send_reminder_notifications():
                 continue
             
             # メッセージ作成
-            # 日時フォーマット
-            def format_dt(dt_str):
-                import re
-                from datetime import date
-                m = re.match(r'(\d+)/(\d+)(\d{2}:\d{2})', dt_str)
-                if m:
-                    month, day, tm = m.groups()
-                    weekdays = ['月', '火', '水', '木', '金', '土', '日']
-                    d = date(2025, int(month), int(day))
-                    return f"{month}月{day}日({weekdays[d.weekday()]}){tm}〜"
-                return dt_str
-            
-            def clean_menu(m):
-                import re
-                # オフあり+アイシャンプーの有無を記録
-                has_off_shampoo = 'オフあり+アイシャンプー' in m or 'オフあり＋アイシャンプー' in m
-                
-                # 除外ワード
-                exclude = [
-                    '【全員】', '【次回】', '【リピーター様】', '【4週間以内】', '【ご新規】',
-                    'オフあり+アイシャンプー', 'オフあり＋アイシャンプー',
-                    '次世代まつ毛パーマ', 'ダメージレス',
-                    '(4週間以内 )', '(4週間以内)',
-                    '(アイシャンプー・トリートメント付き)', '(SP・TR付)',
-                    '(コーティング・シャンプー・オフ込)',
-                    '(まゆげパーマ)', '(眉毛Wax)',
-                    '＋メイク付', '+メイク付',
-                    '指名料', 'カラー変更',
-                    '束感★',
-                ]
-                for w in exclude:
-                    m = m.replace(w, '')
-                
-                # 正規表現で削除
-                m = re.sub(r'\(ｸｰﾎﾟﾝ\)', '', m)
-                m = re.sub(r'《[^》]*》', '', m)
-                m = re.sub(r'【[^】]*】', '', m)
-                m = re.sub(r'◇エクステ.*', '', m)
-                m = re.sub(r'◇毛量調整.*', '', m)
-                
-                # 価格を削除
-                m = re.sub(r'[¥￥][0-9,]+', '', m)
-                
-                # 先頭・末尾の◇を削除
-                m = re.sub(r'^◇', '', m)
-                m = re.sub(r'◇$', '', m)
-                m = re.sub(r'◇\s*$', '', m)
-                
-                # ◇で分割して結合
-                parts = m.split('◇')
-                cleaned = []
-                for p in parts:
-                    p = p.strip().strip('　')
-                    if p:
-                        cleaned.append(p)
-                m = '＋'.join(cleaned) if cleaned else ''
-                
-                # 連続スペースを整理
-                m = re.sub(r'\s+', ' ', m).strip()
-                
-                # オフあり+アイシャンプーがあれば末尾に追加
-                if has_off_shampoo and m:
-                    m = f'{m}（オフあり+アイシャンプー）'
-                
-                return m
-            
-            formatted_dt = format_dt(visit_dt)
-            cleaned_menu = clean_menu(menu)
-            
             if days == 3:
-                message = f"""{customer_name} 様
-ご予約【3日前】のお知らせ🕊️
-【本店】
-{formatted_dt}
-{cleaned_menu}
+                message = f"""【ご予約リマインド】
+{customer_name}様
 
-下記はすべてのお客様に気持ちよくご利用いただくためのご案内です。
-ご理解とご協力をお願いいたします🙇‍♀️
+ご予約日時: {target_date_str} {time}
+メニュー: {menu}
 
-
-■ 遅刻について
-スタッフ判断でメニュー変更や日時変更となる場合があり
-当日中の時間変更であれば、【次回予約特典】はそのまま適用可能
-
-＜次回予約特典が失効＞
-◉予約日から3日前まで
-※ご予約日の前倒し・同日時間変更は適用のまま
-◉前回来店日から3ヶ月経過
-
-＜キャンセル料＞
-◾️次回予約特典
-当日変更：施術代金の50％
-◾️通常予約
-前日変更：施術代金の50％
-当日変更：施術代金の100％"""
+ご来店をお待ちしております。
+eyelashsalon HAL"""
             else:
-                message = f"""{customer_name} 様
-ご予約日の【7日前】となりました🕊️
-{formatted_dt}
-{cleaned_menu}
+                message = f"""【1週間前のお知らせ】
+{customer_name}様
 
-「マツエクが残っている」
-「カールが残っている」
-「眉毛の手入れをした…」
-「仕事が入った」
-など、ご予約日延期は、お早めにご協力をお願いします✨
+{target_date_str} {time}にご予約いただいております。
+メニュー: {menu}
 
-＜次回予約特典が失効＞
-◉予約日から3日前まで
-※ご予約日の前倒し・同日時間変更は適用のまま
-◉前回来店日から3ヶ月経過
-
-＜キャンセル料＞
-◾️次回予約特典
-当日変更：施術代金の50％
-◾️通常予約
-前日変更：施術代金の50％
-当日変更：施術代金の100％"""
+ご来店をお待ちしております。
+eyelashsalon HAL"""
             
             # LINE送信
             if send_line_message(customer['line_user_id'], message):
