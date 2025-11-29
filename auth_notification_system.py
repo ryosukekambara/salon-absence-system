@@ -2310,24 +2310,96 @@ def send_reminder_notifications():
                 continue
             
             # メッセージ作成
+            # 日時フォーマット
+            def format_dt(dt_str):
+                m = re.match(r'(\d+)/(\d+)(\d{2}:\d{2})', dt_str)
+                if m:
+                    month, day, tm = m.groups()
+                    from datetime import date
+                    weekdays = ['月', '火', '水', '木', '金', '土', '日']
+                    d = date(2025, int(month), int(day))
+                    return f"{month}月{day}日({weekdays[d.weekday()]}){tm}〜"
+                return dt_str
+            
+            # メニュークリーンアップ
+            def clean_menu(m):
+                has_off_shampoo = 'オフあり+アイシャンプー' in m or 'オフあり＋アイシャンプー' in m
+                exclude = ['【全員】', '【次回】', '【リピーター様】', '【4週間以内】', '【ご新規】',
+                    'オフあり+アイシャンプー', 'オフあり＋アイシャンプー', '次世代まつ毛パーマ', 'ダメージレス',
+                    '(4週間以内 )', '(4週間以内)', '(アイシャンプー・トリートメント付き)', '(SP・TR付)',
+                    '(コーティング・シャンプー・オフ込)', '(まゆげパーマ)', '(眉毛Wax)', '＋メイク付', '+メイク付',
+                    '指名料', 'カラー変更', '束感★']
+                for w in exclude:
+                    m = m.replace(w, '')
+                m = re.sub(r'\(ｸｰﾎﾟﾝ\)', '', m)
+                m = re.sub(r'《[^》]*》', '', m)
+                m = re.sub(r'【[^】]*】', '', m)
+                m = re.sub(r'◇エクステ.*', '', m)
+                m = re.sub(r'◇毛量調整.*', '', m)
+                m = re.sub(r'[¥￥][0-9,]+', '', m)
+                m = re.sub(r'^◇', '', m)
+                m = re.sub(r'◇$', '', m)
+                m = re.sub(r'◇\s*$', '', m)
+                parts = m.split('◇')
+                cleaned = [p.strip().strip('　') for p in parts if p.strip()]
+                m = '＋'.join(cleaned) if cleaned else ''
+                m = re.sub(r'\s+', ' ', m).strip()
+                if has_off_shampoo and m:
+                    m = f'{m}（オフあり+アイシャンプー）'
+                return m
+            
+            formatted_dt = format_dt(visit_dt)
+            cleaned_menu = clean_menu(menu)
+            
             if days == 3:
-                message = f"""【ご予約リマインド】
-{customer_name}様
+                message = f"""{customer_name} 様
+ご予約【3日前】のお知らせ🕊️
+【本店】
+{formatted_dt}
+{cleaned_menu}
 
-ご予約日時: {target_date_str} {time}
-メニュー: {menu}
+下記はすべてのお客様に気持ちよくご利用いただくためのご案内です。
+ご理解とご協力をお願いいたします🙇‍♀️
 
-ご来店をお待ちしております。
-eyelashsalon HAL"""
+
+■ 遅刻について
+スタッフ判断でメニュー変更や日時変更となる場合があり
+当日中の時間変更であれば、【次回予約特典】はそのまま適用可能
+
+＜次回予約特典が失効＞
+◉予約日から3日前まで
+※ご予約日の前倒し・同日時間変更は適用のまま
+◉前回来店日から3ヶ月経過
+
+＜キャンセル料＞
+◾️次回予約特典
+当日変更：施術代金の50％
+◾️通常予約
+前日変更：施術代金の50％
+当日変更：施術代金の100％"""
             else:
-                message = f"""【1週間前のお知らせ】
-{customer_name}様
+                message = f"""{customer_name} 様
+ご予約日の【7日前】となりました🕊️
+{formatted_dt}
+{cleaned_menu}
 
-{target_date_str} {time}にご予約いただいております。
-メニュー: {menu}
+「マツエクが残っている」
+「カールが残っている」
+「眉毛の手入れをした…」
+「仕事が入った」
+など、ご予約日延期は、お早めにご協力をお願いします✨
 
-ご来店をお待ちしております。
-eyelashsalon HAL"""
+＜次回予約特典が失効＞
+◉予約日から3日前まで
+※ご予約日の前倒し・同日時間変更は適用のまま
+◉前回来店日から3ヶ月経過
+
+＜キャンセル料＞
+◾️次回予約特典
+当日変更：施術代金の50％
+◾️通常予約
+前日変更：施術代金の50％
+当日変更：施術代金の100％"""
             
             # LINE送信
             if send_line_message(customer['line_user_id'], message):
