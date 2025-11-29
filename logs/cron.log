@@ -372,3 +372,11 @@ Call log:
 /Users/kanbararyousuke/salon-absence-system/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
   warnings.warn(
 ❌ エラー通知送信失敗: 401
+[2025-11-29 21:40:00] ==========================================
+[2025-11-29 21:40:00] スクレイピング処理開始
+[2025-11-29 21:40:00] ==========================================
+[2025-11-29 21:40:00] 対象日付: 3日後=20251202, 7日後=20251206
+[2025-11-29 21:40:00] ------------------------------------------
+[2025-11-29 21:40:00] [3日後] 処理開始: 20251202
+[2025-11-29 21:40:00] ------------------------------------------
+[2025-11-29 21:40:00] [3日後] 試行 1/3
