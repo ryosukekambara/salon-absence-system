@@ -66,7 +66,7 @@ STAFF_USERS = {
 }
 
 staff_mapping = {
-    # "U3dafc1648cc64b066ca1c5b3f4a67f8e": {"name": "神原さん"},  # テスト用に一時コメントアウト
+    "U3dafc1648cc64b066ca1c5b3f4a67f8e": {"name": "神原さん"},
     "U1ad150fa84a287c095eb98186a8cdc45": {"name": "Saoriさん"}
 }
 
@@ -152,7 +152,6 @@ def find_phone_from_bookings(name):
 
 def save_mapping(customer_name, user_id):
     customer_name = clean_customer_name(customer_name)
-    print(f"[DEBUG save_mapping] customer_name={customer_name}, user_id={user_id}", flush=True)
     try:
         headers = {
             'apikey': SUPABASE_KEY,
@@ -165,11 +164,9 @@ def save_mapping(customer_name, user_id):
             f'{SUPABASE_URL}/rest/v1/customers?line_user_id=eq.{user_id}',
             headers=headers
         )
-        print(f"[DEBUG save_mapping] check_response.status_code={check_response.status_code}", flush=True)
         
         if check_response.status_code == 200:
             existing_data = check_response.json()
-            print(f"[DEBUG save_mapping] existing_data={existing_data}", flush=True)
             if len(existing_data) == 0:
                 # 電話番号を検索
                 phone, customer_number = find_phone_from_bookings(customer_name)
@@ -1383,13 +1380,10 @@ def webhook():
                             break
                     
                     # 新規でも既存でも名前更新を試みる
-                    print(f"[DEBUG] 顧客メッセージ受信: user_id={user_id}, text={text}", flush=True)
                     if len(text) >= 2:
                         cleaned_name = clean_customer_name(text)
-                        print(f"[DEBUG] 正規化後: cleaned_name={cleaned_name}", flush=True)
                         if cleaned_name and len(cleaned_name) >= 2:
                             result = save_mapping(cleaned_name, user_id)
-                            print(f"[DEBUG] save_mapping結果: {result}", flush=True)
                         
         return 'OK', 200
     except Exception as e:
