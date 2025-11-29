@@ -2272,22 +2272,36 @@ def send_reminder_notifications():
             name_to_customer[normalized] = c
     
     for days, label in [(3, "3days"), (7, "7days")]:
-        target_date = (today + timedelta(days=days)).strftime("%Y-%m-%d")
+        target_date = (today + timedelta(days=days))
+        target_mmdd = target_date.strftime("%-m/%-d")  # 例: "12/2"
+        target_date_str = target_date.strftime("%Y-%m-%d")
         
-        # 予約を取得
+        # 全予約を取得してフィルタリング
         book_response = requests.get(
-            f'{SUPABASE_URL}/rest/v1/bookings?date=eq.{target_date}&select=*',
+            f'{SUPABASE_URL}/rest/v1/bookings?select=*',
             headers=headers
         )
         if book_response.status_code != 200:
             continue
         
-        bookings = book_response.json()
+        all_bookings = book_response.json()
+        # visit_datetimeから日付を抽出してマッチング (例: "11/1117:20" -> "11/11")
+        bookings = []
+        for b in all_bookings:
+            vdt = b.get('visit_datetime', '')
+            if vdt:
+                # "11/1117:20" から "11/11" を抽出
+                import re
+                match = re.match(r'(\d{1,2}/\d{1,2})', vdt)
+                if match and match.group(1) == target_mmdd:
+                    bookings.append(b)
         
         for booking in bookings:
             customer_name = booking.get('customer_name', '')
             phone = booking.get('phone', '')
-            time = booking.get('time', '')
+            visit_dt = booking.get('visit_datetime', '')
+            # 時間を抽出 (例: "11/1117:20" -> "17:20")
+            time = re.sub(r'^\d{1,2}/\d{1,2}', '', visit_dt) if visit_dt else ''
             menu = booking.get('menu', '')
             
             # 顧客を検索
@@ -2308,7 +2322,7 @@ def send_reminder_notifications():
                 message = f"""【ご予約リマインド】
 {customer_name}様
 
-ご予約日時: {target_date} {time}
+ご予約日時: {target_date_str} {time}
 メニュー: {menu}
 
 ご来店をお待ちしております。
@@ -2317,7 +2331,7 @@ eyelashsalon HAL"""
                 message = f"""【1週間前のお知らせ】
 {customer_name}様
 
-{target_date} {time}にご予約いただいております。
+{target_date_str} {time}にご予約いただいております。
 メニュー: {menu}
 
 ご来店をお待ちしております。

@@ -32,7 +32,7 @@ def scrape_customer_page(page_num):
         if len(cells) >= 6:
             link = cells[0].find('a')
             if link:
-                customer_id = link.get('data-customerId', '')
+                customer_id = link.get('data-customerid', '')
                 name_kana = link.get_text(strip=True).replace('\xa0', ' ')
                 name_kanji = cells[1].get_text(strip=True).replace('\xa0', ' ').replace('★', '')
                 customer_number = cells[2].get_text(strip=True)
