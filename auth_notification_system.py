@@ -2245,6 +2245,7 @@ def scrape_daily():
 
 def send_reminder_notifications():
     """3日後・7日後の予約にリマインド通知を送信"""
+    import re
     from datetime import datetime, timedelta, timezone
     
     JST = timezone(timedelta(hours=9))
