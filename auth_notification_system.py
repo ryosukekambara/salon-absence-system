@@ -2285,15 +2285,15 @@ def send_reminder_notifications():
             continue
         
         result = book_response.json()
-        bookings = result[0]['booking_data'] if result and result[0].get('booking_data') else []
+        booking_data = result[0].get('booking_data', {}) if result else {}
+        bookings = booking_data.get('bookings', []) if isinstance(booking_data, dict) else []
         
         for booking in bookings:
-            customer_name = booking.get('customer_name', '')
-            phone = booking.get('phone', '')
-            visit_dt = booking.get('visit_datetime', '')
-            # 時間を抽出 (例: "11/1117:20" -> "17:20")
+            customer_name = booking.get('お客様名', '').split('\n')[0].replace('★', '').strip()
+            phone = booking.get('電話番号', '')
+            visit_dt = booking.get('来店日時', '')
             time = re.sub(r'^\d{1,2}/\d{1,2}', '', visit_dt) if visit_dt else ''
-            menu = booking.get('menu', '')
+            menu = booking.get('メニュー', '')
             
             # 顧客を検索
             customer = None
