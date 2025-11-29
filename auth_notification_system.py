@@ -2213,24 +2213,120 @@ def debug_test_salonboard_direct():
 
 @app.route('/api/scrape_daily', methods=['GET'])
 def scrape_daily():
-    """毎日のスクレイピング実行"""
+    """毎日のスクレイピング実行 + リマインド送信"""
     try:
         import subprocess
+        
+        # 1. スクレイピング実行
         result = subprocess.run(
             ['python3', 'scrape_and_upload.py'],
             capture_output=True,
             text=True,
             timeout=300
         )
+        scrape_output = result.stdout
+        
+        # 2. リマインド送信（3日後・7日後）
+        reminder_results = send_reminder_notifications()
         
         return jsonify({
             "success": True,
-            "stdout": result.stdout,
-            "stderr": result.stderr,
-            "returncode": result.returncode
+            "scrape_stdout": scrape_output,
+            "scrape_stderr": result.stderr,
+            "scrape_returncode": result.returncode,
+            "reminder_results": reminder_results
         })
     except Exception as e:
         return jsonify({
             "success": False,
             "error": str(e)
         }), 500
+
+
+def send_reminder_notifications():
+    """3日後・7日後の予約にリマインド通知を送信"""
+    from datetime import datetime, timedelta, timezone
+    
+    JST = timezone(timedelta(hours=9))
+    today = datetime.now(JST)
+    results = {"3days": {"sent": 0, "failed": 0, "no_match": 0}, "7days": {"sent": 0, "failed": 0, "no_match": 0}}
+    
+    headers = {
+        'apikey': SUPABASE_KEY,
+        'Authorization': f'Bearer {SUPABASE_KEY}',
+        'Content-Type': 'application/json'
+    }
+    
+    # 顧客データを取得
+    cust_response = requests.get(f'{SUPABASE_URL}/rest/v1/customers?select=*', headers=headers)
+    if cust_response.status_code != 200:
+        return {"error": "顧客データ取得失敗"}
+    customers = cust_response.json()
+    
+    # 電話番号→顧客、名前→顧客マッピング
+    phone_to_customer = {c['phone']: c for c in customers if c.get('phone')}
+    name_to_customer = {}
+    for c in customers:
+        if c.get('name'):
+            normalized = c['name'].replace(" ", "").replace("　", "").replace("★", "").strip()
+            name_to_customer[normalized] = c
+    
+    for days, label in [(3, "3days"), (7, "7days")]:
+        target_date = (today + timedelta(days=days)).strftime("%Y-%m-%d")
+        
+        # 予約を取得
+        book_response = requests.get(
+            f'{SUPABASE_URL}/rest/v1/bookings?date=eq.{target_date}&select=*',
+            headers=headers
+        )
+        if book_response.status_code != 200:
+            continue
+        
+        bookings = book_response.json()
+        
+        for booking in bookings:
+            customer_name = booking.get('customer_name', '')
+            phone = booking.get('phone', '')
+            time = booking.get('time', '')
+            menu = booking.get('menu', '')
+            
+            # 顧客を検索
+            customer = None
+            if phone and phone in phone_to_customer:
+                customer = phone_to_customer[phone]
+            else:
+                normalized = customer_name.replace(" ", "").replace("　", "").replace("★", "").strip()
+                if normalized in name_to_customer:
+                    customer = name_to_customer[normalized]
+            
+            if not customer or not customer.get('line_user_id'):
+                results[label]["no_match"] += 1
+                continue
+            
+            # メッセージ作成
+            if days == 3:
+                message = f"""【ご予約リマインド】
+{customer_name}様
+
+ご予約日時: {target_date} {time}
+メニュー: {menu}
+
+ご来店をお待ちしております。
+eyelashsalon HAL"""
+            else:
+                message = f"""【1週間前のお知らせ】
+{customer_name}様
+
+{target_date} {time}にご予約いただいております。
+メニュー: {menu}
+
+ご来店をお待ちしております。
+eyelashsalon HAL"""
+            
+            # LINE送信
+            if send_line_message(customer['line_user_id'], message):
+                results[label]["sent"] += 1
+            else:
+                results[label]["failed"] += 1
+    
+    return results

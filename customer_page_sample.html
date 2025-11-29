@@ -1,0 +1,1321 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ja" xml:lang="ja"><head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="msapplication-config" content="none"/>
+<meta name="viewport" content="width=1024" />
+	<title>SALON BOARD : お客様情報一覧</title>
+	<link rel="shortcut icon" href="/favicon.ico" type="image/vnd.microsoft.icon"/>
+<link rel="icon" href="/favicon.ico" type="image/vnd.microsoft.icon"/>
+<link rel="apple-touch-icon" href="https://imgbp.salonboard.com/apple-touch-icon.png?switch=2025112610"/>
+<link href="https://imgbp.salonboard.com/KLP/css/common.css?switch=2025112610" rel="stylesheet" type="text/css"/>
+<link href="https://imgbp.salonboard.com/KLX/notice/css/sound_popup.css?switch=2025112610" rel="stylesheet" type="text/css"/>
+<script src="/DEV/DEV_OPEN/google_analytics/cl/ga.js?switch=2025112610" type="text/javascript"></script>
+</head>
+<body>
+<a name="top"></a>
+<div class="header" id="headerNavigationBar">
+	<div class="section cf">
+		<p class="logo" id="logo"><a href="/KLP/top/"><img src="https://imgbp.salonboard.com/KLP/img/logo_header_02.png?switch=2025112610" alt="SALON BOARD" /></a></p>
+		<div class="btn_area cf" id="globalNavi">
+			<ul class="shop_name_wrap">
+				<li class="mr5 shop_area"></li>
+				<li class="shop_login_name">パリジェンヌ・眉毛・マツエクの専門店 HAL 豊中本店</li>
+				<li class="common_header_help"><a href="javascript:void(0);" onclick="window.open('https://sbhd-kirei.salonboard.com/hc/ja')" id="jsiHeaderHelp">ヘルプ</a></li>
+			</ul>
+			<ul class="common-KLPcommon__globalNavi">
+				<li><a href="/KLP/schedule/salonSchedule/" class="primaryBtn ">予約管理</a></li>
+				<li><a class="cmsLink primaryBtn " href="javascript:void(0);"><span class="hidden_url">https://salonboard.com/CNK/reflect/reflectTop/</span>掲載管理</a></li>
+				<li><a href="/KLP/customer/customerSearch/" class="primaryBtn isCurrent">お客様管理</a></li>
+				<li><a href="/KLP/clmessage/clientMessageTop/" class="primaryBtn ">メッセージ<br>管理</a></li>
+				<li><a href="/KLP/sales/salesTop/" class="primaryBtn ">売上管理</a></li>
+				<li><a href="/KLP/analysis/" class="primaryBtn ">集計・分析</a></li>
+				<li><a href="/KLP/salonDirect/salonDirectTop/" class="primaryBtn ">サロン<br>ダイレクト</a></li>
+				<li><a href="/KLP/adjust/pointResult/" class="primaryBtn ">振込・請求</a></li>
+				<li><a href="/KLP/set/salonSetup/" class="primaryBtn ">設定</a></li>
+				<li class="menu_btn">
+					<a href="javascript:void(0);" id="showPostedHeaderMenu" class="primaryBtn common-KLPcommon__globalNavi--menuBtn">
+						<span></span>
+					</a>
+					<ul id="postedHeaderMenu" class="header_menu display_none common-KLPcommon__globalNavi--settingList" style="display: none;">
+						<li><a class="cncLink" href="javascript:void(0);"><span class="hidden_url">https://salonboard.com/CNC/mgr/mailAddressChange/?designKbn=K</span><img src="https://imgbp.salonboard.com/KLP/img/menu_header_02.png?switch=2025112610" width="163" height="33" alt="メールアドレス変更" class="rollover"></a></li>
+						<li><a class="cncLink" href="javascript:void(0);"><span class="hidden_url">https://salonboard.com/CNC/mgr/passwordChange/?designKbn=K</span><img src="https://imgbp.salonboard.com/KLP/img/menu_header_03.png?switch=2025112610" width="163" height="34" alt="パスワード変更" class="rollover"></a></li>
+						<li><a class="cncLink" href="javascript:void(0);"><span class="hidden_url">https://salonboard.com/CNC/mgr/storeBaseInfo/?designKbn=K</span><img src="https://imgbp.salonboard.com/KLP/img/menu_header_04.png?switch=2025112610" width="163" height="33" alt="基本情報" class="rollover"></a></li>
+						<li><a class="cncLink" href="javascript:void(0);"><span class="hidden_url">https://salonboard.com/CNC/logout/</span><img src="https://imgbp.salonboard.com/KLP/img/menu_header_05.png?switch=2025112610" width="163" height="42" alt="ログアウト" class="rollover"></a></li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+	</div>
+	</div>
+<div class="btnArea" id="globalNaviSub">
+		<div class="section">
+	<div class="common-KLPcommon__headerMenuWrapper">
+				<ul class="common-KLPcommon__headerMenu">
+					<li><a href="/KLP/customer/customerSearch/" class="primaryBtn isCurrent">お客様一覧</a></li>
+					<li><a href="/KLP/customer/customerUniteSearch/" class="primaryBtn ">お客様統合</a></li>
+					<li><a href="/KLP/customer/customerBulkRegist/" class="primaryBtn ">一括登録</a></li>
+					<li><a href="/KLP/customer/customerBulkUpdate/" class="primaryBtn ">一括変更</a></li>
+					<li><a href="/KLP/customer/customerBulkDelete/" class="primaryBtn ">一括削除</a></li>
+				</ul>
+			</div>
+	</div>
+		</div>
+
+	<form id="cmsForwardForm" method="post" action="#" autocomplete="off">
+	<input type="hidden" name="STORE_ID" value="H000537368" />
+	<input type="hidden" name="KMAGIC" value="92f7b10c86d87af580a7b76787791841d3c99ca8ceb6a53191db3268b617a191" />
+</form>
+<form id="cnkNeedStoreIdForwardForm" method="post" action="#" autocomplete="off">
+	<input type="hidden" name="storeId" value="H000537368" />
+</form>
+<div class="contents">
+	<div class="section">
+		<div class="mod_title01_02 cf">
+			<h1 class="ttl">お客様情報一覧</h1>
+			<p class="btn_help01"><a href="javascript:void(0);" id="questionManual"><img src="https://imgbp.salonboard.com/KLP/img/btn_help_01.png" width="29" height="29" alt="ヘルプ" class="rollover" id="btn_help" /></a></p>
+		</div>
+		<div class="cf">
+			<p class="fr"><a href="/KLP/customer/customerRegist/" class="mod_btn_new_entry fl ml10" tabindex="1" >お客様情報を新しく登録する</a></p>
+		</div>
+		<form id="customerList" method="post" action="/KLP/customer/customerSearch/" autocomplete="off"><input type="hidden" name="sortOrder" value="ASC" id="sortOrder" /><div class="mod_box_05 mt5">
+				<div class="head mod_column02 cf nborder ptn pbn">&nbsp;</div>
+
+				<div class="inner pr ptn pbn">
+					<table class="w950">
+						<tbody>
+						<tr class="mod_left">
+							<th>氏名 (漢字)：</th>
+							<td class="cf">
+								<input type="text" name="nmSei" maxlength="40" tabindex="2" value="" id="rsvCustomerNameKanji1" style="" class="fl w120" /><input type="text" name="nmMei" maxlength="40" tabindex="3" value="" id="rsvCustomerNameKanji2" style="" class="fl ml10 w120" /></td>
+							<th>誕生日：</th>
+							<td>
+								<select name="birthMonthFrom" tabindex="118" id="birthdayMId1" style="" class=""><option value=""></option><option value="01">1</option><option value="02">2</option><option value="03">3</option><option value="04">4</option><option value="05">5</option><option value="06">6</option><option value="07">7</option><option value="08">8</option><option value="09">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select>
+								月
+								<select name="birthDateFrom" tabindex="119" id="birthdayDId1" style="" class=""><option value=""></option><option value="01">1</option><option value="02">2</option><option value="03">3</option><option value="04">4</option><option value="05">5</option><option value="06">6</option><option value="07">7</option><option value="08">8</option><option value="09">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option><option value="24">24</option><option value="25">25</option><option value="26">26</option><option value="27">27</option><option value="28">28</option><option value="29">29</option><option value="30">30</option><option value="31">31</option></select>
+								日から
+								<select name="birthMonthTo" tabindex="120" id="birthdayMId2" style="" class=""><option value=""></option><option value="01">1</option><option value="02">2</option><option value="03">3</option><option value="04">4</option><option value="05">5</option><option value="06">6</option><option value="07">7</option><option value="08">8</option><option value="09">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select>
+								月
+								<select name="birthDateTo" tabindex="121" id="birthdayDId2" style="" class=""><option value=""></option><option value="01">1</option><option value="02">2</option><option value="03">3</option><option value="04">4</option><option value="05">5</option><option value="06">6</option><option value="07">7</option><option value="08">8</option><option value="09">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option><option value="24">24</option><option value="25">25</option><option value="26">26</option><option value="27">27</option><option value="28">28</option><option value="29">29</option><option value="30">30</option><option value="31">31</option></select>
+								日
+							</td>
+						</tr>
+						<tr class="mod_left">
+							<th>氏名 (カナ)：</th>
+							<td class="cf">
+								<input type="text" name="nmSeiKana" maxlength="30" tabindex="4" value="" id="rsvCustomerNameKana1" style="" class="fl w120" /><input type="text" name="nmMeiKana" maxlength="30" tabindex="5" value="" id="rsvCustomerNameKana2" style="" class="fl ml10 w120" /></td>
+							<th>年代：</th>
+							<td>
+								<select name="age" tabindex="122" id="ageId" style="" class="w125"><option value=""></option><option value="10">10代</option>
+<option value="20">20代</option>
+<option value="30">30代</option>
+<option value="40">40代</option>
+<option value="50">50代</option>
+<option value="60">60代</option>
+<option value="70">70代</option>
+<option value="80">80代</option>
+<option value="90">90代</option>
+<option value="100">100代</option></select></td>
+						</tr>
+						<tr class="mod_left">
+							<th>電話番号：</th>
+							<td>
+								<input type="text" name="tel" maxlength="17" tabindex="6" value="" id="telNumber" style="" class="w120" /></td>
+							<th>性別：</th>
+							<td>
+								<select name="sex" tabindex="123" id="sexId" style="" class="w125"><option value=""></option><option value="F">女性</option><option value="M">男性</option></select></td>
+						</tr>
+						<tr class="mod_left">
+							<th>E-MAIL：</th>
+							<td>
+								<input type="text" name="mailAddress" maxlength="200" tabindex="7" value="" id="email" style="" class="w303" /></td>
+							<th>職業：</th>
+							<td>
+								<select name="occupationKbn" tabindex="124" id="jobId" style="" class="w125"><option value=""></option><option value="01">フリーター</option>
+<option value="02">学生</option>
+<option value="03">会社員</option>
+<option value="04">主婦</option>
+<option value="05">自営業</option>
+<option value="06">その他</option></select></td>
+						</tr>
+						<tr class="mod_left">
+							<th>はがき送付許諾：</th>
+							<td>
+								<select name="postCardReceiveFlg" tabindex="8" id="emailPermissionId" style="" class="w125"><option value=""></option><option value="1">送付OK</option><option value="0">送付NG</option></select></td>
+							<th>要注意チェック：</th>
+							<td>
+								<select name="cautionKbn" tabindex="125" id="blackLstId" style="" class="w181"><option value=""></option><option value="0">要注意のお客様を含まない</option><option value="1">要注意のお客様のみ</option></select></td>
+						</tr>
+						<tr class="mod_left">
+							<th>お客様番号：</th>
+							<td>
+								<input type="text" name="customerNo" maxlength="20" tabindex="9" value="" id="customerTelNumber" class="w120" /></td>
+							<th>スタッフ：</th>
+							<td>
+								<select name="staffId" tabindex="126" id="staff" class="w125"><option value=""></option><option value="W000618247">太田　由香利</option>
+<option value="W000765116">與那城　琴美</option>
+<option value="W000967267">中林　香織</option></select></td>
+						</tr>
+						<tr class="mod_left">
+							<th>ダイレクト会員：</th>
+							<td>
+								<select name="directMemberKbn" tabindex="10" id="directMemberKbn" class="w181"><option value=""></option><option value="1">登録済みのお客様</option>
+<option value="2">未登録のお客様</option></select></td>
+						</tr>
+						<tr class="mod_left">
+							<th>前回来店日：</th>
+							<td class="w450" colspan="2">
+								<select name="lastVisitYearFrom" tabindex="11" id="lastVisitYForm" style=""><option value=""></option><option value="2025">2025</option>
+<option value="2024">2024</option>
+<option value="2023">2023</option>
+<option value="2022">2022</option>
+<option value="2021">2021</option>
+<option value="2020">2020</option>
+<option value="2019">2019</option>
+<option value="2018">2018</option>
+<option value="2017">2017</option>
+<option value="2016">2016</option>
+<option value="2015">2015</option>
+<option value="2014">2014</option>
+<option value="2013">2013</option>
+<option value="2012">2012</option>
+<option value="2011">2011</option>
+<option value="2010">2010</option>
+<option value="2009">2009</option>
+<option value="2008">2008</option>
+<option value="2007">2007</option>
+<option value="2006">2006</option>
+<option value="2005">2005</option>
+<option value="2004">2004</option>
+<option value="2003">2003</option>
+<option value="2002">2002</option>
+<option value="2001">2001</option>
+<option value="2000">2000</option>
+<option value="1999">1999</option>
+<option value="1998">1998</option>
+<option value="1997">1997</option>
+<option value="1996">1996</option>
+<option value="1995">1995</option>
+<option value="1994">1994</option>
+<option value="1993">1993</option>
+<option value="1992">1992</option>
+<option value="1991">1991</option>
+<option value="1990">1990</option>
+<option value="1989">1989</option>
+<option value="1988">1988</option>
+<option value="1987">1987</option>
+<option value="1986">1986</option>
+<option value="1985">1985</option>
+<option value="1984">1984</option>
+<option value="1983">1983</option>
+<option value="1982">1982</option>
+<option value="1981">1981</option>
+<option value="1980">1980</option>
+<option value="1979">1979</option>
+<option value="1978">1978</option>
+<option value="1977">1977</option>
+<option value="1976">1976</option>
+<option value="1975">1975</option>
+<option value="1974">1974</option>
+<option value="1973">1973</option>
+<option value="1972">1972</option>
+<option value="1971">1971</option>
+<option value="1970">1970</option>
+<option value="1969">1969</option>
+<option value="1968">1968</option>
+<option value="1967">1967</option>
+<option value="1966">1966</option>
+<option value="1965">1965</option>
+<option value="1964">1964</option>
+<option value="1963">1963</option>
+<option value="1962">1962</option>
+<option value="1961">1961</option>
+<option value="1960">1960</option>
+<option value="1959">1959</option>
+<option value="1958">1958</option>
+<option value="1957">1957</option>
+<option value="1956">1956</option>
+<option value="1955">1955</option>
+<option value="1954">1954</option>
+<option value="1953">1953</option>
+<option value="1952">1952</option>
+<option value="1951">1951</option>
+<option value="1950">1950</option>
+<option value="1949">1949</option>
+<option value="1948">1948</option>
+<option value="1947">1947</option>
+<option value="1946">1946</option>
+<option value="1945">1945</option>
+<option value="1944">1944</option>
+<option value="1943">1943</option>
+<option value="1942">1942</option>
+<option value="1941">1941</option>
+<option value="1940">1940</option>
+<option value="1939">1939</option>
+<option value="1938">1938</option>
+<option value="1937">1937</option>
+<option value="1936">1936</option>
+<option value="1935">1935</option>
+<option value="1934">1934</option>
+<option value="1933">1933</option>
+<option value="1932">1932</option>
+<option value="1931">1931</option>
+<option value="1930">1930</option>
+<option value="1929">1929</option>
+<option value="1928">1928</option>
+<option value="1927">1927</option>
+<option value="1926">1926</option>
+<option value="1925">1925</option>
+<option value="1924">1924</option>
+<option value="1923">1923</option>
+<option value="1922">1922</option>
+<option value="1921">1921</option>
+<option value="1920">1920</option>
+<option value="1919">1919</option>
+<option value="1918">1918</option>
+<option value="1917">1917</option>
+<option value="1916">1916</option>
+<option value="1915">1915</option>
+<option value="1914">1914</option>
+<option value="1913">1913</option>
+<option value="1912">1912</option>
+<option value="1911">1911</option>
+<option value="1910">1910</option>
+<option value="1909">1909</option>
+<option value="1908">1908</option>
+<option value="1907">1907</option>
+<option value="1906">1906</option>
+<option value="1905">1905</option>
+<option value="1904">1904</option>
+<option value="1903">1903</option>
+<option value="1902">1902</option>
+<option value="1901">1901</option>
+<option value="1900">1900</option></select>
+								年
+								<select name="lastVisitMonthFrom" tabindex="12" id="lastVisitMForm" style="" class=""><option value=""></option><option value="01">1</option><option value="02">2</option><option value="03">3</option><option value="04">4</option><option value="05">5</option><option value="06">6</option><option value="07">7</option><option value="08">8</option><option value="09">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select>
+								月
+								<select name="lastVisitDayFrom" tabindex="13" id="lastVisitDForm" style="" class=""><option value=""></option><option value="01">1</option><option value="02">2</option><option value="03">3</option><option value="04">4</option><option value="05">5</option><option value="06">6</option><option value="07">7</option><option value="08">8</option><option value="09">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option><option value="24">24</option><option value="25">25</option><option value="26">26</option><option value="27">27</option><option value="28">28</option><option value="29">29</option><option value="30">30</option><option value="31">31</option></select>
+								日から
+								<select name="lastVisitYearTo" tabindex="14" id="lastVisitYTo" style=""><option value=""></option><option value="2025">2025</option>
+<option value="2024">2024</option>
+<option value="2023">2023</option>
+<option value="2022">2022</option>
+<option value="2021">2021</option>
+<option value="2020">2020</option>
+<option value="2019">2019</option>
+<option value="2018">2018</option>
+<option value="2017">2017</option>
+<option value="2016">2016</option>
+<option value="2015">2015</option>
+<option value="2014">2014</option>
+<option value="2013">2013</option>
+<option value="2012">2012</option>
+<option value="2011">2011</option>
+<option value="2010">2010</option>
+<option value="2009">2009</option>
+<option value="2008">2008</option>
+<option value="2007">2007</option>
+<option value="2006">2006</option>
+<option value="2005">2005</option>
+<option value="2004">2004</option>
+<option value="2003">2003</option>
+<option value="2002">2002</option>
+<option value="2001">2001</option>
+<option value="2000">2000</option>
+<option value="1999">1999</option>
+<option value="1998">1998</option>
+<option value="1997">1997</option>
+<option value="1996">1996</option>
+<option value="1995">1995</option>
+<option value="1994">1994</option>
+<option value="1993">1993</option>
+<option value="1992">1992</option>
+<option value="1991">1991</option>
+<option value="1990">1990</option>
+<option value="1989">1989</option>
+<option value="1988">1988</option>
+<option value="1987">1987</option>
+<option value="1986">1986</option>
+<option value="1985">1985</option>
+<option value="1984">1984</option>
+<option value="1983">1983</option>
+<option value="1982">1982</option>
+<option value="1981">1981</option>
+<option value="1980">1980</option>
+<option value="1979">1979</option>
+<option value="1978">1978</option>
+<option value="1977">1977</option>
+<option value="1976">1976</option>
+<option value="1975">1975</option>
+<option value="1974">1974</option>
+<option value="1973">1973</option>
+<option value="1972">1972</option>
+<option value="1971">1971</option>
+<option value="1970">1970</option>
+<option value="1969">1969</option>
+<option value="1968">1968</option>
+<option value="1967">1967</option>
+<option value="1966">1966</option>
+<option value="1965">1965</option>
+<option value="1964">1964</option>
+<option value="1963">1963</option>
+<option value="1962">1962</option>
+<option value="1961">1961</option>
+<option value="1960">1960</option>
+<option value="1959">1959</option>
+<option value="1958">1958</option>
+<option value="1957">1957</option>
+<option value="1956">1956</option>
+<option value="1955">1955</option>
+<option value="1954">1954</option>
+<option value="1953">1953</option>
+<option value="1952">1952</option>
+<option value="1951">1951</option>
+<option value="1950">1950</option>
+<option value="1949">1949</option>
+<option value="1948">1948</option>
+<option value="1947">1947</option>
+<option value="1946">1946</option>
+<option value="1945">1945</option>
+<option value="1944">1944</option>
+<option value="1943">1943</option>
+<option value="1942">1942</option>
+<option value="1941">1941</option>
+<option value="1940">1940</option>
+<option value="1939">1939</option>
+<option value="1938">1938</option>
+<option value="1937">1937</option>
+<option value="1936">1936</option>
+<option value="1935">1935</option>
+<option value="1934">1934</option>
+<option value="1933">1933</option>
+<option value="1932">1932</option>
+<option value="1931">1931</option>
+<option value="1930">1930</option>
+<option value="1929">1929</option>
+<option value="1928">1928</option>
+<option value="1927">1927</option>
+<option value="1926">1926</option>
+<option value="1925">1925</option>
+<option value="1924">1924</option>
+<option value="1923">1923</option>
+<option value="1922">1922</option>
+<option value="1921">1921</option>
+<option value="1920">1920</option>
+<option value="1919">1919</option>
+<option value="1918">1918</option>
+<option value="1917">1917</option>
+<option value="1916">1916</option>
+<option value="1915">1915</option>
+<option value="1914">1914</option>
+<option value="1913">1913</option>
+<option value="1912">1912</option>
+<option value="1911">1911</option>
+<option value="1910">1910</option>
+<option value="1909">1909</option>
+<option value="1908">1908</option>
+<option value="1907">1907</option>
+<option value="1906">1906</option>
+<option value="1905">1905</option>
+<option value="1904">1904</option>
+<option value="1903">1903</option>
+<option value="1902">1902</option>
+<option value="1901">1901</option>
+<option value="1900">1900</option></select>
+								年
+								<select name="lastVisitMonthTo" tabindex="15" id="lastVisitMTo" style="" class=""><option value=""></option><option value="01">1</option><option value="02">2</option><option value="03">3</option><option value="04">4</option><option value="05">5</option><option value="06">6</option><option value="07">7</option><option value="08">8</option><option value="09">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select>
+								月
+								<select name="lastVisitDayTo" tabindex="16" id="lastVisitDayTo" style="" class=""><option value=""></option><option value="01">1</option><option value="02">2</option><option value="03">3</option><option value="04">4</option><option value="05">5</option><option value="06">6</option><option value="07">7</option><option value="08">8</option><option value="09">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option><option value="24">24</option><option value="25">25</option><option value="26">26</option><option value="27">27</option><option value="28">28</option><option value="29">29</option><option value="30">30</option><option value="31">31</option></select>
+								日まで
+							</td>
+							<th>&nbsp;</th>
+							<td>&nbsp;</td>
+						</tr>
+						<tr class="mod_left">
+							<th>来店回数：</th>
+							<td class="cf">
+								<input type="text" name="visitCountFrom" maxlength="4" tabindex="17" value="" id="visitNumFrom" style="" class="fl w60" /><p class="fl ml5">回以上</p>
+								<input type="text" name="visitCountTo" maxlength="4" tabindex="18" value="" id="visitNumTo" style="" class="fl ml10 w60" /><p class="fl ml5">回以下</p>
+							</td>
+							<th>&nbsp;</th>
+							<td>&nbsp;</td>
+						</tr>
+						</tbody>
+					</table>
+
+					<div class="btn_area mtn85 customer_search">
+						<p class="mb10"><a href="javascript:void(0);" id="clear" class="mod_btn_75" tabindex="127">条件をクリア</a></p>
+						<p><a href="javascript:void(0);" id="search" class="mod_btn_76" tabindex="128">検索する</a></p>
+					</div>
+				</div>
+			</div>
+		</form><div class="pb10 dbbS">
+				<div class="mod_column02 mt20 cf">
+					<div class="columnBlock01"><p class="ttl mod_font01">該当するお客様情報が<b class="mod_color_e50000 ml10 mr10">1356</b>件あります</p></div>
+					<div class="columnBlock02">
+						<!-- paging -->
+<div class="paging">
+<p class="prev_disable"><span>前へ</span></p>
+<p class="page mod_font01">1/28ページ</p>
+<p class="next"><a href="/KLP/customer/customerSearch/search?page=1&amp;pn=2">次へ</a></p>
+</div>
+<!-- /paging -->
+</div>
+				</div>
+			</div>
+			<table class="mod_table03 mt20 w980 tlfTbl customerInfoTbl">
+				<thead>
+					<tr class="mod_middle">
+						<th class="w192 sorter prn pln" id="sortNmKana">
+							<div class="cf mod_icon_arrow_wrap w85">
+								<p class="fl mt3 mr5"><span class="mod_icon_arrow_up">昇順</span></p><p>氏名 (カナ)</p>
+							</div>
+						</th>
+						<th class="w192 sorter prn pln" id="sortNm">
+							<div class="cf mod_icon_arrow_wrap w85">
+								<p>氏名 (漢字)</p>
+							</div>
+						</th>
+						<th class="w155 sorter prn pln" id="sortCustomerNo">
+							<div class="cf mod_icon_arrow_wrap w80">
+								<p>お客様番号</p>
+							</div>
+						</th>
+						<th class="w90 prn pln">
+							性別
+							<span class="tooltipIcn tooltip dib vab">
+								<span>
+									<b>性別表記「＊」とは</b><br />
+									お客様情報の性別が「未設定」の場合に表示されます。（ネット予約会員の場合、HOT PEPPER Beauty会員の性別が「回答しない」「自由記載」の時、お客様情報の性別は「未設定」で登録されます。）<br /><br />詳しくは「お客様情報詳細」画面でご確認ください。
+								</span>
+							</span>
+						</th>
+						<th class="w130 prn pln">職業</th>
+						<th class="w95 sorter prn pln" id="sortVisitCount">
+							<div class="cf mod_icon_arrow_wrap w70">
+								<p>来店回数</p>
+							</div>
+						</th>
+						<th class="w110 sorter prn pln" id="sortLastVisitDate">
+							<div class="cf mod_icon_arrow_wrap w85">
+								<p>前回来店日</p>
+							</div>
+						</th>
+					</tr>
+				</thead>
+			<tbody>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C01093054634" class="customerActionLinkTypePost">
+								アイカワ&nbsp;アヤメ</a>
+						</td>
+						<td>相川&nbsp;采女</td>
+						<td>
+							-</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">0</td>
+						<td>
+							-</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C01164988355" class="customerActionLinkTypePost">
+								アイハラ&nbsp;ミミ</a>
+						</td>
+						<td>相原&nbsp;望美★</td>
+						<td>
+							772</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">3</td>
+						<td>
+							2025/02/14</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C01103173271" class="customerActionLinkTypePost">
+								アオキ&nbsp;ヒトミ</a>
+						</td>
+						<td>青木&nbsp;ひと美</td>
+						<td>
+							-</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">0</td>
+						<td>
+							-</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C01129883028" class="customerActionLinkTypePost">
+								アオヤマ&nbsp;チホ</a>
+						</td>
+						<td>青山&nbsp;千穂</td>
+						<td>
+							-</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">0</td>
+						<td>
+							-</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C00722708664" class="customerActionLinkTypePost">
+								アオヤマ&nbsp;リカ</a>
+						</td>
+						<td>青山&nbsp;里香</td>
+						<td>
+							111</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">1</td>
+						<td>
+							2021/09/06</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C00872318239" class="customerActionLinkTypePost">
+								アカオ&nbsp;リナ</a>
+						</td>
+						<td>赤尾&nbsp;理夏★</td>
+						<td>
+							500</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">1</td>
+						<td>
+							2022/08/17</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C01084249659" class="customerActionLinkTypePost">
+								アカタニ&nbsp;ミカ</a>
+						</td>
+						<td>赤谷&nbsp;美佳</td>
+						<td>
+							モデル</td>
+						<td>＊</td>
+						<td>-</td>
+						<td class="mod_align_right">2</td>
+						<td>
+							2023/11/25</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C00790632835" class="customerActionLinkTypePost">
+								アキタ&nbsp;マキ</a>
+						</td>
+						<td>秋田&nbsp;真希★</td>
+						<td>
+							299</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">2</td>
+						<td>
+							2022/04/01</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C01189971472" class="customerActionLinkTypePost">
+								アキタ&nbsp;レナ</a>
+						</td>
+						<td>秋田&nbsp;玲奈★</td>
+						<td>
+							829</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">1</td>
+						<td>
+							2024/07/04</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C01302678673" class="customerActionLinkTypePost">
+								アサイ&nbsp;サクラ</a>
+						</td>
+						<td>浅井&nbsp;さくら★</td>
+						<td>
+							994</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">1</td>
+						<td>
+							2025/02/28</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C00709802214" class="customerActionLinkTypePost">
+								アサイ&nbsp;ナユコ</a>
+						</td>
+						<td>浅井&nbsp;奈佑子★</td>
+						<td>
+							70</td>
+						<td>女性</td>
+						<td>会社員</td>
+						<td class="mod_align_right">1</td>
+						<td>
+							2021/08/07</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C01202683928" class="customerActionLinkTypePost">
+								アサイ&nbsp;ユミ</a>
+						</td>
+						<td>浅井&nbsp;優実★</td>
+						<td>
+							847</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">10</td>
+						<td>
+							2025/11/08</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C00695900675" class="customerActionLinkTypePost">
+								アサオ&nbsp;カナコ</a>
+						</td>
+						<td>浅生&nbsp;佳奈子</td>
+						<td>
+							13</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">3</td>
+						<td>
+							2021/08/13</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C00861178598" class="customerActionLinkTypePost">
+								アサオカ&nbsp;マコ</a>
+						</td>
+						<td>朝岡&nbsp;真子★</td>
+						<td>
+							463</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">9</td>
+						<td>
+							2025/10/18</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C01331580240" class="customerActionLinkTypePost">
+								アサキ&nbsp;ヤスコ</a>
+						</td>
+						<td>浅木&nbsp;泰子★</td>
+						<td>
+							1074</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">3</td>
+						<td>
+							2025/11/27</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C00949374437" class="customerActionLinkTypePost">
+								アサクラ&nbsp;マイ</a>
+						</td>
+						<td>朝倉&nbsp;まい★</td>
+						<td>
+							660</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">1</td>
+						<td>
+							2023/02/13</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C00724674218" class="customerActionLinkTypePost">
+								アサノ&nbsp;アイミ</a>
+						</td>
+						<td>朝野&nbsp;あいみ</td>
+						<td>
+							100</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">1</td>
+						<td>
+							2021/08/30</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C01294696906" class="customerActionLinkTypePost">
+								アサハラ&nbsp;ヒトミ</a>
+						</td>
+						<td>浅原&nbsp;ひとみ★</td>
+						<td>
+							1030</td>
+						<td>＊</td>
+						<td>-</td>
+						<td class="mod_align_right">4</td>
+						<td>
+							2025/11/05</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C01378766618" class="customerActionLinkTypePost">
+								アサヒ&nbsp;エリ</a>
+						</td>
+						<td>旭&nbsp;笑里★</td>
+						<td>
+							1099</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">1</td>
+						<td>
+							2025/07/25</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C00811317510" class="customerActionLinkTypePost">
+								アサヒナ&nbsp;モエ</a>
+						</td>
+						<td>朝比奈&nbsp;萌★</td>
+						<td>
+							347</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">34</td>
+						<td>
+							2025/06/06</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C00697355610" class="customerActionLinkTypePost">
+								アサヤマ&nbsp;ユイ</a>
+						</td>
+						<td>朝山&nbsp;優衣★</td>
+						<td>
+							17</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">12</td>
+						<td>
+							2023/03/11</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C01209614858" class="customerActionLinkTypePost">
+								アシナ&nbsp;ユキ</a>
+						</td>
+						<td>芦名&nbsp;友紀★</td>
+						<td>
+							852</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">9</td>
+						<td>
+							2025/11/01</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C01387666278" class="customerActionLinkTypePost">
+								アシナサマ&nbsp;オナオシ</a>
+						</td>
+						<td>芦名様直&nbsp;</td>
+						<td>
+							-</td>
+						<td>＊</td>
+						<td>-</td>
+						<td class="mod_align_right">0</td>
+						<td>
+							-</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C00890474595" class="customerActionLinkTypePost">
+								アズマ&nbsp;ミキ</a>
+						</td>
+						<td>東&nbsp;未希★</td>
+						<td>
+							565</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">4</td>
+						<td>
+							2025/04/25</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C01196170226" class="customerActionLinkTypePost">
+								アダチ&nbsp;コトコ</a>
+						</td>
+						<td>足立&nbsp;琴咲★</td>
+						<td>
+							839</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">6</td>
+						<td>
+							2025/04/05</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C00746800452" class="customerActionLinkTypePost">
+								アダチ&nbsp;ジュリ</a>
+						</td>
+						<td>安達&nbsp;じゅり</td>
+						<td>
+							180</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">1</td>
+						<td>
+							2021/10/26</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C00919091594" class="customerActionLinkTypePost">
+								アダチ&nbsp;チエ</a>
+						</td>
+						<td>足立&nbsp;智栄★</td>
+						<td>
+							620</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">39</td>
+						<td>
+							2025/11/08</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C01236688265" class="customerActionLinkTypePost">
+								アダチ&nbsp;ヒヨリ</a>
+						</td>
+						<td>足立&nbsp;陽由★</td>
+						<td>
+							902</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">3</td>
+						<td>
+							2025/04/04</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C00840394722" class="customerActionLinkTypePost">
+								アダチ&nbsp;マリ</a>
+						</td>
+						<td>足立&nbsp;まり</td>
+						<td>
+							-</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">0</td>
+						<td>
+							-</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C00786850297" class="customerActionLinkTypePost">
+								アトベ&nbsp;マキ</a>
+						</td>
+						<td>跡部&nbsp;真紀★</td>
+						<td>
+							292</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">1</td>
+						<td>
+							2022/02/12</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C01292248179" class="customerActionLinkTypePost">
+								アベ&nbsp;スミレ</a>
+						</td>
+						<td>安部&nbsp;澄怜★</td>
+						<td>
+							1084</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">2</td>
+						<td>
+							2025/09/15</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C01232422822" class="customerActionLinkTypePost">
+								アマコ&nbsp;レイラ</a>
+						</td>
+						<td>尼子&nbsp;玲良★</td>
+						<td>
+							919</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">5</td>
+						<td>
+							2025/11/14</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C01416481391" class="customerActionLinkTypePost">
+								アマサキ&nbsp;マサミ</a>
+						</td>
+						<td>尼嵜&nbsp;まさみ★</td>
+						<td>
+							1125</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">1</td>
+						<td>
+							2025/10/14</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C00733902288" class="customerActionLinkTypePost">
+								アミノ&nbsp;サユミ</a>
+						</td>
+						<td>網野&nbsp;紗弓★</td>
+						<td>
+							134</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">37</td>
+						<td>
+							2025/11/21</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C00902695845" class="customerActionLinkTypePost">
+								アヤシロ&nbsp;ジュンコ</a>
+						</td>
+						<td>綾城&nbsp;順子★</td>
+						<td>
+							585</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">1</td>
+						<td>
+							2022/10/28</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C00741747887" class="customerActionLinkTypePost">
+								アライ&nbsp;ヒトミ</a>
+						</td>
+						<td>新井&nbsp;ひとみ★</td>
+						<td>
+							162</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">24</td>
+						<td>
+							2025/11/14</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C01169825815" class="customerActionLinkTypePost">
+								アライ&nbsp;ホノハ</a>
+						</td>
+						<td>新井&nbsp;帆葉★</td>
+						<td>
+							786</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">1</td>
+						<td>
+							2024/05/25</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C01283219839" class="customerActionLinkTypePost">
+								アラキ&nbsp;アユミ</a>
+						</td>
+						<td>荒木&nbsp;亜弓★</td>
+						<td>
+							967</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">9</td>
+						<td>
+							2025/10/28</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C01153283709" class="customerActionLinkTypePost">
+								アラキ&nbsp;ミユキ</a>
+						</td>
+						<td>荒木&nbsp;みゆき★</td>
+						<td>
+							756</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">1</td>
+						<td>
+							2024/04/27</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C00793751415" class="customerActionLinkTypePost">
+								アラタケ&nbsp;ルイ</a>
+						</td>
+						<td>新武&nbsp;るい</td>
+						<td>
+							314</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">1</td>
+						<td>
+							2022/03/01</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C00823257274" class="customerActionLinkTypePost">
+								アリマ&nbsp;ヒトミ</a>
+						</td>
+						<td>有馬&nbsp;仁美</td>
+						<td>
+							-</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">0</td>
+						<td>
+							-</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C00853186416" class="customerActionLinkTypePost">
+								アルガ&nbsp;トキコ</a>
+						</td>
+						<td>有賀&nbsp;時規子★</td>
+						<td>
+							431</td>
+						<td>＊</td>
+						<td>-</td>
+						<td class="mod_align_right">3</td>
+						<td>
+							2023/02/21</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C01130721909" class="customerActionLinkTypePost">
+								アワタ&nbsp;ユリエ</a>
+						</td>
+						<td>粟田&nbsp;友里江★</td>
+						<td>
+							739</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">2</td>
+						<td>
+							2024/04/16</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C01105600283" class="customerActionLinkTypePost">
+								アン&nbsp;マリアノ</a>
+						</td>
+						<td>アン&nbsp;マリアノ★</td>
+						<td>
+							721</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">7</td>
+						<td>
+							2024/11/08</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C01209492230" class="customerActionLinkTypePost">
+								アンザイ&nbsp;ユミカ</a>
+						</td>
+						<td>安西&nbsp;裕美香★</td>
+						<td>
+							863</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">3</td>
+						<td>
+							2024/12/27</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C00848076650" class="customerActionLinkTypePost">
+								アンジュ&nbsp;</a>
+						</td>
+						<td>-</td>
+						<td>
+							416</td>
+						<td>＊</td>
+						<td>-</td>
+						<td class="mod_align_right">1</td>
+						<td>
+							2022/06/24</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C00830556732" class="customerActionLinkTypePost">
+								アンラク&nbsp;マユミ</a>
+						</td>
+						<td>安楽&nbsp;真由美★</td>
+						<td>
+							380</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">1</td>
+						<td>
+							2022/05/28</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C00760184507" class="customerActionLinkTypePost">
+								イイダ&nbsp;アキコ</a>
+						</td>
+						<td>飯田&nbsp;明子★</td>
+						<td>
+							216</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">20</td>
+						<td>
+							2023/04/01</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C01409188681" class="customerActionLinkTypePost">
+								イイダ&nbsp;ヒナコ</a>
+						</td>
+						<td>飯田&nbsp;日菜子★</td>
+						<td>
+							1114</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">2</td>
+						<td>
+							2025/10/22</td>
+					</tr>
+				<tr class="mod_middle">
+						<td>
+							<a href="javascript:void(0);" data-url="/KLP/customer/customerDetail/" data-customerId="C00719406307" class="customerActionLinkTypePost">
+								イイヅカ&nbsp;マユ</a>
+						</td>
+						<td>飯塚&nbsp;真優</td>
+						<td>
+							-</td>
+						<td>女性</td>
+						<td>-</td>
+						<td class="mod_align_right">0</td>
+						<td>
+							-</td>
+					</tr>
+				</tbody>
+		</table>
+		<div class="cf mt20">
+			<!-- paging -->
+<div class="paging">
+<p class="prev_disable"><span>前へ</span></p>
+<p class="page mod_font01">1/28ページ</p>
+<p class="next"><a href="/KLP/customer/customerSearch/search?page=1&amp;pn=2">次へ</a></p>
+</div>
+<!-- /paging -->
+</div>
+		<div class="mod_pagetop01 cf">
+			<a href="#top">ページのトップへ</a>
+		</div>
+	</div>
+</div>
+<div class="path">
+	<div class="section">
+	    <p>パリジェンヌ・眉毛・マツエクの専門店 HAL 豊中本店様 / H000537368 / 即時予約 / 太田由香利 / 管理者用ID(CD18317)</p>
+	</div>
+</div>
+<div class="footer" id="footer">
+	<div class="section">
+		<div class="link_area cf">
+			<ul class="link cf">
+				<li><a href="javascript:void(0);" id="inquiry">お問い合わせ</a></li>
+				<li><a href="javascript:void(0);" id="terms">利用規約</a></li>
+				<li><a href="javascript:void(0);" id="pointTerms">ポイントプログラム利用規約</a></li>
+				<li><a href="javascript:void(0);" id="privacyPolicy">プライバシーポリシー</a></li>
+				<li><a href="javascript:void(0);" id="regulations">利用細則</a></li>
+				<li><a href="javascript:void(0);" id="onlineManual">ヘルプ</a></li>
+			</ul>
+		</div>
+		<address class="cf">
+			<p class="logo">
+				<a target="_blank" href="https://www.recruit.co.jp/"><img src="https://imgbp.salonboard.com/DEV/DEV_OPEN/RECRUITLOGO/logo_footer.gif?switch=2025112610"  width="217" height="27" alt="(C) Recruit Co., Ltd." /></a>
+			</p>
+		</address>
+	</div>
+	</div>
+<script src="https://imgbp.salonboard.com/KLP/js/common/jquery-1.10.2.min.js" type="text/javascript"></script>
+<script src="https://imgbp.salonboard.com/KLP/js/common/superTextConverter.js?switch=2025112610" type="text/javascript"></script>
+<script src="https://imgbp.salonboard.com/KLP/js/common/common.js?switch=2025112610" type="text/javascript"></script>
+<script type="text/javascript" src="https://imgbp.salonboard.com/KLP/js/common/jquery.cookie.js?switch=2025112610"></script>
+<script type="text/javascript" src="https://imgbp.salonboard.com/KLX/notice/js/soundalert.js?switch=2025112610" id="soundalert" data-store-id="H000537368" data-login-key="92f7b10c86d87af580a7b76787791841d3c99ca8ceb6a53191db3268b617a191" data-cdn-server="https://imgbp.salonboard.com" charset="UTF-8"></script>
+<script type="text/javascript">
+//<![CDATA[
+	$(function() {
+		$.shuhari.globalNaviHover();
+		$("#globalNavi,#globalNaviSub").find("a.cmsLink").bind("click", function(e) {
+			$.shuhari.cmsForward(e.target);
+			return false;
+		});
+
+		// ----- popup -----
+		$.shuhari.showPopup({url : "https://sbhd-kirei.salonboard.com/hc/ja/articles/360039395113", width : 1024, height : 800}, "inquiry");
+		$.shuhari.showPopup({url : "https://cdn.p.recruit.co.jp/terms/hpb-t-1009/index.html", width : 1024, height : 800}, "terms");
+		$.shuhari.showPopup({url : "https://cdn.p.recruit.co.jp/terms/slb-t-1001/index.html", width : 1024, height : 800}, "pointTerms");
+		$.shuhari.showPopup({url : "https://cdn.p.recruit.co.jp/terms/clu-t-1001/index.html", width : 1024, height : 800}, "privacyPolicy");
+		$.shuhari.showPopup({url : "https://cdn.p.recruit.co.jp/terms/slb-t-1003/index.html", width : 1024, height : 800}, "regulations");
+		// -- マニュアル系リンク --
+		$.shuhari.showPopup({url : "https://sbhd-kirei.salonboard.com/hc/ja", width : 1024, height : 800}, "onlineManual");
+
+
+		$.shuhari.showPopup({url : "https://sbhd-kirei.salonboard.com/hc/ja/articles/360001743173", width : 1024, height : 800}, "questionManual");
+	
+		//-- GAイベントハンドル設定 --
+		$("#inquiry").bind($.shuhari.getClickEventName(), function() {
+			wrapTrackPageview("/KLP/WEB-INF/action/footer/inquiry");
+		});
+	});
+//]]>
+</script>
+<script type="text/javascript">
+//<![CDATA[
+	sc_data = {"device":"desktop","pagegroup1":"お客様管理","pagegroup2":"お客様一覧","pagename":"/KLP/WEB-INF/view/customer/customerSearch/KPCL035V01.jsp","storeid":"H000537368","userid":"CD18317"};
+
+	function wrapTrackPageview(inHtmlPath) {
+		window.dataLayer = window.dataLayer || [];
+		dataLayer.push({'event' : 'virtual_pv', 'virtual_pagename': inHtmlPath});
+	}
+//]]>
+</script>
+<script type="text/javascript">
+//<![CDATA[
+			function kpiLogAjax(moduleId, ext1, ext2, ext3, ext4, ext5, ext6, ext7, ext8, ext9, ext10) {
+
+				if (!moduleId){
+					var modulePass = '/KLP/WEB-INF/view/customer/customerSearch/KPCL035V01.jsp';
+					var start = modulePass.indexOf('KPCL');
+					var end = modulePass.indexOf('.jsp');
+					moduleId = modulePass.substring(start, end);
+				}
+
+				$.shuhari.ajax({
+					url: "/KLP/kpiLogAjax/createKpiLog",
+					data:{
+						"moduleId" : moduleId,
+						"ext1" : ext1,
+						"ext2" : ext2,
+						"ext3" : ext3,
+						"ext4" : ext4,
+						"ext5" : ext5,
+						"ext6" : ext6,
+						"ext7" : ext7,
+						"ext8" : ext8,
+						"ext9" : ext9,
+						"ext10" : ext10
+					}
+				}, true);
+			}
+//]]>
+</script><script type="text/javascript" src="https://imgbp.salonboard.com/KLP/js/KPCL035V01.js?switch=2025112610"></script>
+<script type="text/javascript"  src="/AwCxsgW9U/3upPZ/3-Yc0/0NPI3GH8/h9wOhmNL2kw8GkG7/L0MmXABYBA/fG/QqLUx4HRQ"></script></body>
+</html>
