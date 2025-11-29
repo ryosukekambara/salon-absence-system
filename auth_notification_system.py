@@ -2404,7 +2404,16 @@ def send_reminder_notifications():
             # LINE送信
             if send_line_message(customer['line_user_id'], message):
                 results[label]["sent"] += 1
+                status = "sent"
             else:
                 results[label]["failed"] += 1
+                status = "failed"
+            
+            # ログ保存
+            requests.post(
+                f'{SUPABASE_URL}/rest/v1/reminder_logs',
+                headers=headers,
+                json={'phone': phone, 'customer_name': customer_name, 'days_ahead': days, 'status': status}
+            )
     
     return results
