@@ -1,8 +1,37 @@
 #!/usr/bin/env python3
 import json
 import re
+import os
 from playwright.sync_api import sync_playwright
 from datetime import datetime, timedelta, timezone
+
+def login_to_salonboard(page):
+    """サロンボードにID/パスワードでログイン"""
+    login_id = os.environ.get('SALONBOARD_LOGIN_ID', 'CD18317')
+    login_password = os.environ.get('SALONBOARD_LOGIN_PASSWORD', 'Ne8T2Hhi!')
+    
+    print("[LOGIN] ログインページにアクセス...")
+    page.goto('https://salonboard.com/login/', timeout=60000)
+    page.wait_for_timeout(3000)
+    
+    print("[LOGIN] ID入力...")
+    page.fill('input[name="userId"]', login_id)
+    page.wait_for_timeout(500)
+    
+    print("[LOGIN] パスワード入力...")
+    page.fill('input[name="password"]', login_password)
+    page.wait_for_timeout(500)
+    
+    print("[LOGIN] ログインボタンクリック...")
+    page.click('a:has-text("ログイン")')
+    page.wait_for_timeout(5000)
+    
+    if 'login' in page.url.lower():
+        print("[LOGIN] ログイン失敗")
+        return False
+    
+    print(f"[LOGIN] ログイン成功: {page.url}")
+    return True
 
 with sync_playwright() as p:
     browser = p.chromium.launch(
@@ -16,19 +45,44 @@ with sync_playwright() as p:
         locale='ja-JP',
         timezone_id='Asia/Tokyo'
     )
+    
+    # クッキーを読み込んで適用
+    try:
+        with open('session_cookies.json', 'r') as f:
+            cookies = json.load(f)
+        context.add_cookies(cookies)
+        print("[COOKIE] クッキー読み込み成功")
+    except:
+        print("[COOKIE] クッキーファイルなし")
+        cookies = []
+    
     page = context.new_page()
     
-    with open('session_cookies.json', 'r') as f:
-        cookies = json.load(f)
-    
-    context.add_cookies(cookies)
-    
-    JST = timezone(timedelta(hours=9)); today = (datetime.now(JST) + timedelta(days=7)).strftime('%Y%m%d')
+    JST = timezone(timedelta(hours=9))
+    today = (datetime.now(JST) + timedelta(days=7)).strftime('%Y%m%d')
     url = f'https://salonboard.com/KLP/reserve/reserveList/searchDate?date={today}'
     
     print(f"[SCRAPE] 本日の予約にアクセス（{today}）...")
     page.goto(url, timeout=90000)
     page.wait_for_timeout(3000)
+    
+    # ログイン状態確認 - ログインページにリダイレクトされたら再ログイン
+    if 'login' in page.url.lower():
+        print("[COOKIE] セッション切れ - 再ログイン実行")
+        if not login_to_salonboard(page):
+            print("[ERROR] ログイン失敗")
+            browser.close()
+            exit(1)
+        
+        # クッキーを更新して保存
+        new_cookies = context.cookies()
+        with open('session_cookies.json', 'w') as f:
+            json.dump(new_cookies, f, indent=2, ensure_ascii=False)
+        print(f"[COOKIE] 新しいクッキーを保存: {len(new_cookies)}個")
+        
+        # 再度予約ページにアクセス
+        page.goto(url, timeout=90000)
+        page.wait_for_timeout(3000)
     
     # 第1段階：予約IDと基本情報を取得
     basic_bookings = []
@@ -84,7 +138,6 @@ with sync_playwright() as p:
             source = booking["予約経路"]
             print(f"[SCRAPE] ({i+1}/{len(basic_bookings)}) {booking['お客様名'][:20]}の詳細取得中...")
             
-            # 予約経路に応じてURLを切り替え
             if source == "NHPB":
                 detail_url = f'https://salonboard.com/KLP/reserve/net/reserveDetail/?reserveid={booking_id}'
             else:
@@ -93,15 +146,12 @@ with sync_playwright() as p:
             page.goto(detail_url)
             page.wait_for_timeout(2000)
             
-            # 電話番号を取得
             phone_cell = page.query_selector('tr:has-text("電話番号") td:nth-child(2)')
             phone = phone_cell.text_content().strip() if phone_cell else ""
             
-            # 電話番号から数字のみ抽出（余計なテキストを除去）
             phone_match = re.search(r'(0\d{9,10})', phone)
             phone = phone_match.group(1) if phone_match else phone
             
-            # お客様番号を取得
             customer_number_cell = page.query_selector('tr:has-text("お客様番号") td:nth-child(2)')
             customer_number = customer_number_cell.text_content().strip() if customer_number_cell else ""
             
