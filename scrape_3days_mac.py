@@ -66,6 +66,9 @@ with sync_playwright() as p:
     page.goto(url, timeout=90000)
     page.wait_for_timeout(3000)
     
+    # デバッグ: 現在のURL確認
+    print(f"[DEBUG] 現在のURL: {page.url}")
+    
     # ログイン状態確認 - ログインページにリダイレクトされたら再ログイン
     if 'login' in page.url.lower():
         print("[COOKIE] セッション切れ - 再ログイン実行")
