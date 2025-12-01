@@ -71,9 +71,9 @@ with sync_playwright() as p:
     print(f"[DEBUG] ページタイトル: {page.title()}")
     print(f"[DEBUG] テーブル数: {len(page.query_selector_all('table'))}")
 
-    # ログイン状態確認 - ログインページにリダイレクトされたら再ログイン
-    if 'login' in page.url.lower():
-        print("[COOKIE] セッション切れ - 再ログイン実行")
+    # ログイン状態確認 - ログインページまたはエラーページなら再ログイン
+    if 'login' in page.url.lower() or 'エラー' in page.title() or len(page.query_selector_all('table')) == 0:
+        print(f"[COOKIE] セッション無効検出 - 再ログイン実行")
         if not login_to_salonboard(page):
             print("[ERROR] ログイン失敗")
             browser.close()
