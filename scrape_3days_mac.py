@@ -68,7 +68,9 @@ with sync_playwright() as p:
     
     # デバッグ: 現在のURL確認
     print(f"[DEBUG] 現在のURL: {page.url}")
-    
+    print(f"[DEBUG] ページタイトル: {page.title()}")
+    print(f"[DEBUG] テーブル数: {len(page.query_selector_all('table'))}")
+
     # ログイン状態確認 - ログインページにリダイレクトされたら再ログイン
     if 'login' in page.url.lower():
         print("[COOKIE] セッション切れ - 再ログイン実行")
