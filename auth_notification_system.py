@@ -2210,7 +2210,25 @@ def debug_test_salonboard_direct():
             'error_type': type(e).__name__
         }), 500
 
-
+@app.route('/api/scrape_today', methods=['GET', 'POST'])
+def api_scrape_today():
+    """当日予約から電話番号を取得してcustomersに追加"""
+    try:
+        import subprocess
+        result = subprocess.run(
+            ['python3', 'scrape_today.py'],
+            capture_output=True,
+            text=True,
+            timeout=300
+        )
+        return jsonify({
+            'success': result.returncode == 0,
+            'stdout': result.stdout,
+            'stderr': result.stderr
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+    
 @app.route('/api/scrape_daily', methods=['GET'])
 def scrape_daily():
     """毎日のスクレイピング実行 + リマインド送信"""

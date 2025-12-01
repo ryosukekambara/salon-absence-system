@@ -2,17 +2,40 @@ name: Daily Scrape
 
 on:
   schedule:
-    # 毎日朝9時(JST) = UTC 0時
+    # 毎日朝9時(JST) = UTC 0時 - リマインド送信
     - cron: '0 0 * * *'
-  workflow_dispatch:  # 手動実行も可能
+    # 毎日21時(JST) = UTC 12時 - 電話番号取得
+    - cron: '0 12 * * *'
+  workflow_dispatch:
 
 jobs:
-  trigger-scrape:
+  morning-reminder:
+    if: github.event.schedule == '0 0 * * *' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Railway API
+      - name: Trigger Railway API (Morning)
         run: |
           response=$(curl -s -w "\n%{http_code}" https://salon-absence-system-production.up.railway.app/api/scrape_daily)
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+          
+          echo "Response: $body"
+          echo "HTTP Code: $http_code"
+          
+          if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
+            echo "✅ Success"
+          else
+            echo "❌ Failed"
+            exit 1
+          fi
+
+  evening-phone:
+    if: github.event.schedule == '0 12 * * *'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Railway API (Evening)
+        run: |
+          response=$(curl -s -w "\n%{http_code}" https://salon-absence-system-production.up.railway.app/api/scrape_today)
           http_code=$(echo "$response" | tail -n1)
           body=$(echo "$response" | head -n-1)
           

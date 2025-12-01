@@ -474,3 +474,83 @@ Call log:
 /Users/kanbararyousuke/salon-absence-system/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
   warnings.warn(
 ✅ エラー通知送信成功
+[2025-12-01 21:40:00] ==========================================
+[2025-12-01 21:40:00] スクレイピング処理開始
+[2025-12-01 21:40:00] ==========================================
+[2025-12-01 21:40:00] 対象日付: 3日後=20251204, 7日後=20251208
+[2025-12-01 21:40:00] ------------------------------------------
+[2025-12-01 21:40:00] [3日後] 処理開始: 20251204
+[2025-12-01 21:40:00] ------------------------------------------
+[2025-12-01 21:40:00] [3日後] 試行 1/3
+[2025-12-01 21:40:19] [3日後] ❌ 空のデータ (120バイト) - クッキー無効の可能性
+[2025-12-01 21:40:19] 🔄 クッキー自動再取得開始...
+Traceback (most recent call last):
+  File "<stdin>", line 17, in <module>
+  File "/Users/kanbararyousuke/salon-absence-system/venv/lib/python3.9/site-packages/playwright/sync_api/_generated.py", line 9019, in goto
+    self._sync(
+  File "/Users/kanbararyousuke/salon-absence-system/venv/lib/python3.9/site-packages/playwright/_impl/_sync_base.py", line 115, in _sync
+    return task.result()
+  File "/Users/kanbararyousuke/salon-absence-system/venv/lib/python3.9/site-packages/playwright/_impl/_page.py", line 556, in goto
+    return await self._main_frame.goto(**locals_to_params(locals()))
+  File "/Users/kanbararyousuke/salon-absence-system/venv/lib/python3.9/site-packages/playwright/_impl/_frame.py", line 153, in goto
+    await self._channel.send(
+  File "/Users/kanbararyousuke/salon-absence-system/venv/lib/python3.9/site-packages/playwright/_impl/_connection.py", line 69, in send
+    return await self._connection.wrap_api_call(
+  File "/Users/kanbararyousuke/salon-absence-system/venv/lib/python3.9/site-packages/playwright/_impl/_connection.py", line 558, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.TimeoutError: Page.goto: Timeout 60000ms exceeded.
+Call log:
+  - navigating to "https://salonboard.com/login/", waiting until "load"
+
+[2025-12-01 21:41:24] ❌ クッキー再取得失敗
+[2025-12-01 21:41:24] [3日後] 15分後にリトライ...
+[2025-12-01 21:56:24] [3日後] 試行 2/3
+[2025-12-01 21:56:44] [3日後] ❌ 空のデータ (120バイト) - クッキー無効の可能性
+[2025-12-01 21:56:44] 🔄 クッキー自動再取得開始...
+Traceback (most recent call last):
+  File "<stdin>", line 17, in <module>
+  File "/Users/kanbararyousuke/salon-absence-system/venv/lib/python3.9/site-packages/playwright/sync_api/_generated.py", line 9019, in goto
+    self._sync(
+  File "/Users/kanbararyousuke/salon-absence-system/venv/lib/python3.9/site-packages/playwright/_impl/_sync_base.py", line 115, in _sync
+    return task.result()
+  File "/Users/kanbararyousuke/salon-absence-system/venv/lib/python3.9/site-packages/playwright/_impl/_page.py", line 556, in goto
+    return await self._main_frame.goto(**locals_to_params(locals()))
+  File "/Users/kanbararyousuke/salon-absence-system/venv/lib/python3.9/site-packages/playwright/_impl/_frame.py", line 153, in goto
+    await self._channel.send(
+  File "/Users/kanbararyousuke/salon-absence-system/venv/lib/python3.9/site-packages/playwright/_impl/_connection.py", line 69, in send
+    return await self._connection.wrap_api_call(
+  File "/Users/kanbararyousuke/salon-absence-system/venv/lib/python3.9/site-packages/playwright/_impl/_connection.py", line 558, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.TimeoutError: Page.goto: Timeout 60000ms exceeded.
+Call log:
+  - navigating to "https://salonboard.com/login/", waiting until "load"
+
+[2025-12-01 21:57:49] ❌ クッキー再取得失敗
+[2025-12-01 21:57:49] [3日後] 15分後にリトライ...
+[2025-12-01 22:12:49] [3日後] 試行 3/3
+[2025-12-01 22:12:59] [3日後] ❌ 空のデータ (120バイト) - クッキー無効の可能性
+[2025-12-01 22:12:59] 🔄 クッキー自動再取得開始...
+Traceback (most recent call last):
+  File "<stdin>", line 17, in <module>
+  File "/Users/kanbararyousuke/salon-absence-system/venv/lib/python3.9/site-packages/playwright/sync_api/_generated.py", line 9019, in goto
+    self._sync(
+  File "/Users/kanbararyousuke/salon-absence-system/venv/lib/python3.9/site-packages/playwright/_impl/_sync_base.py", line 115, in _sync
+    return task.result()
+  File "/Users/kanbararyousuke/salon-absence-system/venv/lib/python3.9/site-packages/playwright/_impl/_page.py", line 556, in goto
+    return await self._main_frame.goto(**locals_to_params(locals()))
+  File "/Users/kanbararyousuke/salon-absence-system/venv/lib/python3.9/site-packages/playwright/_impl/_frame.py", line 153, in goto
+    await self._channel.send(
+  File "/Users/kanbararyousuke/salon-absence-system/venv/lib/python3.9/site-packages/playwright/_impl/_connection.py", line 69, in send
+    return await self._connection.wrap_api_call(
+  File "/Users/kanbararyousuke/salon-absence-system/venv/lib/python3.9/site-packages/playwright/_impl/_connection.py", line 558, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.TimeoutError: Page.goto: Timeout 60000ms exceeded.
+Call log:
+  - navigating to "https://salonboard.com/login/", waiting until "load"
+
+[2025-12-01 22:14:02] ❌ クッキー再取得失敗
+[2025-12-01 22:14:02] [3日後] ❌ 全試行失敗
+[2025-12-01 22:14:02] エラー通知送信: 3回のリトライすべて失敗
+/Users/kanbararyousuke/salon-absence-system/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+✅ エラー通知送信成功
