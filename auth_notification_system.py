@@ -2441,6 +2441,15 @@ def send_reminder_notifications(test_mode=False):
 ◾️通常予約
 前日変更：施術代金の50％
 当日変更：施術代金の100％"""
+      
+            # 重複送信チェック
+            today_str = today.strftime("%Y-%m-%d")
+            dup_check = requests.get(
+                f'{SUPABASE_URL}/rest/v1/reminder_logs?phone=eq.{phone}&days_ahead=eq.{days}&sent_at=gte.{today_str}T00:00:00',
+                headers=headers
+            )
+            if dup_check.json():
+                continue  # 既に今日送信済み
             
             # LINE送信
             if send_line_message(customer['line_user_id'], message):
