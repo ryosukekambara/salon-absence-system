@@ -2252,7 +2252,7 @@ def scrape_daily_test():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route('/api/scrape_daily', methods=['GET'])
+@app.route('/api/scrape_daily_DISABLED', methods=['GET'])
 def scrape_daily():
     """毎日のスクレイピング実行 + リマインド送信"""
     try:
@@ -2267,8 +2267,8 @@ def scrape_daily():
         )
         scrape_output = result.stdout
         
-        # 2. リマインド送信（3日後・7日後）
-        reminder_results = send_reminder_notifications()
+        # 2. リマインド送信（テストモード：神原のみ）
+        reminder_results = send_reminder_notifications(test_mode=True)
         
         return jsonify({
             "success": True,
@@ -2284,7 +2284,7 @@ def scrape_daily():
         }), 500
 
 
-def send_reminder_notifications():
+def send_reminder_notifications(test_mode=False):
     """3日後・7日後の予約にリマインド通知を送信"""
     import re
     from datetime import datetime, timedelta, timezone
