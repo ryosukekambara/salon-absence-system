@@ -1,20 +1,17 @@
 name: Daily Scrape
 
 on:
-  schedule:
-    # 毎日朝9時(JST) = UTC 0時 - リマインド送信
-    - cron: '0 0 * * *'
-    # 毎日21時(JST) = UTC 12時 - 電話番号取得
-    - cron: '0 12 * * *'
+  # schedule:
+  #   - cron: '0 0 * * *'
+  #   - cron: '0 12 * * *'
   workflow_dispatch:
 
 jobs:
   morning-reminder:
-    if: github.event.schedule == '0 0 * * *' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Railway API (Morning)
-        run: |
+      - name: Disabled
+        run: echo "自動実行は無効化中"
           response=$(curl -s -w "\n%{http_code}" https://salon-absence-system-production.up.railway.app/api/scrape_daily)
           http_code=$(echo "$response" | tail -n1)
           body=$(echo "$response" | head -n-1)

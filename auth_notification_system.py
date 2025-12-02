@@ -2229,6 +2229,29 @@ def api_scrape_today():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
     
+@app.route('/api/scrape_daily_test', methods=['GET', 'POST'])
+def scrape_daily_test():
+    """テスト用：スクレイピングのみ、LINE送信なし"""
+    try:
+        import subprocess
+        
+        result = subprocess.run(
+            ['python3', 'scrape_and_upload.py'],
+            capture_output=True,
+            text=True,
+            timeout=300
+        )
+        
+        return jsonify({
+            "success": True,
+            "scrape_stdout": result.stdout,
+            "scrape_stderr": result.stderr,
+            "scrape_returncode": result.returncode,
+            "note": "テストモード：LINE送信はスキップされました"
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @app.route('/api/scrape_daily', methods=['GET'])
 def scrape_daily():
     """毎日のスクレイピング実行 + リマインド送信"""
@@ -2433,5 +2456,10 @@ def send_reminder_notifications():
                 headers=headers,
                 json={'phone': phone, 'customer_name': customer_name, 'days_ahead': days, 'status': status}
             )
+            
+            # 神原に送信通知
+            if status == "sent":
+                notify_message = f"✅ リマインド送信完了\n{customer_name}様（{days}日前）"
+                send_line_message("U9022782f05526cf7632902acaed0cb08", notify_message)
     
     return results
