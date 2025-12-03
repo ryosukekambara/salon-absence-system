@@ -2715,3 +2715,22 @@ def scrape_test_1day_v2():
         results["error"] = str(e)
     
     return jsonify(results)
+
+@app.route('/api/scrape_8weeks_v2', methods=['GET', 'POST'])
+def api_scrape_8weeks_v2():
+    """8週間分の予約をスクレイピング（scrape_today.py方式）"""
+    try:
+        import subprocess
+        result = subprocess.run(
+            ['python3', 'scrape_8weeks_v2.py'],
+            capture_output=True,
+            text=True,
+            timeout=600
+        )
+        return jsonify({
+            'success': result.returncode == 0,
+            'stdout': result.stdout,
+            'stderr': result.stderr
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
