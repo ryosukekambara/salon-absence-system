@@ -2647,3 +2647,71 @@ def scrape_test_1day():
         results["error"] = str(e)
     
     return jsonify(results)
+
+@app.route('/api/scrape_test_1day_v2', methods=['GET', 'POST'])
+def scrape_test_1day_v2():
+    """テスト用：1日分のみ（タイムアウト延長）"""
+    from datetime import datetime, timedelta, timezone
+    from playwright.sync_api import sync_playwright
+    import json
+    
+    JST = timezone(timedelta(hours=9))
+    today = datetime.now(JST)
+    target_date = today + timedelta(days=3)
+    date_str = target_date.strftime("%Y%m%d")
+    
+    results = {"date": target_date.strftime("%Y-%m-%d"), "bookings": [], "error": None, "url": None}
+    
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            context = browser.new_context()
+            
+            cookie_file = os.path.join(os.path.dirname(__file__), 'session_cookies.json')
+            if os.path.exists(cookie_file):
+                with open(cookie_file, 'r') as f:
+                    cookies = json.load(f)
+                    context.add_cookies(cookies)
+            
+            page = context.new_page()
+            
+            # まずトップページ
+            page.goto("https://salonboard.com/", timeout=60000, wait_until="domcontentloaded")
+            page.wait_for_timeout(2000)
+            
+            # 予約ページ
+            url = f"https://salonboard.com/KLP/reserve/reserveList/?search_date={date_str}"
+            results["url"] = url
+            
+            page.goto(url, timeout=90000, wait_until="domcontentloaded")
+            page.wait_for_timeout(3000)
+            
+            results["current_url"] = page.url
+            
+            if 'login' in page.url.lower():
+                results["error"] = "ログイン必要"
+            else:
+                # ページタイトル取得
+                results["title"] = page.title()
+                
+                # 予約行を取得
+                rows = page.query_selector_all('tr.rsv')
+                results["row_count"] = len(rows)
+                
+                for row in rows[:5]:  # 最初の5件のみ
+                    try:
+                        time_el = row.query_selector('td.time')
+                        name_el = row.query_selector('td.name a')
+                        results["bookings"].append({
+                            "time": time_el.inner_text().strip() if time_el else '',
+                            "name": name_el.inner_text().strip() if name_el else ''
+                        })
+                    except:
+                        continue
+            
+            browser.close()
+    
+    except Exception as e:
+        results["error"] = str(e)
+    
+    return jsonify(results)
