@@ -1,49 +1,9 @@
-name: Daily Scrape
+name: Daily Scrape (DISABLED)
 on:
-  schedule:
-    
   workflow_dispatch:
 jobs:
-  scrape:
+  disabled:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      
-      - name: Install
-        run: |
-          pip install playwright
-          playwright install chromium
-      
-      - name: Test
-        env:
-          ID: ${{ secrets.SALONBOARD_LOGIN_ID }}
-          PW: ${{ secrets.SALONBOARD_LOGIN_PASSWORD }}
-        run: |
-          cat > test.py << 'ENDPY'
-          from playwright.sync_api import sync_playwright
-          import os
-          with sync_playwright() as p:
-              b = p.chromium.launch(headless=True)
-              pg = b.new_page()
-              pg.goto('https://salonboard.com/login/', timeout=60000)
-              print(pg.title())
-              pg.wait_for_timeout(30000)
-              h = pg.content()
-              if 'login_id' in h:
-                  print('Form found')
-                  pg.fill('input[name="login_id"]', os.environ['ID'])
-                  pg.fill('input[name="login_password"]', os.environ['PW'])
-                  pg.click('button[type="submit"]')
-                  pg.wait_for_timeout(5000)
-                  print(pg.url)
-              else:
-                  print('No form')
-              b.close()
-          ENDPY
-          python test.py
+      - name: Disabled
+        run: echo "無効化中"
