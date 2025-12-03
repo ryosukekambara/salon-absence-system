@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 8週間分の予約をスクレイピングしてbookingsテーブルに保存
-scrape_today.pyのログイン方式を流用
+scrape_today.pyの方式を流用（詳細ページから電話番号取得）
 """
 import json
 import re
@@ -34,6 +34,7 @@ def scrape_date(page, target_date, headers, supabase_url):
     page.wait_for_timeout(2000)
     
     bookings_saved = 0
+    seen_ids = set()
     rows = page.query_selector_all('table tbody tr')
     
     for row in rows:
@@ -42,34 +43,58 @@ def scrape_date(page, target_date, headers, supabase_url):
             if len(cells) < 4:
                 continue
             
-            time_text = cells[0].text_content().strip() if cells[0] else ''
-            customer_name = cells[2].text_content().strip() if len(cells) > 2 else ''
-            phone = cells[3].text_content().strip() if len(cells) > 3 else ''
-            menu = cells[5].text_content().strip() if len(cells) > 5 else ''
-            staff = cells[1].text_content().strip() if len(cells) > 1 else ''
+            customer_name = cells[2].text_content().strip()
+            id_match = re.search(r'\(([A-Z]{2}\d+)\)', customer_name)
+            booking_id = id_match.group(1) if id_match else None
             
-            # 名前から★などを除去
-            customer_name = re.sub(r'[★☆♪♡⭐️🦁]', '', customer_name).strip()
-            customer_name = re.sub(r'\([A-Z]{2}\d+\)', '', customer_name).strip()
-            
-            if not customer_name:
+            if not booking_id or booking_id in seen_ids:
                 continue
+            seen_ids.add(booking_id)
             
-            # 電話番号を数字のみに
-            phone_clean = re.sub(r'[^\d]', '', phone)
+            source = cells[4].text_content().strip() if len(cells) > 4 else ""
             
-            # booking_id生成
-            booking_id = f"{date_str}_{time_text}_{phone_clean}".replace(" ", "").replace(":", "").replace("~", "")
+            # 詳細ページから電話番号取得
+            if source == 'NET':
+                detail_url = f'https://salonboard.com/KLP/reserve/net/reserveDetail/?reserveid={booking_id}'
+            else:
+                detail_url = f'https://salonboard.com/KLP/reserve/ext/extReserveDetail/?reserveid={booking_id}'
+            
+            page.goto(detail_url, timeout=60000)
+            page.wait_for_timeout(1500)
+            
+            # 電話番号取得
+            phone_cell = page.query_selector('tr:has-text("電話番号") td:nth-child(2)')
+            phone = phone_cell.text_content().strip() if phone_cell else ""
+            phone_match = re.search(r'(0\d{9,10})', phone)
+            phone = phone_match.group(1) if phone_match else ""
+            
+            # 顧客名取得
+            name_cell = page.query_selector('tr:has-text("お客様名") td:nth-child(2)')
+            full_name = name_cell.text_content().strip() if name_cell else customer_name
+            full_name = re.sub(r'[★☆♪♡⭐️🦁]', '', full_name).strip()
+            full_name = re.sub(r'\([A-Z]{2}\d+\)', '', full_name).strip()
+            
+            # 来店日時取得
+            datetime_cell = page.query_selector('tr:has-text("来店日時") td:nth-child(2)')
+            visit_datetime = datetime_cell.text_content().strip() if datetime_cell else target_date.strftime('%m/%d')
+            
+            # メニュー取得
+            menu_cell = page.query_selector('tr:has-text("メニュー") td:nth-child(2)')
+            menu = menu_cell.text_content().strip() if menu_cell else ""
+            
+            # スタッフ取得
+            staff_cell = page.query_selector('tr:has-text("担当") td:nth-child(2)')
+            staff = staff_cell.text_content().strip() if staff_cell else ""
             
             data = {
                 'booking_id': booking_id,
-                'customer_name': customer_name,
-                'phone': phone_clean,
-                'visit_datetime': f"{target_date.strftime('%m/%d')}{time_text}",
+                'customer_name': full_name,
+                'phone': phone,
+                'visit_datetime': visit_datetime,
                 'menu': menu,
                 'staff': staff,
                 'status': 'confirmed',
-                'booking_source': 'salonboard'
+                'booking_source': source
             }
             
             # Upsert
@@ -81,8 +106,10 @@ def scrape_date(page, target_date, headers, supabase_url):
             
             if res.status_code in [200, 201]:
                 bookings_saved += 1
+                print(f"    保存: {full_name} | {phone} | {visit_datetime}")
                 
         except Exception as e:
+            print(f"    エラー: {e}")
             continue
     
     return bookings_saved
@@ -133,7 +160,6 @@ def main():
                 browser.close()
                 return {"success": False, "error": "ログイン失敗"}
             
-            # クッキー保存
             new_cookies = context.cookies()
             with open('session_cookies.json', 'w') as f:
                 json.dump(new_cookies, f, indent=2, ensure_ascii=False)
@@ -142,9 +168,10 @@ def main():
         # 8週間分（56日）をスクレイピング
         for day_offset in range(56):
             target_date = today + timedelta(days=day_offset)
+            print(f"  [{target_date.strftime('%Y-%m-%d')}] スクレイピング中...")
             saved = scrape_date(page, target_date, headers, SUPABASE_URL)
             total_saved += saved
-            print(f"  {target_date.strftime('%Y-%m-%d')}: {saved}件保存")
+            print(f"  [{target_date.strftime('%Y-%m-%d')}] {saved}件保存")
         
         browser.close()
     
