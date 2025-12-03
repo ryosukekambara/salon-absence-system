@@ -2718,19 +2718,14 @@ def scrape_test_1day_v2():
 
 @app.route('/api/scrape_8weeks_v2', methods=['GET', 'POST'])
 def api_scrape_8weeks_v2():
-    """8週間分の予約をスクレイピング（scrape_today.py方式）"""
-    try:
-        import subprocess
-        result = subprocess.run(
-            ['python3', 'scrape_8weeks_v2.py'],
-            capture_output=True,
-            text=True,
-            timeout=600
-        )
-        return jsonify({
-            'success': result.returncode == 0,
-            'stdout': result.stdout,
-            'stderr': result.stderr
-        })
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+    """8週間分の予約をスクレイピング（バックグラウンド実行）"""
+    import threading
+    import subprocess
+    
+    def run_scrape():
+        subprocess.run(['python3', 'scrape_8weeks_v2.py'], capture_output=True, text=True)
+    
+    thread = threading.Thread(target=run_scrape)
+    thread.start()
+    
+    return jsonify({'success': True, 'message': 'スクレイピング開始（バックグラウンド実行中）'})
