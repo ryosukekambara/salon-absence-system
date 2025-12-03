@@ -2293,6 +2293,9 @@ def send_reminder_notifications(test_mode=False):
     today = datetime.now(JST)
     results = {"3days": {"sent": 0, "failed": 0, "no_match": 0}, "7days": {"sent": 0, "failed": 0, "no_match": 0}}
     
+    # テストモード: 神原のみに送信
+    KAMBARA_PHONE = "09015992055"
+    
     headers = {
         'apikey': SUPABASE_KEY,
         'Authorization': f'Bearer {SUPABASE_KEY}',
@@ -2393,7 +2396,10 @@ def send_reminder_notifications(test_mode=False):
             cleaned_menu = clean_menu(menu)
             
             if days == 3:
+                # テストモード: 神原のみに送信
+                KANBARA_PHONE = "09015992055"
                 message = f"""{customer_name} 様
+
 ご予約【3日前】のお知らせ🕊️
 【本店】
 {formatted_dt}
@@ -2450,6 +2456,10 @@ def send_reminder_notifications(test_mode=False):
             )
             if dup_check.json():
                 continue  # 既に今日送信済み
+            
+            # テストモード: 神原以外はスキップ
+            if test_mode and phone != KAMBARA_PHONE:
+                continue
             
             # LINE送信
             if send_line_message(customer['line_user_id'], message):
