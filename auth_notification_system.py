@@ -2591,3 +2591,59 @@ def scrape_8weeks():
         results["errors"].append(str(e))
     
     return jsonify(results)
+
+@app.route('/api/scrape_test_1day', methods=['GET', 'POST'])
+def scrape_test_1day():
+    """テスト用：1日分のみスクレイピング"""
+    from datetime import datetime, timedelta, timezone
+    from playwright.sync_api import sync_playwright
+    import json
+    import re
+    
+    JST = timezone(timedelta(hours=9))
+    today = datetime.now(JST)
+    target_date = today + timedelta(days=3)  # 3日後
+    date_str = target_date.strftime("%Y%m%d")
+    
+    results = {"date": target_date.strftime("%Y-%m-%d"), "bookings": [], "error": None}
+    
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            context = browser.new_context()
+            
+            cookie_file = os.path.join(os.path.dirname(__file__), 'session_cookies.json')
+            if os.path.exists(cookie_file):
+                with open(cookie_file, 'r') as f:
+                    cookies = json.load(f)
+                    context.add_cookies(cookies)
+            
+            page = context.new_page()
+            url = f"https://salonboard.com/KLP/reserve/reserveList/?search_date={date_str}"
+            
+            page.goto(url, timeout=30000, wait_until="domcontentloaded")
+            page.wait_for_timeout(3000)
+            
+            if 'login' in page.url.lower():
+                results["error"] = "ログイン必要（クッキー期限切れ）"
+            else:
+                rows = page.query_selector_all('tr.rsv')
+                for row in rows:
+                    try:
+                        time_el = row.query_selector('td.time')
+                        name_el = row.query_selector('td.name a')
+                        results["bookings"].append({
+                            "time": time_el.inner_text().strip() if time_el else '',
+                            "name": name_el.inner_text().strip() if name_el else ''
+                        })
+                    except:
+                        continue
+                
+                results["total"] = len(results["bookings"])
+            
+            browser.close()
+    
+    except Exception as e:
+        results["error"] = str(e)
+    
+    return jsonify(results)
