@@ -2482,3 +2482,112 @@ def send_reminder_notifications(test_mode=False):
                 send_line_message("U9022782f05526cf7632902acaed0cb08", notify_message)
     
     return results
+# ========== 8週間予約スクレイピング ==========
+@app.route('/api/scrape_8weeks', methods=['GET', 'POST'])
+def scrape_8weeks():
+    """8週間分の予約をスクレイピングしてbookingsテーブルに保存"""
+    from datetime import datetime, timedelta, timezone
+    from playwright.sync_api import sync_playwright
+    import json
+    import re
+    
+    JST = timezone(timedelta(hours=9))
+    today = datetime.now(JST)
+    
+    results = {"total": 0, "updated": 0, "errors": []}
+    
+    headers = {
+        'apikey': SUPABASE_KEY,
+        'Authorization': f'Bearer {SUPABASE_KEY}',
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates'
+    }
+    
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            context = browser.new_context()
+            
+            # クッキー読み込み
+            cookie_file = os.path.join(os.path.dirname(__file__), 'session_cookies.json')
+            if os.path.exists(cookie_file):
+                with open(cookie_file, 'r') as f:
+                    cookies = json.load(f)
+                    context.add_cookies(cookies)
+            
+            page = context.new_page()
+            
+            # 8週間分（56日）をループ
+            for day_offset in range(56):
+                target_date = today + timedelta(days=day_offset)
+                date_str = target_date.strftime("%Y%m%d")
+                url = f"https://salonboard.com/KLP/reserve/reserveList/?search_date={date_str}"
+                
+                try:
+                    page.goto(url, timeout=30000, wait_until="domcontentloaded")
+                    page.wait_for_timeout(2000)
+                    
+                    # ログインチェック
+                    if 'login' in page.url.lower():
+                        results["errors"].append(f"ログイン必要: {date_str}")
+                        break
+                    
+                    # 予約データ抽出
+                    rows = page.query_selector_all('tr.rsv')
+                    
+                    for row in rows:
+                        try:
+                            time_el = row.query_selector('td.time')
+                            name_el = row.query_selector('td.name a')
+                            phone_el = row.query_selector('td.phone')
+                            menu_el = row.query_selector('td.menu')
+                            staff_el = row.query_selector('td.staff')
+                            
+                            visit_time = time_el.inner_text().strip() if time_el else ''
+                            customer_name = name_el.inner_text().strip() if name_el else ''
+                            phone = phone_el.inner_text().strip() if phone_el else ''
+                            menu = menu_el.inner_text().strip() if menu_el else ''
+                            staff = staff_el.inner_text().strip() if staff_el else ''
+                            
+                            if not customer_name:
+                                continue
+                            
+                            # booking_id生成（重複防止用）
+                            booking_id = f"{date_str}_{visit_time}_{phone}".replace(" ", "").replace(":", "")
+                            
+                            data = {
+                                'booking_id': booking_id,
+                                'customer_name': customer_name.replace('★', '').strip(),
+                                'phone': re.sub(r'[^\d]', '', phone),
+                                'visit_datetime': f"{target_date.strftime('%m/%d')}{visit_time}",
+                                'menu': menu,
+                                'staff': staff,
+                                'status': 'confirmed',
+                                'booking_source': 'salonboard'
+                            }
+                            
+                            # Upsert
+                            res = requests.post(
+                                f'{SUPABASE_URL}/rest/v1/bookings',
+                                headers=headers,
+                                json=data
+                            )
+                            
+                            if res.status_code in [200, 201]:
+                                results["updated"] += 1
+                            
+                            results["total"] += 1
+                            
+                        except Exception as e:
+                            continue
+                    
+                except Exception as e:
+                    results["errors"].append(f"{date_str}: {str(e)}")
+                    continue
+            
+            browser.close()
+    
+    except Exception as e:
+        results["errors"].append(str(e))
+    
+    return jsonify(results)
