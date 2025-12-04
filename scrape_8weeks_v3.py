@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
 8週間分の予約をスクレイピングしてbookingsテーブルに保存
+詳細ページをスキップ、一覧ページから直接保存
 """
 import json
 import re
 import os
-import sys
 import requests
 from datetime import datetime, timedelta, timezone
 
@@ -108,10 +108,9 @@ def main():
                     page.goto(url, timeout=60000)
                     page.wait_for_timeout(2000)
                 
-                # 予約ID抽出
-                bookings = []
-                seen_ids = set()
+                # 一覧ページから直接予約情報を取得
                 rows = page.query_selector_all('table tbody tr')
+                day_saved = 0
                 
                 for row in rows:
                     try:
@@ -119,60 +118,35 @@ def main():
                         if len(cells) < 4:
                             continue
                         
-                        customer_name = cells[2].text_content().strip()
-                        id_match = re.search(r'\(([A-Z]{2}\d+)\)', customer_name)
+                        # 顧客名から予約ID抽出
+                        customer_cell = cells[2].text_content().strip()
+                        id_match = re.search(r'\(([A-Z]{2}\d+)\)', customer_cell)
                         booking_id = id_match.group(1) if id_match else None
                         
-                        if not booking_id or booking_id in seen_ids:
+                        if not booking_id:
                             continue
-                        seen_ids.add(booking_id)
                         
+                        # 顧客名（IDを除去）
+                        customer_name = re.sub(r'\s*\([A-Z]{2}\d+\)', '', customer_cell).strip()
+                        customer_name = re.sub(r'[★☆♪♡⭐️🦁]', '', customer_name).strip()
+                        
+                        # 時間
+                        time_cell = cells[0].text_content().strip() if len(cells) > 0 else ""
+                        visit_datetime = f"{target_date.strftime('%Y/%m/%d')} {time_cell}"
+                        
+                        # スタッフ
+                        staff = cells[1].text_content().strip() if len(cells) > 1 else ""
+                        
+                        # ソース（NET/NHPB等）
                         source = cells[4].text_content().strip() if len(cells) > 4 else ""
-                        bookings.append({'booking_id': booking_id, 'source': source})
-                    except:
-                        continue
-                
-                print(f"[{target_date.strftime('%Y-%m-%d')}] {len(bookings)}件検出", flush=True)
-                
-                # 詳細ページから情報取得
-                for booking in bookings:
-                    bid = booking['booking_id']
-                    source = booking['source']
-                    
-                    try:
-                        if source == "NHPB":
-                            detail_url = f'https://salonboard.com/KLP/reserve/net/reserveDetail/?reserveid={bid}'
-                        else:
-                            detail_url = f'https://salonboard.com/KLP/reserve/ext/extReserveDetail/?reserveid={bid}'
                         
-                        page.goto(detail_url, timeout=30000)
-                        page.wait_for_timeout(1500)
-                        
-                        phone_cell = page.query_selector('tr:has-text("電話番号") td:nth-child(2)')
-                        phone = phone_cell.text_content().strip() if phone_cell else ""
-                        phone_match = re.search(r'(0\d{9,10})', phone)
-                        phone = phone_match.group(1) if phone_match else ""
-                        
-                        name_cell = page.query_selector('tr:has-text("お客様名") td:nth-child(2)')
-                        full_name = name_cell.text_content().strip() if name_cell else ""
-                        
-                        datetime_cell = page.query_selector('tr:has-text("来店日時") td:nth-child(2)')
-                        visit_datetime = datetime_cell.text_content().strip() if datetime_cell else ""
-                        
-                        menu_cell = page.query_selector('tr:has-text("メニュー") td:nth-child(2)')
-                        menu = menu_cell.text_content().strip() if menu_cell else ""
-                        
-                        staff_cell = page.query_selector('tr:has-text("担当") td:nth-child(2)')
-                        staff = staff_cell.text_content().strip() if staff_cell else ""
-                        
-                        # 電話番号がなくても保存（顧客名があれば）
-                        if full_name:
+                        if customer_name:
                             data = {
-                                'booking_id': bid,
-                                'customer_name': full_name,
-                                'phone': phone,
+                                'booking_id': booking_id,
+                                'customer_name': customer_name,
+                                'phone': '',  # 一覧ページには電話番号がない
                                 'visit_datetime': visit_datetime,
-                                'menu': menu,
+                                'menu': '',
                                 'staff': staff,
                                 'status': 'confirmed',
                                 'booking_source': source
@@ -186,12 +160,11 @@ def main():
                             
                             if res.status_code in [200, 201]:
                                 total_saved += 1
-                                print(f"  保存: {full_name} | {phone}", flush=True)
-                            else:
-                                print(f"  保存エラー: {res.status_code} {res.text}", flush=True)
+                                day_saved += 1
                     except Exception as e:
-                        print(f"  [SKIP] {bid}: {e}", flush=True)
                         continue
+                
+                print(f"[{target_date.strftime('%Y-%m-%d')}] {day_saved}件保存", flush=True)
             
             browser.close()
     except Exception as e:
