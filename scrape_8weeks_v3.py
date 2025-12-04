@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 8週間分の予約をスクレイピングしてbookingsテーブルに保存
-scrape_today.pyをそのまま流用、期間を8週間に拡張
+scrape_today.pyをそのまま流用、期間を8週間に変更
 """
 import json
 import re
@@ -58,32 +58,29 @@ def main():
         
         page = context.new_page()
         
-        # ログイン確認
-        test_url = f'https://salonboard.com/KLP/reserve/reserveList/searchDate?date={today.strftime("%Y%m%d")}'
-        page.goto(test_url, timeout=90000)
-        page.wait_for_timeout(3000)
-        
-        if 'login' in page.url.lower() or 'エラー' in page.title() or len(page.query_selector_all('table')) == 0:
-            print("ログインが必要です...")
-            if not login_to_salonboard(page):
-                print("ログイン失敗")
-                browser.close()
-                return {"success": False, "error": "ログイン失敗"}
-            
-            new_cookies = context.cookies()
-            with open('session_cookies.json', 'w') as f:
-                json.dump(new_cookies, f, indent=2, ensure_ascii=False)
-            print("ログイン成功、クッキー保存")
-        
-        # 8週間分（56日）をスクレイピング
+        # 8週間分（56日）をループ
         for day_offset in range(56):
             target_date = today + timedelta(days=day_offset)
             date_str = target_date.strftime('%Y%m%d')
             url = f'https://salonboard.com/KLP/reserve/reserveList/searchDate?date={date_str}'
             
             page.goto(url, timeout=90000)
-            page.wait_for_timeout(2000)
+            page.wait_for_timeout(3000)
             
+            # ログイン確認（初回のみ）
+            if day_offset == 0 and ('login' in page.url.lower() or 'エラー' in page.title() or len(page.query_selector_all('table')) == 0):
+                if not login_to_salonboard(page):
+                    browser.close()
+                    return
+                
+                new_cookies = context.cookies()
+                with open('session_cookies.json', 'w') as f:
+                    json.dump(new_cookies, f, indent=2, ensure_ascii=False)
+                
+                page.goto(url, timeout=90000)
+                page.wait_for_timeout(3000)
+            
+            # 予約ID抽出（scrape_today.pyと同じ方式）
             bookings = []
             seen_ids = set()
             rows = page.query_selector_all('table tbody tr')
@@ -107,9 +104,9 @@ def main():
                 except:
                     continue
             
-            print(f"  [{target_date.strftime('%Y-%m-%d')}] {len(bookings)}件検出")
+            print(f"[{target_date.strftime('%Y-%m-%d')}] {len(bookings)}件検出")
             
-            # 詳細ページから情報取得してbookingsに保存
+            # 詳細ページから情報取得（scrape_today.pyと同じ方式）
             for booking in bookings:
                 try:
                     bid = booking['booking_id']
@@ -120,8 +117,8 @@ def main():
                     else:
                         detail_url = f'https://salonboard.com/KLP/reserve/ext/extReserveDetail/?reserveid={bid}'
                     
-                    page.goto(detail_url, timeout=60000)
-                    page.wait_for_timeout(1500)
+                    page.goto(detail_url)
+                    page.wait_for_timeout(2000)
                     
                     # 電話番号
                     phone_cell = page.query_selector('tr:has-text("電話番号") td:nth-child(2)')
@@ -132,7 +129,6 @@ def main():
                     # 顧客名
                     name_cell = page.query_selector('tr:has-text("お客様名") td:nth-child(2)')
                     full_name = name_cell.text_content().strip() if name_cell else ""
-                    full_name = re.sub(r'[★☆♪♡⭐️🦁]', '', full_name).strip()
                     
                     # 来店日時
                     datetime_cell = page.query_selector('tr:has-text("来店日時") td:nth-child(2)')
@@ -146,7 +142,8 @@ def main():
                     staff_cell = page.query_selector('tr:has-text("担当") td:nth-child(2)')
                     staff = staff_cell.text_content().strip() if staff_cell else ""
                     
-                    if full_name:
+                    if full_name and phone:
+                        # bookingsテーブルに保存
                         data = {
                             'booking_id': bid,
                             'customer_name': full_name,
@@ -166,15 +163,13 @@ def main():
                         
                         if res.status_code in [200, 201]:
                             total_saved += 1
-                            print(f"    保存: {full_name} | {phone}")
+                            print(f"  保存: {full_name} | {phone}")
                 except Exception as e:
-                    print(f"    エラー: {e}")
                     continue
         
         browser.close()
     
-    print(f"\n完了: 合計 {total_saved}件 保存")
-    return {"success": True, "total": total_saved}
+    print(f"\n[完了] {total_saved}件の予約を保存")
 
 if __name__ == "__main__":
     main()
