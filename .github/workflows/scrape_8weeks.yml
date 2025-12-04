@@ -1,0 +1,24 @@
+name: 8週間スクレイピング（1分ごと）
+on:
+  schedule:
+    - cron: '* * * * *'  # 毎分実行
+  workflow_dispatch:  # 手動実行も可能
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 8週間スクレイピング実行
+        run: |
+          response=$(curl -s -w "\n%{http_code}" --max-time 30 https://salon-absence-system-production.up.railway.app/api/scrape_8weeks_v3)
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+          
+          echo "Response: $body"
+          echo "HTTP Code: $http_code"
+          
+          if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
+            echo "✅ Success"
+          else
+            echo "❌ Failed"
+            exit 1
+          fi
