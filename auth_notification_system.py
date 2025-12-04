@@ -2729,3 +2729,33 @@ def api_scrape_8weeks_v2():
     thread.start()
     
     return jsonify({'success': True, 'message': 'スクレイピング開始（バックグラウンド実行中）'})
+
+# 8週間スクレイピング実行中フラグ
+scrape_8weeks_running = False
+
+@app.route('/api/scrape_8weeks_v3', methods=['GET', 'POST'])
+def api_scrape_8weeks_v3():
+    """8週間分の予約をスクレイピング（二重実行防止付き）"""
+    global scrape_8weeks_running
+    
+    # 二重実行防止
+    if scrape_8weeks_running:
+        return jsonify({'success': False, 'message': '既に実行中です。しばらくお待ちください。'}), 429
+    
+    import threading
+    import subprocess
+    
+    def run_scrape():
+        global scrape_8weeks_running
+        scrape_8weeks_running = True
+        try:
+            subprocess.run(['python3', 'scrape_8weeks_v3.py'], capture_output=True, text=True, timeout=1800)
+        except Exception as e:
+            print(f"スクレイピングエラー: {e}")
+        finally:
+            scrape_8weeks_running = False
+    
+    thread = threading.Thread(target=run_scrape)
+    thread.start()
+    
+    return jsonify({'success': True, 'message': 'スクレイピング開始（バックグラウンド実行中）'})
