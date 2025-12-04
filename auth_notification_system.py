@@ -2749,7 +2749,7 @@ def api_scrape_8weeks_v3():
         global scrape_8weeks_running
         scrape_8weeks_running = True
         try:
-            subprocess.run(['python3', 'scrape_8weeks_v3.py'], capture_output=True, text=True, timeout=1800)
+            subprocess.run(['python3', 'scrape_8weeks_v3.py'], timeout=1800)
         except Exception as e:
             print(f"スクレイピングエラー: {e}")
         finally:
