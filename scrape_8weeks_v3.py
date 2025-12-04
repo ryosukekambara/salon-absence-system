@@ -85,8 +85,12 @@ def main():
                 
                 print(f"[{target_date.strftime('%Y-%m-%d')}] アクセス中...", flush=True)
                 
-                page.goto(url, timeout=90000)
-                page.wait_for_timeout(3000)
+                try:
+                    page.goto(url, timeout=60000)
+                    page.wait_for_timeout(2000)
+                except Exception as e:
+                    print(f"[{target_date.strftime('%Y-%m-%d')}] アクセスエラー、スキップ: {e}", flush=True)
+                    continue
                 
                 # ログイン確認（初回のみ）
                 if day_offset == 0 and ('login' in page.url.lower() or 'エラー' in page.title() or len(page.query_selector_all('table')) == 0):
@@ -101,8 +105,8 @@ def main():
                         json.dump(new_cookies, f, indent=2, ensure_ascii=False)
                     print("[OK] ログイン成功、クッキー保存", flush=True)
                     
-                    page.goto(url, timeout=90000)
-                    page.wait_for_timeout(3000)
+                    page.goto(url, timeout=60000)
+                    page.wait_for_timeout(2000)
                 
                 # 予約ID抽出
                 bookings = []
@@ -132,17 +136,17 @@ def main():
                 
                 # 詳細ページから情報取得
                 for booking in bookings:
+                    bid = booking['booking_id']
+                    source = booking['source']
+                    
                     try:
-                        bid = booking['booking_id']
-                        source = booking['source']
-                        
                         if source == "NHPB":
                             detail_url = f'https://salonboard.com/KLP/reserve/net/reserveDetail/?reserveid={bid}'
                         else:
                             detail_url = f'https://salonboard.com/KLP/reserve/ext/extReserveDetail/?reserveid={bid}'
                         
-                        page.goto(detail_url)
-                        page.wait_for_timeout(2000)
+                        page.goto(detail_url, timeout=30000)
+                        page.wait_for_timeout(1500)
                         
                         phone_cell = page.query_selector('tr:has-text("電話番号") td:nth-child(2)')
                         phone = phone_cell.text_content().strip() if phone_cell else ""
@@ -161,7 +165,8 @@ def main():
                         staff_cell = page.query_selector('tr:has-text("担当") td:nth-child(2)')
                         staff = staff_cell.text_content().strip() if staff_cell else ""
                         
-                        if full_name and phone:
+                        # 電話番号がなくても保存（顧客名があれば）
+                        if full_name:
                             data = {
                                 'booking_id': bid,
                                 'customer_name': full_name,
@@ -182,8 +187,10 @@ def main():
                             if res.status_code in [200, 201]:
                                 total_saved += 1
                                 print(f"  保存: {full_name} | {phone}", flush=True)
+                            else:
+                                print(f"  保存エラー: {res.status_code} {res.text}", flush=True)
                     except Exception as e:
-                        print(f"  [ERROR] {bid}: {e}", flush=True)
+                        print(f"  [SKIP] {bid}: {e}", flush=True)
                         continue
             
             browser.close()
