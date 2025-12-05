@@ -1,47 +1,9 @@
-name: Daily Scrape
-
+name: Daily Scrape (DISABLED)
 on:
-  # schedule:
-  #   - cron: '0 0 * * *'
-  #   - cron: '0 12 * * *'
   workflow_dispatch:
-
 jobs:
-  morning-reminder:
+  disabled:
     runs-on: ubuntu-latest
     steps:
       - name: Disabled
-        run: echo "自動実行は無効化中"
-          response=$(curl -s -w "\n%{http_code}" https://salon-absence-system-production.up.railway.app/api/scrape_daily)
-          http_code=$(echo "$response" | tail -n1)
-          body=$(echo "$response" | head -n-1)
-          
-          echo "Response: $body"
-          echo "HTTP Code: $http_code"
-          
-          if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
-            echo "✅ Success"
-          else
-            echo "❌ Failed"
-            exit 1
-          fi
-
-  evening-phone:
-    if: github.event.schedule == '0 12 * * *'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Trigger Railway API (Evening)
-        run: |
-          response=$(curl -s -w "\n%{http_code}" https://salon-absence-system-production.up.railway.app/api/scrape_today)
-          http_code=$(echo "$response" | tail -n1)
-          body=$(echo "$response" | head -n-1)
-          
-          echo "Response: $body"
-          echo "HTTP Code: $http_code"
-          
-          if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
-            echo "✅ Success"
-          else
-            echo "❌ Failed"
-            exit 1
-          fi
+        run: echo "無効化中"
