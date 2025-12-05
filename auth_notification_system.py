@@ -2967,7 +2967,7 @@ def liff_booking():
         }}
         
         async function changeBooking(bookingId) {{
-            if (confirm('日時変更をリクエストしますか？\nサロンからご連絡いたします。')) {{
+            if (confirm('日時変更をリクエストしますか？\nサロンからご連絡いたします。\nサロンからご連絡いたします。')) {{
                 const response = await fetch('/api/liff/change-request', {{
                     method: 'POST',
                     headers: {{ 'Content-Type': 'application/json' }},
