@@ -2961,9 +2961,9 @@ def liff_booking():
                     data.bookings.forEach(booking => {{
                         html += `
                             <div class="booking-card">
-                                <div class="booking-date">${formatDate(booking.visit_datetime)}</div>
-                                <div class="booking-menu">${booking.menu || 'メニュー未設定'}</div>
-                                <div class="booking-menu">担当: ${booking.staff || '未定'}</div>
+                                <div class="booking-date">${{formatDate(booking.visit_datetime)}}</div>
+                                <div class="booking-menu">${{booking.menu || 'メニュー未設定'}}</div>
+                                <div class="booking-menu">担当: ${{booking.staff || '未定'}}</div>
                                 <button class="btn btn-change" onclick="changeBooking('${{booking.booking_id}}')">日時変更</button>
                                 <button class="btn btn-cancel" onclick="cancelBooking('${{booking.booking_id}}')">キャンセル</button>
                             </div>
