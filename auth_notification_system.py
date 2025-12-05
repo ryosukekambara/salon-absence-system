@@ -2954,3 +2954,53 @@ def api_liff_cancel_request():
     )
     
     return jsonify({'success': True, 'message': 'キャンセルリクエストを受け付けました。'})
+
+# ========== CSVインポート機能 ==========
+@app.route('/api/import-customers', methods=['POST'])
+def api_import_customers():
+    """サロンボードのCSVから顧客情報をインポート"""
+    import csv
+    import io
+    
+    if 'file' not in request.files:
+        return jsonify({'error': 'ファイルがありません'}), 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'ファイルが選択されていません'}), 400
+    
+    try:
+        stream = io.StringIO(file.stream.read().decode('utf-8-sig'))
+        reader = csv.DictReader(stream)
+        
+        headers_api = {
+            'apikey': SUPABASE_KEY,
+            'Authorization': f'Bearer {SUPABASE_KEY}',
+            'Content-Type': 'application/json'
+        }
+        
+        updated = 0
+        for row in reader:
+            phone = row.get('電話番号', '').replace('-', '').replace(' ', '')
+            name = row.get('顧客名', '') or row.get('お客様名', '') or row.get('名前', '')
+            
+            if phone and name:
+                # 電話番号でcustomersを検索して名前を更新
+                res = requests.get(
+                    f'{SUPABASE_URL}/rest/v1/customers?phone=eq.{phone}&select=id',
+                    headers=headers_api
+                )
+                customers = res.json()
+                
+                if customers:
+                    # 既存顧客の名前を更新
+                    requests.patch(
+                        f'{SUPABASE_URL}/rest/v1/customers?phone=eq.{phone}',
+                        headers=headers_api,
+                        json={'name': name}
+                    )
+                    updated += 1
+        
+        return jsonify({'success': True, 'updated': updated})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
