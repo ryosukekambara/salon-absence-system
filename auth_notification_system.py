@@ -2863,6 +2863,19 @@ def liff_booking():
     </div>
     <script>
         const LIFF_ID = "{liff_id}";
+        
+        function formatDate(dateStr) {{
+            const match = dateStr.match(/(\d{{4}})\/(\d{{2}})\/(\d{{2}}).*?(\d{{2}}):(\d{{2}})/);
+            if (match) {{
+                const year = match[1];
+                const month = parseInt(match[2]);
+                const day = parseInt(match[3]);
+                const hour = match[4];
+                const min = match[5];
+                return `${{year}}年${{month}}月${{day}}日 ${{hour}}:${{min}}`;
+            }}
+            return dateStr;
+        }}
         let userProfile = null;
         let lineUserId = null;
         
@@ -2948,10 +2961,9 @@ def liff_booking():
                     data.bookings.forEach(booking => {{
                         html += `
                             <div class="booking-card">
-                                <div class="booking-date">${{booking.visit_datetime}}</div>
-                                <div class="booking-menu">${{booking.customer_name}}</div>
-                                <div class="booking-menu">${{booking.menu || ''}}</div>
-                                <div class="booking-menu">担当: ${{booking.staff || '未定'}}</div>
+                                <div class="booking-date">${formatDate(booking.visit_datetime)}</div>
+                                <div class="booking-menu">${booking.menu || 'メニュー未設定'}</div>
+                                <div class="booking-menu">担当: ${booking.staff || '未定'}</div>
                                 <button class="btn btn-change" onclick="changeBooking('${{booking.booking_id}}')">日時変更</button>
                                 <button class="btn btn-cancel" onclick="cancelBooking('${{booking.booking_id}}')">キャンセル</button>
                             </div>
