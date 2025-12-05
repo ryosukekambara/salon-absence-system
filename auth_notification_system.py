@@ -2760,201 +2760,6 @@ def api_scrape_8weeks_v3():
     
     return jsonify({'success': True, 'message': 'スクレイピング開始（バックグラウンド実行中）'})
 
-# ========== LIFF予約確認画面 ==========
-@app.route('/liff/booking')
-def liff_booking():
-    """LIFF予約確認画面"""
-    liff_id = "2006629229-Y8lb2daA"
-    html = f'''<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>予約確認</title>
-    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <style>
-        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
-        body {{ font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f5f5f5; }}
-        .container {{ max-width: 500px; margin: 0 auto; padding: 20px; }}
-        .header {{ background: #06c755; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }}
-        .content {{ background: white; padding: 20px; border-radius: 0 0 10px 10px; }}
-        .booking-card {{ border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin: 10px 0; }}
-        .booking-date {{ font-size: 18px; font-weight: bold; color: #333; }}
-        .booking-time {{ font-size: 16px; color: #06c755; margin: 5px 0; }}
-        .booking-menu {{ font-size: 14px; color: #666; }}
-        .btn {{ display: block; width: 100%; padding: 12px; margin: 5px 0; border: none; border-radius: 5px; font-size: 14px; cursor: pointer; }}
-        .btn-change {{ background: #06c755; color: white; }}
-        .btn-cancel {{ background: #ff6b6b; color: white; }}
-        .loading {{ text-align: center; padding: 40px; }}
-        .no-booking {{ text-align: center; padding: 40px; color: #666; }}
-        .user-info {{ background: #e8f5e9; padding: 10px; border-radius: 5px; margin-bottom: 15px; }}
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>予約確認</h1>
-        </div>
-        <div class="content">
-            <div id="user-info" class="user-info" style="display:none;"></div>
-            <div id="loading" class="loading">読み込み中...</div>
-            <div id="bookings"></div>
-        </div>
-    </div>
-    <script>
-        const LIFF_ID = "{liff_id}";
-        let userProfile = null;
-        
-        async function initLiff() {{
-            try {{
-                await liff.init({{ liffId: LIFF_ID }});
-                
-                if (!liff.isLoggedIn()) {{
-                    liff.login();
-                    return;
-                }}
-                
-                userProfile = await liff.getProfile();
-                document.getElementById('user-info').innerHTML = `<strong>${{userProfile.displayName}}</strong> 様の予約`;
-                document.getElementById('user-info').style.display = 'block';
-                
-                await loadBookings(userProfile.userId);
-            }} catch (error) {{
-                document.getElementById('loading').innerHTML = 'エラーが発生しました: ' + error.message;
-            }}
-        }}
-        
-        async function loadBookings(lineUserId) {{
-            try {{
-                const response = await fetch(`/api/liff/bookings?line_user_id=${{lineUserId}}`);
-                const data = await response.json();
-                
-                document.getElementById('loading').style.display = 'none';
-                
-                if (data.bookings && data.bookings.length > 0) {{
-                    let html = '';
-                    data.bookings.forEach(booking => {{
-                        html += `
-                            <div class="booking-card">
-                                <div class="booking-date">${{booking.visit_datetime}}</div>
-                                <div class="booking-menu">${{booking.menu || 'メニュー未設定'}}</div>
-                                <div class="booking-menu">担当: ${{booking.staff || '未定'}}</div>
-                                <button class="btn btn-change" onclick="changeBooking('${{booking.booking_id}}')">日時変更</button>
-                                <button class="btn btn-cancel" onclick="cancelBooking('${{booking.booking_id}}')">キャンセル</button>
-                            </div>
-                        `;
-                    }});
-                    document.getElementById('bookings').innerHTML = html;
-                }} else {{
-                    document.getElementById('bookings').innerHTML = '<div class="no-booking">現在予約はありません</div>';
-                }}
-            }} catch (error) {{
-                document.getElementById('bookings').innerHTML = '<div class="no-booking">予約の取得に失敗しました</div>';
-            }}
-        }}
-        
-        async function changeBooking(bookingId) {{
-            if (confirm('日時変更をリクエストしますか？\\nサロンからご連絡いたします。')) {{
-                const response = await fetch('/api/liff/change-request', {{
-                    method: 'POST',
-                    headers: {{ 'Content-Type': 'application/json' }},
-                    body: JSON.stringify({{ booking_id: bookingId, line_user_id: userProfile.userId }})
-                }});
-                const data = await response.json();
-                alert(data.message || '変更リクエストを送信しました');
-            }}
-        }}
-        
-        async function cancelBooking(bookingId) {{
-            if (confirm('本当にキャンセルしますか？')) {{
-                const response = await fetch('/api/liff/cancel-request', {{
-                    method: 'POST',
-                    headers: {{ 'Content-Type': 'application/json' }},
-                    body: JSON.stringify({{ booking_id: bookingId, line_user_id: userProfile.userId }})
-                }});
-                const data = await response.json();
-                alert(data.message || 'キャンセルリクエストを送信しました');
-                await loadBookings(userProfile.userId);
-            }}
-        }}
-        
-        initLiff();
-    </script>
-</body>
-</html>'''
-    return html
-
-@app.route('/api/liff/bookings')
-def api_liff_bookings():
-    """LIFF用：顧客の予約一覧取得"""
-    line_user_id = request.args.get('line_user_id')
-    
-    if not line_user_id:
-        return jsonify({'error': 'line_user_id is required'}), 400
-    
-    # customersテーブルからline_user_idで顧客を検索
-    headers = {
-        'apikey': SUPABASE_KEY,
-        'Authorization': f'Bearer {SUPABASE_KEY}'
-    }
-    
-    # 顧客情報取得
-    customer_res = requests.get(
-        f'{SUPABASE_URL}/rest/v1/customers?line_user_id=eq.{line_user_id}&select=name,phone',
-        headers=headers
-    )
-    customers = customer_res.json()
-    
-    if not customers:
-        return jsonify({'bookings': [], 'message': '顧客情報が見つかりません'})
-    
-    customer = customers[0]
-    customer_name = customer.get('name', '')
-    
-    # bookingsテーブルから顧客名で予約を検索
-    bookings_res = requests.get(
-        f'{SUPABASE_URL}/rest/v1/bookings?customer_name=ilike.*{customer_name}*&status=eq.confirmed&select=booking_id,visit_datetime,menu,staff&order=visit_datetime.asc',
-        headers=headers
-    )
-    bookings = bookings_res.json()
-    
-    return jsonify({'bookings': bookings, 'customer_name': customer_name})
-
-@app.route('/api/liff/change-request', methods=['POST'])
-def api_liff_change_request():
-    """LIFF用：日時変更リクエスト"""
-    data = request.json
-    booking_id = data.get('booking_id')
-    line_user_id = data.get('line_user_id')
-    
-    # TODO: 変更リクエストをサロンに通知する処理を追加
-    
-    return jsonify({'success': True, 'message': '日時変更リクエストを受け付けました。サロンからご連絡いたします。'})
-
-@app.route('/api/liff/cancel-request', methods=['POST'])
-def api_liff_cancel_request():
-    """LIFF用：キャンセルリクエスト"""
-    data = request.json
-    booking_id = data.get('booking_id')
-    line_user_id = data.get('line_user_id')
-    
-    # TODO: キャンセル処理をサロンボードに反映する処理を追加
-    
-    headers = {
-        'apikey': SUPABASE_KEY,
-        'Authorization': f'Bearer {SUPABASE_KEY}',
-        'Content-Type': 'application/json'
-    }
-    
-    # ステータスを更新
-    requests.patch(
-        f'{SUPABASE_URL}/rest/v1/bookings?booking_id=eq.{booking_id}',
-        headers=headers,
-        json={'status': 'cancelled'}
-    )
-    
-    return jsonify({'success': True, 'message': 'キャンセルリクエストを受け付けました。'})
-
 # ========== CSVインポート機能 ==========
 @app.route('/api/import-customers', methods=['POST'])
 def api_import_customers():
@@ -3004,3 +2809,275 @@ def api_import_customers():
         return jsonify({'success': True, 'updated': updated})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+# ========== LIFF予約確認画面 ==========
+@app.route('/liff/booking')
+def liff_booking():
+    """LIFF予約確認画面"""
+    liff_id = "2006629229-Y8lb2daA"
+    html = f'''<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>予約確認</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+        body {{ font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f5f5f5; }}
+        .container {{ max-width: 500px; margin: 0 auto; padding: 20px; }}
+        .header {{ background: #06c755; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }}
+        .content {{ background: white; padding: 20px; border-radius: 0 0 10px 10px; }}
+        .booking-card {{ border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin: 10px 0; }}
+        .booking-date {{ font-size: 18px; font-weight: bold; color: #333; }}
+        .booking-menu {{ font-size: 14px; color: #666; margin: 5px 0; }}
+        .btn {{ display: block; width: 100%; padding: 12px; margin: 5px 0; border: none; border-radius: 5px; font-size: 14px; cursor: pointer; }}
+        .btn-change {{ background: #06c755; color: white; }}
+        .btn-cancel {{ background: #ff6b6b; color: white; }}
+        .btn-submit {{ background: #06c755; color: white; }}
+        .loading {{ text-align: center; padding: 40px; }}
+        .no-booking {{ text-align: center; padding: 40px; color: #666; }}
+        .user-info {{ background: #e8f5e9; padding: 10px; border-radius: 5px; margin-bottom: 15px; }}
+        .phone-form {{ padding: 20px 0; }}
+        .phone-form input {{ width: 100%; padding: 15px; font-size: 18px; border: 2px solid #ddd; border-radius: 8px; margin: 10px 0; }}
+        .phone-form label {{ font-size: 14px; color: #666; }}
+        .phone-note {{ font-size: 12px; color: #999; margin-top: 10px; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>予約確認</h1>
+        </div>
+        <div class="content">
+            <div id="user-info" class="user-info" style="display:none;"></div>
+            <div id="loading" class="loading">読み込み中...</div>
+            <div id="phone-form" class="phone-form" style="display:none;">
+                <label>電話番号を入力してください</label>
+                <input type="tel" id="phone-input" placeholder="09012345678" pattern="[0-9]*">
+                <button class="btn btn-submit" onclick="submitPhone()">予約を確認</button>
+                <p class="phone-note">※ サロンボードにご登録の電話番号を入力してください<br>※ 初回のみ入力が必要です</p>
+            </div>
+            <div id="bookings"></div>
+        </div>
+    </div>
+    <script>
+        const LIFF_ID = "{liff_id}";
+        let userProfile = null;
+        let lineUserId = null;
+        
+        async function initLiff() {{
+            try {{
+                await liff.init({{ liffId: LIFF_ID }});
+                
+                if (!liff.isLoggedIn()) {{
+                    liff.login();
+                    return;
+                }}
+                
+                userProfile = await liff.getProfile();
+                lineUserId = userProfile.userId;
+                document.getElementById('user-info').innerHTML = `<strong>${{userProfile.displayName}}</strong> 様`;
+                document.getElementById('user-info').style.display = 'block';
+                
+                // 既に電話番号が登録されているか確認
+                await checkRegistration(lineUserId);
+            }} catch (error) {{
+                document.getElementById('loading').innerHTML = 'エラー: ' + error.message;
+            }}
+        }}
+        
+        async function checkRegistration(lineUserId) {{
+            try {{
+                const response = await fetch(`/api/liff/check-registration?line_user_id=${{lineUserId}}`);
+                const data = await response.json();
+                
+                document.getElementById('loading').style.display = 'none';
+                
+                if (data.registered && data.phone) {{
+                    // 電話番号登録済み → 予約を表示
+                    await loadBookings(data.phone);
+                }} else {{
+                    // 未登録 → 電話番号入力フォームを表示
+                    document.getElementById('phone-form').style.display = 'block';
+                }}
+            }} catch (error) {{
+                document.getElementById('loading').innerHTML = 'エラー: ' + error.message;
+            }}
+        }}
+        
+        async function submitPhone() {{
+            const phone = document.getElementById('phone-input').value.replace(/[^0-9]/g, '');
+            
+            if (phone.length < 10) {{
+                alert('正しい電話番号を入力してください');
+                return;
+            }}
+            
+            try {{
+                // 電話番号をLINE IDと紐付けて保存
+                const response = await fetch('/api/liff/register-phone', {{
+                    method: 'POST',
+                    headers: {{ 'Content-Type': 'application/json' }},
+                    body: JSON.stringify({{ line_user_id: lineUserId, phone: phone }})
+                }});
+                const data = await response.json();
+                
+                if (data.success) {{
+                    document.getElementById('phone-form').style.display = 'none';
+                    await loadBookings(phone);
+                }} else {{
+                    alert(data.message || '登録に失敗しました');
+                }}
+            }} catch (error) {{
+                alert('エラーが発生しました');
+            }}
+        }}
+        
+        async function loadBookings(phone) {{
+            try {{
+                const response = await fetch(`/api/liff/bookings-by-phone?phone=${{phone}}`);
+                const data = await response.json();
+                
+                if (data.bookings && data.bookings.length > 0) {{
+                    let html = '';
+                    data.bookings.forEach(booking => {{
+                        html += `
+                            <div class="booking-card">
+                                <div class="booking-date">${{booking.visit_datetime}}</div>
+                                <div class="booking-menu">${{booking.customer_name}}</div>
+                                <div class="booking-menu">${{booking.menu || ''}}</div>
+                                <div class="booking-menu">担当: ${{booking.staff || '未定'}}</div>
+                                <button class="btn btn-change" onclick="changeBooking('${{booking.booking_id}}')">日時変更</button>
+                                <button class="btn btn-cancel" onclick="cancelBooking('${{booking.booking_id}}')">キャンセル</button>
+                            </div>
+                        `;
+                    }});
+                    document.getElementById('bookings').innerHTML = html;
+                }} else {{
+                    document.getElementById('bookings').innerHTML = '<div class="no-booking">現在予約はありません</div>';
+                }}
+            }} catch (error) {{
+                document.getElementById('bookings').innerHTML = '<div class="no-booking">予約の取得に失敗しました</div>';
+            }}
+        }}
+        
+        async function changeBooking(bookingId) {{
+            if (confirm('日時変更をリクエストしますか？\nサロンからご連絡いたします。')) {{
+                const response = await fetch('/api/liff/change-request', {{
+                    method: 'POST',
+                    headers: {{ 'Content-Type': 'application/json' }},
+                    body: JSON.stringify({{ booking_id: bookingId, line_user_id: lineUserId }})
+                }});
+                const data = await response.json();
+                alert(data.message || '変更リクエストを送信しました');
+            }}
+        }}
+        
+        async function cancelBooking(bookingId) {{
+            if (confirm('本当にキャンセルしますか？')) {{
+                const response = await fetch('/api/liff/cancel-request', {{
+                    method: 'POST',
+                    headers: {{ 'Content-Type': 'application/json' }},
+                    body: JSON.stringify({{ booking_id: bookingId, line_user_id: lineUserId }})
+                }});
+                const data = await response.json();
+                alert(data.message || 'キャンセルリクエストを送信しました');
+                if (data.success) {{
+                    location.reload();
+                }}
+            }}
+        }}
+        
+        initLiff();
+    </script>
+</body>
+</html>'''
+    return html
+
+@app.route('/api/liff/check-registration')
+def api_liff_check_registration():
+    """LINE IDで電話番号登録状況を確認"""
+    line_user_id = request.args.get('line_user_id')
+    
+    if not line_user_id:
+        return jsonify({'registered': False})
+    
+    headers = {
+        'apikey': SUPABASE_KEY,
+        'Authorization': f'Bearer {SUPABASE_KEY}'
+    }
+    
+    res = requests.get(
+        f'{SUPABASE_URL}/rest/v1/customers?line_user_id=eq.{line_user_id}&select=phone',
+        headers=headers
+    )
+    customers = res.json()
+    
+    if customers and customers[0].get('phone'):
+        return jsonify({'registered': True, 'phone': customers[0]['phone']})
+    else:
+        return jsonify({'registered': False})
+
+@app.route('/api/liff/register-phone', methods=['POST'])
+def api_liff_register_phone():
+    """電話番号をLINE IDと紐付け"""
+    data = request.json
+    line_user_id = data.get('line_user_id')
+    phone = data.get('phone', '').replace('-', '').replace(' ', '')
+    
+    if not line_user_id or not phone:
+        return jsonify({'success': False, 'message': '入力が不正です'})
+    
+    headers = {
+        'apikey': SUPABASE_KEY,
+        'Authorization': f'Bearer {SUPABASE_KEY}',
+        'Content-Type': 'application/json'
+    }
+    
+    # LINE IDで既存顧客を検索
+    res = requests.get(
+        f'{SUPABASE_URL}/rest/v1/customers?line_user_id=eq.{line_user_id}&select=id',
+        headers=headers
+    )
+    customers = res.json()
+    
+    if customers:
+        # 既存顧客の電話番号を更新
+        requests.patch(
+            f'{SUPABASE_URL}/rest/v1/customers?line_user_id=eq.{line_user_id}',
+            headers=headers,
+            json={'phone': phone}
+        )
+    else:
+        # 新規顧客として登録
+        requests.post(
+            f'{SUPABASE_URL}/rest/v1/customers',
+            headers=headers,
+            json={'line_user_id': line_user_id, 'phone': phone}
+        )
+    
+    return jsonify({'success': True})
+
+@app.route('/api/liff/bookings-by-phone')
+def api_liff_bookings_by_phone():
+    """電話番号で予約を検索"""
+    phone = request.args.get('phone', '').replace('-', '').replace(' ', '')
+    
+    if not phone:
+        return jsonify({'bookings': []})
+    
+    headers = {
+        'apikey': SUPABASE_KEY,
+        'Authorization': f'Bearer {SUPABASE_KEY}'
+    }
+    
+    # bookingsテーブルで電話番号検索
+    res = requests.get(
+        f'{SUPABASE_URL}/rest/v1/bookings?phone=eq.{phone}&status=eq.confirmed&select=booking_id,visit_datetime,customer_name,menu,staff&order=visit_datetime.asc',
+        headers=headers
+    )
+    bookings = res.json()
+    
+    return jsonify({'bookings': bookings})
+
