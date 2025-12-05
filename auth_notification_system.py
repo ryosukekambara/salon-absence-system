@@ -2868,41 +2868,45 @@ def liff_booking():
         
         async function initLiff() {{
             try {{
+                document.getElementById('loading').innerHTML = 'LIFF初期化中...';
                 await liff.init({{ liffId: LIFF_ID }});
                 
                 if (!liff.isLoggedIn()) {{
+                    document.getElementById('loading').innerHTML = 'ログイン中...';
                     liff.login();
                     return;
                 }}
                 
+                document.getElementById('loading').innerHTML = 'プロフィール取得中...';
                 userProfile = await liff.getProfile();
                 lineUserId = userProfile.userId;
                 document.getElementById('user-info').innerHTML = `<strong>${{userProfile.displayName}}</strong> 様`;
                 document.getElementById('user-info').style.display = 'block';
                 
-                // 既に電話番号が登録されているか確認
                 await checkRegistration(lineUserId);
             }} catch (error) {{
-                document.getElementById('loading').innerHTML = 'エラー: ' + error.message;
+                document.getElementById('loading').innerHTML = 'エラー: ' + error.message + '<br><br><button onclick="location.reload()">再読み込み</button>';
+                console.error('LIFF init error:', error);
             }}
         }}
         
         async function checkRegistration(lineUserId) {{
             try {{
+                document.getElementById('loading').innerHTML = '確認中...';
                 const response = await fetch(`/api/liff/check-registration?line_user_id=${{lineUserId}}`);
                 const data = await response.json();
                 
                 document.getElementById('loading').style.display = 'none';
                 
                 if (data.registered && data.phone) {{
-                    // 電話番号登録済み → 予約を表示
                     await loadBookings(data.phone);
                 }} else {{
-                    // 未登録 → 電話番号入力フォームを表示
                     document.getElementById('phone-form').style.display = 'block';
                 }}
             }} catch (error) {{
-                document.getElementById('loading').innerHTML = 'エラー: ' + error.message;
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('phone-form').style.display = 'block';
+                console.error('Check registration error:', error);
             }}
         }}
         
