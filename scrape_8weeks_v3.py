@@ -151,7 +151,7 @@ def main():
                 reservation_table = None
                 tables = page.query_selector_all("table")
                 for table in tables:
-                    header = table.query_selector("th#comingDate, th:has-text('来店')")
+                    header = table.query_selector("th#comingDate")
                     if header:
                         reservation_table = table
                         break
