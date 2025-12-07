@@ -40,20 +40,20 @@ def login_to_salonboard(page):
         print(f"[LOGIN] パスワード入力失敗: {e}", flush=True)
         return False
     
-    # ログインボタンクリック
+    # ログインボタンクリック（JavaScript実行）
     try:
-        page.wait_for_selector('a.loginBtnSize', timeout=10000)
-        print(f"[LOGIN] ログインボタン発見", flush=True)
-        page.click('a.loginBtnSize')
-        print(f"[LOGIN] ログインボタンクリック成功", flush=True)
+        print(f"[LOGIN] JavaScriptでdologin()を実行...", flush=True)
+        page.evaluate("dologin(new Event('click'))")
+        print(f"[LOGIN] dologin()実行成功", flush=True)
     except Exception as e:
-        print(f"[LOGIN] ログインボタンクリック失敗: {e}", flush=True)
-        # 別のセレクターを試す
+        print(f"[LOGIN] dologin()失敗: {e}", flush=True)
+        # フォーム送信を試す
         try:
-            page.click('a:has-text("ログイン")')
-            print(f"[LOGIN] 代替セレクターでクリック成功", flush=True)
+            print(f"[LOGIN] フォーム送信を試行...", flush=True)
+            page.evaluate("document.forms[0].submit()")
+            print(f"[LOGIN] フォーム送信成功", flush=True)
         except Exception as e2:
-            print(f"[LOGIN] 代替セレクターも失敗: {e2}", flush=True)
+            print(f"[LOGIN] フォーム送信も失敗: {e2}", flush=True)
             return False
     
     page.wait_for_timeout(5000)
