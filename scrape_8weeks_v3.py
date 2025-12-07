@@ -111,8 +111,9 @@ def main():
                 # デバッグ: ページ構造確認
                 tables = page.query_selector_all("table")
                 print(f"[DEBUG] テーブル数: {len(tables)}", flush=True)
-                if tables:
-                    print(f"[DEBUG] 最初のテーブルHTML: {tables[0].inner_html()[:500]}", flush=True)
+                for i, t in enumerate(tables):
+                    html_preview = t.inner_html()[:200].replace('\n', ' ')
+                    print(f"[DEBUG] テーブル{i}: {html_preview}", flush=True)
                 
                 # 一覧ページから直接予約情報を取得
                 rows = page.query_selector_all('table tbody tr')
