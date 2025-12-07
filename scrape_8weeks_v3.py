@@ -147,24 +147,22 @@ def main():
                     page.goto(url, timeout=60000)
                     page.wait_for_timeout(2000)
                 
-                # デバッグ: ページ構造確認
+                # 予約一覧テーブルを特定（来店日時ヘッダーを持つテーブル）
+                reservation_table = None
                 tables = page.query_selector_all("table")
-                print(f"[DEBUG] テーブル数: {len(tables)}", flush=True)
+                for table in tables:
+                    header = table.query_selector("th#comingDate, th:has-text('来店')")
+                    if header:
+                        reservation_table = table
+                        break
                 
-                # テーブル1（予約一覧）のtbody確認
-                if len(tables) > 1:
-                    tbody = tables[1].query_selector("tbody")
-                    if tbody:
-                        rows = tbody.query_selector_all("tr")
-                        print(f"[DEBUG] テーブル1のtbody行数: {len(rows)}", flush=True)
-                        if rows:
-                            first_row = rows[0].inner_html()[:300].replace('\n', ' ')
-                            print(f"[DEBUG] 最初の行: {first_row}", flush=True)
-                    else:
-                        print(f"[DEBUG] テーブル1にtbodyなし", flush=True)
+                if not reservation_table:
+                    print(f"[{target_date.strftime('%Y-%m-%d')}] 予約一覧テーブルなし、スキップ", flush=True)
+                    continue
                 
-                # 一覧ページから直接予約情報を取得
-                rows = page.query_selector_all('table tbody tr')
+                # 予約一覧テーブルからデータ取得
+                rows = reservation_table.query_selector_all('tbody tr')
+                print(f"[DEBUG] 予約行数: {len(rows)}", flush=True)
                 day_saved = 0
                 
                 for row in rows:
