@@ -47,18 +47,22 @@ def login_to_salonboard(page):
         print(f"[LOGIN] dologin()実行成功", flush=True)
     except Exception as e:
         print(f"[LOGIN] dologin()失敗: {e}", flush=True)
-        # フォーム送信を試す
-        try:
-            print(f"[LOGIN] フォーム送信を試行...", flush=True)
-            page.evaluate("document.forms[0].submit()")
-            print(f"[LOGIN] フォーム送信成功", flush=True)
-        except Exception as e2:
-            print(f"[LOGIN] フォーム送信も失敗: {e2}", flush=True)
-            return False
+        return False
     
-    page.wait_for_timeout(5000)
+    # ページ遷移を待つ
+    try:
+        page.wait_for_url("**/KLP/**", timeout=30000)
+        print(f"[LOGIN] ページ遷移成功", flush=True)
+    except Exception as e:
+        print(f"[LOGIN] ページ遷移タイムアウト: {e}", flush=True)
+        # エラーメッセージを確認
+        error_msg = page.query_selector('.error, .errorMessage, .mod_error')
+        if error_msg:
+            print(f"[LOGIN] エラーメッセージ: {error_msg.inner_text()}", flush=True)
+        print(f"[LOGIN] 現在のURL: {page.url}", flush=True)
+        return False
+    
     print(f"[LOGIN] ログイン後URL: {page.url}", flush=True)
-    
     return 'login' not in page.url.lower()
 
 def main():
