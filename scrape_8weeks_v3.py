@@ -21,7 +21,7 @@ def login_to_salonboard(page):
     page.wait_for_timeout(3000)
     page.fill('input[name="userId"]', login_id)
     page.fill('input[name="password"]', login_password)
-    page.click('a:has-text("ログイン")')
+    page.click('a.loginBtnSize')
     page.wait_for_timeout(5000)
     
     return 'login' not in page.url.lower()
