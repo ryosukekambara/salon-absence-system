@@ -17,12 +17,47 @@ def login_to_salonboard(page):
     login_id = os.environ.get('SALONBOARD_LOGIN_ID', 'CD18317')
     login_password = os.environ.get('SALONBOARD_LOGIN_PASSWORD', 'Ne8T2Hhi!')
     
+    print(f"[LOGIN] ログインページにアクセス中...", flush=True)
     page.goto('https://salonboard.com/login/', timeout=60000)
-    page.wait_for_timeout(3000)
-    page.fill('input[name="userId"]', login_id)
-    page.fill('input[name="password"]', login_password)
-    page.click('a.loginBtnSize')
     page.wait_for_timeout(5000)
+    
+    print(f"[LOGIN] 現在のURL: {page.url}", flush=True)
+    print(f"[LOGIN] ページタイトル: {page.title()}", flush=True)
+    
+    # ID入力
+    try:
+        page.fill('input[name="userId"]', login_id)
+        print(f"[LOGIN] ID入力成功", flush=True)
+    except Exception as e:
+        print(f"[LOGIN] ID入力失敗: {e}", flush=True)
+        return False
+    
+    # パスワード入力
+    try:
+        page.fill('input[name="password"]', login_password)
+        print(f"[LOGIN] パスワード入力成功", flush=True)
+    except Exception as e:
+        print(f"[LOGIN] パスワード入力失敗: {e}", flush=True)
+        return False
+    
+    # ログインボタンクリック
+    try:
+        page.wait_for_selector('a.loginBtnSize', timeout=10000)
+        print(f"[LOGIN] ログインボタン発見", flush=True)
+        page.click('a.loginBtnSize')
+        print(f"[LOGIN] ログインボタンクリック成功", flush=True)
+    except Exception as e:
+        print(f"[LOGIN] ログインボタンクリック失敗: {e}", flush=True)
+        # 別のセレクターを試す
+        try:
+            page.click('a:has-text("ログイン")')
+            print(f"[LOGIN] 代替セレクターでクリック成功", flush=True)
+        except Exception as e2:
+            print(f"[LOGIN] 代替セレクターも失敗: {e2}", flush=True)
+            return False
+    
+    page.wait_for_timeout(5000)
+    print(f"[LOGIN] ログイン後URL: {page.url}", flush=True)
     
     return 'login' not in page.url.lower()
 
