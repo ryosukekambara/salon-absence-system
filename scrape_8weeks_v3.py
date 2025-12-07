@@ -166,6 +166,10 @@ def main():
                 day_saved = 0
                 
                 for row in rows:
+                    # デバッグ: 最初の行の内容を出力
+                    if day_saved == 0:
+                        row_html = row.inner_html()[:400].replace("\n", " ")
+                        print(f"[DEBUG] 行HTML: {row_html}", flush=True)
                     try:
                         cells = row.query_selector_all('td')
                         if len(cells) < 4:
