@@ -108,6 +108,12 @@ def main():
                     page.goto(url, timeout=60000)
                     page.wait_for_timeout(2000)
                 
+                # デバッグ: ページ構造確認
+                tables = page.query_selector_all("table")
+                print(f"[DEBUG] テーブル数: {len(tables)}", flush=True)
+                if tables:
+                    print(f"[DEBUG] 最初のテーブルHTML: {tables[0].inner_html()[:500]}", flush=True)
+                
                 # 一覧ページから直接予約情報を取得
                 rows = page.query_selector_all('table tbody tr')
                 day_saved = 0
