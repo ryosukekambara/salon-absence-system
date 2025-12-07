@@ -51,7 +51,10 @@ def login_to_salonboard(page):
     
     # ページ遷移を待つ
     try:
-        page.wait_for_url("**/KLP/**", timeout=30000)
+        page.wait_for_timeout(3000)  # 3秒待機
+        print(f"[LOGIN] 3秒後のURL: {page.url}", flush=True)
+        print(f"[LOGIN] 3秒後のタイトル: {page.title()}", flush=True)
+        page.wait_for_url("**/KLP/**", timeout=27000)
         print(f"[LOGIN] ページ遷移成功", flush=True)
     except Exception as e:
         print(f"[LOGIN] ページ遷移タイムアウト: {e}", flush=True)
