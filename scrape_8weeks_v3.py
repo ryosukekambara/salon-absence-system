@@ -180,6 +180,7 @@ def main():
                         
                         # 顧客名から予約ID抽出
                         customer_cell = cells[2].text_content().strip()
+                        print(f"[DEBUG] customer_cell: {customer_cell[:100]}", flush=True)
                         id_match = re.search(r'\(([A-Z]{2}\d+)\)', customer_cell)
                         booking_id = id_match.group(1) if id_match else None
                         
