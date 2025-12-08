@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-8週間分の予約をスクレイピングしてbookingsテーブルに保存
+8週間分の予約をスクレイピングして8weeks_bookingsテーブルに保存
 詳細ページをスキップ、一覧ページから直接保存
 """
 import json
@@ -90,7 +90,8 @@ def main():
     headers = {
         'apikey': SUPABASE_KEY,
         'Authorization': f'Bearer {SUPABASE_KEY}',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates'
     }
     
     today = datetime.now(JST)
@@ -218,8 +219,8 @@ def main():
                             }
                             
                             res = requests.post(
-                                f'{SUPABASE_URL}/rest/v1/bookings',
-                                headers={**headers, 'Prefer': 'resolution=merge-duplicates'},
+                                f'{SUPABASE_URL}/rest/v1/8weeks_bookings',
+                                headers=headers,
                                 json=data
                             )
                             
