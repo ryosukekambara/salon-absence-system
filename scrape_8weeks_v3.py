@@ -178,10 +178,10 @@ def main():
                         if len(cells) < 4:
                             continue
                         
-                        # 顧客名から予約ID抽出
-                        customer_cell = cells[2].text_content().strip()
-                        print(f"[DEBUG] customer_cell: {customer_cell[:100]}", flush=True)
-                        id_match = re.search(r'\(([A-Z]{2}\d+)\)', customer_cell)
+                        # aタグのhrefから予約ID抽出
+                        reserve_link = cells[2].query_selector("a[href*='reserveId=']")
+                        href = reserve_link.get_attribute("href") if reserve_link else ""
+                        id_match = re.search(r'reserveId=([A-Z]{2}\d+)', href)
                         booking_id = id_match.group(1) if id_match else None
                         
                         if not booking_id:
