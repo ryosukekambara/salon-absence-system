@@ -187,8 +187,9 @@ def main():
                         if not booking_id:
                             continue
                         
-                        # 顧客名（IDを除去）
-                        customer_name = re.sub(r'\s*\([A-Z]{2}\d+\)', '', customer_cell).strip()
+                        # 顧客名（pタグから取得）
+                        name_elem = cells[2].query_selector("p.wordBreak")
+                        customer_name = name_elem.text_content().strip() if name_elem else ""
                         customer_name = re.sub(r'[★☆♪♡⭐️🦁]', '', customer_name).strip()
                         
                         # 時間
