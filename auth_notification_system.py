@@ -3080,7 +3080,7 @@ def api_liff_register_phone():
 
 @app.route('/api/liff/bookings-by-phone')
 def api_liff_bookings_by_phone():
-    """電話番号で予約を検索"""
+    """電話番号で予約を検索（8weeks_bookingsテーブル）"""
     phone = request.args.get('phone', '').replace('-', '').replace(' ', '')
     
     if not phone:
@@ -3091,12 +3091,23 @@ def api_liff_bookings_by_phone():
         'Authorization': f'Bearer {SUPABASE_KEY}'
     }
     
-    # bookingsテーブルで電話番号検索
+    # 8weeks_bookingsテーブルで電話番号検索
     res = requests.get(
-        f'{SUPABASE_URL}/rest/v1/bookings?phone=eq.{phone}&status=eq.confirmed&select=booking_id,visit_datetime,customer_name,menu,staff&order=visit_datetime.asc',
+        f'{SUPABASE_URL}/rest/v1/8weeks_bookings?phone=eq.{phone}&select=booking_id,booking_date,booking_time,customer_name,menu,staff_name&order=booking_date.asc,booking_time.asc',
         headers=headers
     )
-    bookings = res.json()
+    rows = res.json()
+    
+    # フロント互換のためvisit_datetimeを組み立て
+    bookings = []
+    for row in rows:
+        bookings.append({
+            'booking_id': row.get('booking_id'),
+            'visit_datetime': f"{row.get('booking_date', '')} {row.get('booking_time', '')}",
+            'customer_name': row.get('customer_name'),
+            'menu': row.get('menu'),
+            'staff': row.get('staff_name')
+        })
     
     return jsonify({'bookings': bookings})
 
