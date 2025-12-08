@@ -192,12 +192,15 @@ def main():
                         customer_name = name_elem.text_content().strip() if name_elem else ""
                         customer_name = re.sub(r'[★☆♪♡⭐️🦁]', '', customer_name).strip()
                         
-                        # 時間
+                        # 時間（"12/08\n18:00" → "18:00"だけ抽出）
                         time_cell = cells[0].text_content().strip() if len(cells) > 0 else ""
-                        visit_datetime = f"{target_date.strftime('%Y/%m/%d')} {time_cell}"
+                        time_match = re.search(r'(\d{1,2}:\d{2})', time_cell)
+                        time_only = time_match.group(1) if time_match else "00:00"
+                        visit_datetime = f"{target_date.strftime('%Y-%m-%d')} {time_only}:00"
                         
-                        # スタッフ
-                        staff = cells[1].text_content().strip() if len(cells) > 1 else ""
+                        # スタッフ（cells[3]）
+                        staff = cells[3].text_content().strip() if len(cells) > 3 else ""
+                        staff = re.sub(r'^\(指\)', '', staff).strip()
                         
                         # ソース（NET/NHPB等）
                         source = cells[4].text_content().strip() if len(cells) > 4 else ""
