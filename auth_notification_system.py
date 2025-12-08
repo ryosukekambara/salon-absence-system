@@ -3093,21 +3093,10 @@ def api_liff_bookings_by_phone():
     
     # 8weeks_bookingsテーブルで電話番号検索
     res = requests.get(
-        f'{SUPABASE_URL}/rest/v1/8weeks_bookings?phone=eq.{phone}&select=booking_id,booking_date,booking_time,customer_name,menu,staff_name&order=booking_date.asc,booking_time.asc',
+        f'{SUPABASE_URL}/rest/v1/8weeks_bookings?phone=eq.{phone}&select=booking_id,visit_datetime,customer_name,menu,staff&order=visit_datetime.asc',
         headers=headers
     )
-    rows = res.json()
-    
-    # フロント互換のためvisit_datetimeを組み立て
-    bookings = []
-    for row in rows:
-        bookings.append({
-            'booking_id': row.get('booking_id'),
-            'visit_datetime': f"{row.get('booking_date', '')} {row.get('booking_time', '')}",
-            'customer_name': row.get('customer_name'),
-            'menu': row.get('menu'),
-            'staff': row.get('staff_name')
-        })
+    bookings = res.json()
     
     return jsonify({'bookings': bookings})
 
