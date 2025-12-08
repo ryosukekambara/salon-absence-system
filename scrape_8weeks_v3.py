@@ -226,7 +226,10 @@ def main():
                             if res.status_code in [200, 201]:
                                 total_saved += 1
                                 day_saved += 1
+                            else:
+                                print(f"[ERROR] 保存失敗: {res.status_code} - {res.text}", flush=True)
                     except Exception as e:
+                        print(f"[ERROR] 例外: {e}", flush=True)
                         continue
                 
                 print(f"[{target_date.strftime('%Y-%m-%d')}] {day_saved}件保存", flush=True)
