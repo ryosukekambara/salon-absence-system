@@ -219,7 +219,7 @@ def main():
                             }
                             
                             res = requests.post(
-                                f'{SUPABASE_URL}/rest/v1/8weeks_bookings',
+                                f'{SUPABASE_URL}/rest/v1/8weeks_bookings?on_conflict=booking_id',
                                 headers=headers,
                                 json=data
                             )
