@@ -188,17 +188,9 @@ def save_mapping(customer_name, user_id):
                     backup_customers()
                     return True
             else:
-                # 既存ユーザーの名前を更新（フルネームで上書き）
-                current_name = existing_data[0].get("name", "")
-                if current_name != customer_name and len(customer_name) >= 2:
-                    update_response = requests.patch(
-                        f"{SUPABASE_URL}/rest/v1/customers?line_user_id=eq.{user_id}",
-                        headers=headers,
-                        json={"name": customer_name}
-                    )
-                    if update_response.status_code in [200, 204]:
-                        print(f"✓ {current_name} → {customer_name} に更新")
-                        return True
+                # 既存ユーザーは更新しない（名前上書き防止）
+                print(f"✓ 既存ユーザー: {existing_data[0].get('name', '')} (更新スキップ)")
+                return True
     except Exception as e:
         print(f"Supabase保存エラー: {e}")
     return False
