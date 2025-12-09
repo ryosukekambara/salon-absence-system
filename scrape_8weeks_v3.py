@@ -13,6 +13,25 @@ print(f"[STARTUP] scrape_8weeks_v3.py 開始", flush=True)
 
 JST = timezone(timedelta(hours=9))
 
+SUPABASE_URL = os.environ.get('SUPABASE_URL', 'https://lsrbeugmqqqklywmvjjs.supabase.co')
+SUPABASE_KEY = os.environ.get('SUPABASE_KEY', '')
+
+def get_phone_for_customer(customer_name, reserve_id, session):
+    """顧客の電話番号を取得（customersテーブルから検索）"""
+    if not SUPABASE_KEY:
+        return ''
+    headers = {'apikey': SUPABASE_KEY, 'Authorization': f'Bearer {SUPABASE_KEY}'}
+    res = requests.get(
+        f'{SUPABASE_URL}/rest/v1/customers?name=ilike.*{customer_name}*&select=phone',
+        headers=headers
+    )
+    if res.status_code == 200 and res.json():
+        phone = res.json()[0].get('phone', '')
+        if phone:
+            print(f"[PHONE] {customer_name} → {phone}")
+            return phone
+    return ''
+
 def login_to_salonboard(page):
     login_id = os.environ.get('SALONBOARD_LOGIN_ID', 'CD18317')
     login_password = os.environ.get('SALONBOARD_LOGIN_PASSWORD', 'Ne8T2Hhi!')
@@ -210,7 +229,7 @@ def main():
                             data = {
                                 'booking_id': booking_id,
                                 'customer_name': customer_name,
-                                'phone': '',  # 一覧ページには電話番号がない
+                                'phone': get_phone_for_customer(customer_name, reserve_id, session),
                                 'visit_datetime': visit_datetime,
                                 'menu': '',
                                 'staff': staff,
