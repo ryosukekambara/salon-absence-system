@@ -3108,8 +3108,6 @@ def api_liff_bookings_by_phone():
     
     return jsonify({'bookings': bookings})
 
-cat >> auth_notification_system.py << 'EOF'
-
 @app.route('/api/liff/change-request', methods=['POST'])
 def api_liff_change_request():
     """日時変更リクエスト"""
@@ -3131,4 +3129,3 @@ def api_liff_cancel_request():
     print(f"[キャンセルリクエスト] booking_id={booking_id}, line_user_id={line_user_id}")
     
     return jsonify({'success': True, 'message': 'キャンセルリクエストを受け付けました。サロンからご連絡いたします。'})
-EOF
