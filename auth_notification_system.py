@@ -3098,5 +3098,9 @@ def api_liff_bookings_by_phone():
     )
     bookings = res.json()
     
-    return jsonify({'bookings': bookings})
+    # 今日以降の予約のみフィルタ
+    from datetime import datetime
+    today = datetime.now().strftime('%Y/%m/%d')
+    bookings = [b for b in bookings if b.get('visit_datetime', '')[:10] >= today]
 
+    return jsonify({'bookings': bookings})
