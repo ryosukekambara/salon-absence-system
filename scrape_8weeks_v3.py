@@ -16,7 +16,7 @@ JST = timezone(timedelta(hours=9))
 SUPABASE_URL = os.environ.get('SUPABASE_URL', 'https://lsrbeugmqqqklywmvjjs.supabase.co')
 SUPABASE_KEY = os.environ.get('SUPABASE_KEY', '')
 
-def get_phone_for_customer(customer_name, reserve_id, session):
+def get_phone_for_customer(customer_name, booking_id, session):
     """顧客の電話番号を取得（customersテーブルから検索）"""
     if not SUPABASE_KEY:
         return ''
@@ -229,7 +229,7 @@ def main():
                             data = {
                                 'booking_id': booking_id,
                                 'customer_name': customer_name,
-                                'phone': get_phone_for_customer(customer_name, reserve_id, session),
+                                'phone': get_phone_for_customer(customer_name, booking_id, session),
                                 'visit_datetime': visit_datetime,
                                 'menu': '',
                                 'staff': staff,
