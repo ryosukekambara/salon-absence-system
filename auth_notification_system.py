@@ -3081,6 +3081,8 @@ def api_liff_register_phone():
 @app.route('/api/liff/bookings-by-phone')
 def api_liff_bookings_by_phone():
     """電話番号で予約を検索（8weeks_bookingsテーブル）"""
+    from datetime import datetime, timedelta, timezone
+    
     phone = request.args.get('phone', '').replace('-', '').replace(' ', '')
     
     if not phone:
@@ -3096,11 +3098,13 @@ def api_liff_bookings_by_phone():
         f'{SUPABASE_URL}/rest/v1/8weeks_bookings?phone=eq.{phone}&select=booking_id,visit_datetime,customer_name,menu,staff&order=visit_datetime.asc',
         headers=headers
     )
-    bookings = res.json()
+    all_bookings = res.json()
     
-    # 今日以降の予約のみフィルタ
-    from datetime import datetime
-    today = datetime.now().strftime('%Y/%m/%d')
-    bookings = [b for b in bookings if b.get('visit_datetime', '')[:10] >= today]
-
+    # 今日以降のみフィルタ（Python側）
+    JST = timezone(timedelta(hours=9))
+    today = datetime.now(JST).strftime('%Y/%m/%d')
+    
+    bookings = [b for b in all_bookings if b.get('visit_datetime', '') >= today]
+    
     return jsonify({'bookings': bookings})
+
