@@ -153,7 +153,7 @@ def main():
             for day_offset in range(56):
                 target_date = today + timedelta(days=day_offset)
                 date_str = target_date.strftime('%Y%m%d')
-                url = f'https://salonboard.com/KLP/reserve/reserveList/?search_date={date_str}'
+                url = f'https://salonboard.com/KLP/reserve/reserveList/searchDate?date={date_str}'
                 
                 print(f"[{target_date.strftime('%Y-%m-%d')}] アクセス中...", flush=True)
                 
