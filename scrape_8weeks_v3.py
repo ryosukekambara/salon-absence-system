@@ -153,7 +153,7 @@ def main():
             for day_offset in range(56):
                 target_date = today + timedelta(days=day_offset)
                 date_str = target_date.strftime('%Y%m%d')
-                url = f'https://salonboard.com/KLP/reserve/reserveList/searchDate?date={date_str}'
+                url = f'https://salonboard.com/KLP/reserve/reserveList/?search_date={date_str}'
                 
                 print(f"[{target_date.strftime('%Y-%m-%d')}] アクセス中...", flush=True)
                 
@@ -234,8 +234,8 @@ def main():
                         visit_datetime = f"{target_date.strftime('%Y-%m-%d')} {time_only}:00"
                         
                         # スタッフ（cells[3]）
-                        staff = cells[3].text_content().strip() if len(cells) > 3 else ""
-                        staff = re.sub(r'^\(指\)', '', staff).strip()
+                        staff_text = cells[3].text_content().strip() if len(cells) > 3 else ""
+                        staff = re.sub(r'^\(指\)', '', staff_text).strip() if staff_text.startswith('(指)') else ''
                         
                         # ソース（NET/NHPB等）
                         source = cells[4].text_content().strip() if len(cells) > 4 else ""
