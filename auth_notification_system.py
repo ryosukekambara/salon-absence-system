@@ -3094,7 +3094,7 @@ def api_liff_bookings_by_phone():
     
     # 今日以降のみフィルタ（Python側）
     JST = timezone(timedelta(hours=9))
-    today = datetime.now(JST).strftime('%Y/%m/%d')
+    today = datetime.now(JST).strftime('%Y-%m-%d')
     
     bookings = [b for b in all_bookings if b.get('visit_datetime', '') >= today]
     
