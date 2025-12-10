@@ -237,6 +237,22 @@ def main():
                         staff_text = cells[3].text_content().strip() if len(cells) > 3 else ""
                         staff = re.sub(r'^\(指\)', '', staff_text).strip() if staff_text.startswith('(指)') else ''
                         
+                        # メニュー取得（詳細ページから）
+                        menu = ''
+                        if href:
+                            try:
+                                detail_url = f"https://salonboard.com{href}"
+                                page.goto(detail_url, timeout=30000)
+                                page.wait_for_timeout(1000)
+                                menu_el = page.query_selector('td.menu, .menu, [class*="menu"]')
+                                if menu_el:
+                                    menu = menu_el.inner_text().strip()
+                                # 一覧に戻る
+                                page.goto(url, timeout=30000)
+                                page.wait_for_timeout(1000)
+                            except Exception as e:
+                                print(f"[MENU] 取得エラー: {e}", flush=True)
+                        
                         # ソース（NET/NHPB等）
                         source = cells[4].text_content().strip() if len(cells) > 4 else ""
                         
@@ -246,7 +262,7 @@ def main():
                                 'customer_name': customer_name,
                                 'phone': get_phone_for_customer(customer_name, booking_id),
                                 'visit_datetime': visit_datetime,
-                                'menu': '',
+                                'menu': menu,
                                 'staff': staff,
                                 'status': 'confirmed',
                                 'booking_source': source
