@@ -110,8 +110,18 @@ def main():
         'apikey': SUPABASE_KEY,
         'Authorization': f'Bearer {SUPABASE_KEY}',
         'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates'
+        'Prefer': 'resolution-merge-duplicates'
     }
+    
+    # スクレイピング前に8weeks_bookings全削除
+    try:
+        del_res = requests.delete(
+            f"{SUPABASE_URL}/rest/v1/8weeks_bookings?id=neq.00000000-0000-0000-0000-000000000000",
+            headers=headers
+        )
+        print(f"[DELETE] 既存データ削除: {del_res.status_code}", flush=True)
+    except Exception as e:
+        print(f"[DELETE] 削除エラー: {e}", flush=True)
     
     today = datetime.now(JST)
     total_saved = 0
