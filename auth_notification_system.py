@@ -2857,7 +2857,7 @@ def liff_booking():
         const LIFF_ID = "{liff_id}";
         
         function formatDate(dateStr) {{
-    const match = dateStr.match(/(\d{{4}})\/(\d{{2}})\/(\d{{2}}).*?(\d{{2}}):(\d{{2}})/);
+    const match = dateStr.match(/(\d{{4}})[-\/](\d{{2}})[-\/](\d{{2}}).*?(\d{{2}}):(\d{{2}})/);
     if (match) {{
         const year = match[1];
         const month = parseInt(match[2]);
@@ -2867,7 +2867,7 @@ def liff_booking():
         const date = new Date(year, month - 1, day);
         const days = ['日', '月', '火', '水', '木', '金', '土'];
         const dayOfWeek = days[date.getDay()];
-        return `${{year}}年${{month}}月${{day}}日(${{dayOfWeek}}) ${{hour}}:${{min}}`;
+        return `${{month}}月${{day}}日(${{dayOfWeek}}) ${{hour}}:${{min}}〜`;
     }}
     return dateStr;
 }}
