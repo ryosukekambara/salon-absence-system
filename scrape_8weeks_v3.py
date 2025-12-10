@@ -206,6 +206,11 @@ def main():
                         
                         if not booking_id:
                             continue
+
+                        # ステータス確認（受付待ち以外はスキップ）
+                        status_text = cells[1].text_content().strip() if len(cells) > 1 else ""
+                        if "受付待ち" not in status_text:
+                            continue
                         
                         # 顧客名（pタグから取得）
                         name_elem = cells[2].query_selector("p.wordBreak")
