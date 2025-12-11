@@ -198,9 +198,11 @@ def main():
                 print(f"[DEBUG] 予約行数: {len(rows)}", flush=True)
                 day_saved = 0
                 
+                # フェーズ1: 一覧ページから全データを抽出（メニュー以外）
+                bookings_data = []
                 for row in rows:
                     # デバッグ: 最初の行の内容を出力
-                    if day_saved == 0:
+                    if len(bookings_data) == 0:
                         row_html = row.inner_html()[:400].replace("\n", " ")
                         print(f"[DEBUG] 行HTML: {row_html}", flush=True)
                     try:
@@ -237,50 +239,61 @@ def main():
                         staff_text = cells[3].text_content().strip() if len(cells) > 3 else ""
                         staff = re.sub(r'^\(指\)', '', staff_text).strip() if staff_text.startswith('(指)') else ''
                         
-                        # メニュー取得（詳細ページから）
+                        # ソース（NET/NHPB等）
+                        source = cells[4].text_content().strip() if len(cells) > 4 else ""
+                        
+                        if customer_name:
+                            bookings_data.append({
+                                'booking_id': booking_id,
+                                'customer_name': customer_name,
+                                'visit_datetime': visit_datetime,
+                                'staff': staff,
+                                'source': source,
+                                'href': href
+                            })
+                    except Exception as e:
+                        print(f"[ERROR] 例外: {e}", flush=True)
+                        continue
+                
+                # フェーズ2: 詳細ページからメニュー取得 → DB保存
+                for item in bookings_data:
+                    try:
                         menu = ''
-                        if href:
+                        if item['href']:
                             try:
-                                detail_url = f"https://salonboard.com{href}"
+                                detail_url = f"https://salonboard.com{item['href']}"
                                 page.goto(detail_url, timeout=30000)
                                 page.wait_for_timeout(1000)
                                 menu_el = page.query_selector('td.menu, .menu, [class*="menu"]')
                                 if menu_el:
                                     menu = menu_el.inner_text().strip()
-                                # 一覧に戻る
-                                page.goto(url, timeout=30000)
-                                page.wait_for_timeout(1000)
                             except Exception as e:
                                 print(f"[MENU] 取得エラー: {e}", flush=True)
                         
-                        # ソース（NET/NHPB等）
-                        source = cells[4].text_content().strip() if len(cells) > 4 else ""
+                        data = {
+                            'booking_id': item['booking_id'],
+                            'customer_name': item['customer_name'],
+                            'phone': get_phone_for_customer(item['customer_name'], item['booking_id']),
+                            'visit_datetime': item['visit_datetime'],
+                            'menu': menu,
+                            'staff': item['staff'],
+                            'status': 'confirmed',
+                            'booking_source': item['source']
+                        }
                         
-                        if customer_name:
-                            data = {
-                                'booking_id': booking_id,
-                                'customer_name': customer_name,
-                                'phone': get_phone_for_customer(customer_name, booking_id),
-                                'visit_datetime': visit_datetime,
-                                'menu': menu,
-                                'staff': staff,
-                                'status': 'confirmed',
-                                'booking_source': source
-                            }
-                            
-                            res = requests.post(
-                                f'{SUPABASE_URL}/rest/v1/8weeks_bookings?on_conflict=booking_id',
-                                headers=headers,
-                                json=data
-                            )
-                            
-                            if res.status_code in [200, 201]:
-                                total_saved += 1
-                                day_saved += 1
-                            else:
-                                print(f"[ERROR] 保存失敗: {res.status_code} - {res.text}", flush=True)
+                        res = requests.post(
+                            f'{SUPABASE_URL}/rest/v1/8weeks_bookings?on_conflict=booking_id',
+                            headers=headers,
+                            json=data
+                        )
+                        
+                        if res.status_code in [200, 201]:
+                            total_saved += 1
+                            day_saved += 1
+                        else:
+                            print(f"[ERROR] 保存失敗: {res.status_code} - {res.text}", flush=True)
                     except Exception as e:
-                        print(f"[ERROR] 例外: {e}", flush=True)
+                        print(f"[ERROR] 保存例外: {e}", flush=True)
                         continue
                 
                 print(f"[{target_date.strftime('%Y-%m-%d')}] {day_saved}件保存", flush=True)
