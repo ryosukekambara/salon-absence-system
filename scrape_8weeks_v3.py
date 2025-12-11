@@ -153,19 +153,19 @@ def main():
             for day_offset in range(56):
                 target_date = today + timedelta(days=day_offset)
                 date_str = target_date.strftime('%Y%m%d')
-                url = f'https://salonboard.com/KLP/reserve/reserveList/searchDate?date={date_str}'
+                url = f'https://salonboard.com/KLP/reserve/reserveList/?search_date={date_str}'
                 
                 print(f"[{target_date.strftime('%Y-%m-%d')}] アクセス中...", flush=True)
                 
                 try:
-                    page.goto(url, timeout=60000)
+                    page.goto(url, timeout=60000, wait_until="domcontentloaded")
                     page.wait_for_timeout(2000)
                 except Exception as e:
                     print(f"[{target_date.strftime('%Y-%m-%d')}] アクセスエラー、スキップ: {e}", flush=True)
                     continue
                 
                 # ログイン確認（初回のみ）
-                if day_offset == 0 and ('login' in page.url.lower() or 'エラー' in page.title() or len(page.query_selector_all('table')) == 0):
+                if day_offset == 0 and 'login' in page.url.lower():
                     print("[WARN] ログインが必要", flush=True)
                     if not login_to_salonboard(page):
                         print("[ERROR] ログイン失敗", flush=True)
@@ -177,108 +177,69 @@ def main():
                         json.dump(new_cookies, f, indent=2, ensure_ascii=False)
                     print("[OK] ログイン成功、クッキー保存", flush=True)
                     
-                    page.goto(url, timeout=60000)
+                    page.goto(url, timeout=60000, wait_until="domcontentloaded")
                     page.wait_for_timeout(2000)
                 
-                # 予約一覧テーブルを特定（来店日時ヘッダーを持つテーブル）
-                reservation_table = None
-                tables = page.query_selector_all("table")
-                for table in tables:
-                    header = table.query_selector("th#comingDate")
-                    if header:
-                        reservation_table = table
-                        break
-                
-                if not reservation_table:
-                    print(f"[{target_date.strftime('%Y-%m-%d')}] 予約一覧テーブルなし、スキップ", flush=True)
-                    continue
-                
-                # 予約一覧テーブルからデータ取得
-                rows = reservation_table.query_selector_all('tbody tr')
+                # 予約データ抽出（リマインドシステムと同じセレクタ）
+                rows = page.query_selector_all('tr.rsv')
                 print(f"[DEBUG] 予約行数: {len(rows)}", flush=True)
                 day_saved = 0
                 
-                # フェーズ1: 一覧ページから全データを抽出（メニュー以外）
-                bookings_data = []
+                if len(rows) == 0:
+                    print(f"[{target_date.strftime('%Y-%m-%d')}] 予約なし", flush=True)
+                    continue
+                
                 for row in rows:
-                    # デバッグ: 最初の行の内容を出力
-                    if len(bookings_data) == 0:
-                        row_html = row.inner_html()[:400].replace("\n", " ")
-                        print(f"[DEBUG] 行HTML: {row_html}", flush=True)
                     try:
-                        cells = row.query_selector_all('td')
-                        if len(cells) < 4:
-                            continue
+                        time_el = row.query_selector('td.time')
+                        name_el = row.query_selector('td.name a')
+                        phone_el = row.query_selector('td.phone')
+                        menu_el = row.query_selector('td.menu')
+                        staff_el = row.query_selector('td.staff')
+                        status_el = row.query_selector('td.status')
                         
-                        # aタグのhrefから予約ID抽出
-                        reserve_link = cells[2].query_selector("a[href*='reserveId=']")
-                        href = reserve_link.get_attribute("href") if reserve_link else ""
-                        id_match = re.search(r'reserveId=([A-Z]{2}\d+)', href)
-                        booking_id = id_match.group(1) if id_match else None
-                        
-                        if not booking_id:
-                            continue
-
                         # ステータス確認（受付待ち以外はスキップ）
-                        status_text = cells[1].text_content().strip() if len(cells) > 1 else ""
-                        if "受付待ち" not in status_text:
+                        status_text = status_el.inner_text().strip() if status_el else ''
+                        if '受付待ち' not in status_text:
                             continue
                         
-                        # 顧客名（pタグから取得）
-                        name_elem = cells[2].query_selector("p.wordBreak")
-                        customer_name = name_elem.text_content().strip() if name_elem else ""
+                        visit_time = time_el.inner_text().strip() if time_el else ''
+                        customer_name = name_el.inner_text().strip() if name_el else ''
+                        phone = phone_el.inner_text().strip() if phone_el else ''
+                        menu = menu_el.inner_text().strip() if menu_el else ''
+                        staff_text = staff_el.inner_text().strip() if staff_el else ''
+                        
+                        if not customer_name:
+                            continue
+                        
+                        # 予約IDをhrefから抽出
+                        href = name_el.get_attribute('href') if name_el else ''
+                        id_match = re.search(r'reserveId=([A-Z]{2}\d+)', href)
+                        booking_id = id_match.group(1) if id_match else f"{date_str}_{visit_time}_{phone}".replace(" ", "").replace(":", "")
+                        
+                        # 顧客名クリーンアップ
                         customer_name = re.sub(r'[★☆♪♡⭐️🦁]', '', customer_name).strip()
                         
-                        # 時間（"12/08\n18:00" → "18:00"だけ抽出）
-                        time_cell = cells[0].text_content().strip() if len(cells) > 0 else ""
-                        time_match = re.search(r'(\d{1,2}:\d{2})', time_cell)
+                        # 時間フォーマット
+                        time_match = re.search(r'(\d{1,2}:\d{2})', visit_time)
                         time_only = time_match.group(1) if time_match else "00:00"
                         visit_datetime = f"{target_date.strftime('%Y-%m-%d')} {time_only}:00"
                         
-                        # スタッフ（cells[3]）
-                        staff_text = cells[3].text_content().strip() if len(cells) > 3 else ""
+                        # 指名判定
                         staff = re.sub(r'^\(指\)', '', staff_text).strip() if staff_text.startswith('(指)') else ''
                         
-                        # ソース（NET/NHPB等）
-                        source = cells[4].text_content().strip() if len(cells) > 4 else ""
-                        
-                        if customer_name:
-                            bookings_data.append({
-                                'booking_id': booking_id,
-                                'customer_name': customer_name,
-                                'visit_datetime': visit_datetime,
-                                'staff': staff,
-                                'source': source,
-                                'href': href
-                            })
-                    except Exception as e:
-                        print(f"[ERROR] 例外: {e}", flush=True)
-                        continue
-                
-                # フェーズ2: 詳細ページからメニュー取得 → DB保存
-                for item in bookings_data:
-                    try:
-                        menu = ''
-                        if item['href']:
-                            try:
-                                detail_url = f"https://salonboard.com{item['href']}"
-                                page.goto(detail_url, timeout=30000)
-                                page.wait_for_timeout(1000)
-                                menu_el = page.query_selector('td.menu, .menu, [class*="menu"]')
-                                if menu_el:
-                                    menu = menu_el.inner_text().strip()
-                            except Exception as e:
-                                print(f"[MENU] 取得エラー: {e}", flush=True)
+                        # 電話番号クリーンアップ
+                        phone_clean = re.sub(r'[^\d]', '', phone)
                         
                         data = {
-                            'booking_id': item['booking_id'],
-                            'customer_name': item['customer_name'],
-                            'phone': get_phone_for_customer(item['customer_name'], item['booking_id']),
-                            'visit_datetime': item['visit_datetime'],
+                            'booking_id': booking_id,
+                            'customer_name': customer_name,
+                            'phone': phone_clean if phone_clean else get_phone_for_customer(customer_name, booking_id),
+                            'visit_datetime': visit_datetime,
                             'menu': menu,
-                            'staff': item['staff'],
+                            'staff': staff,
                             'status': 'confirmed',
-                            'booking_source': item['source']
+                            'booking_source': 'salonboard'
                         }
                         
                         res = requests.post(
@@ -290,10 +251,12 @@ def main():
                         if res.status_code in [200, 201]:
                             total_saved += 1
                             day_saved += 1
+                            if menu:
+                                print(f"[MENU] {customer_name} → {menu[:30]}", flush=True)
                         else:
                             print(f"[ERROR] 保存失敗: {res.status_code} - {res.text}", flush=True)
                     except Exception as e:
-                        print(f"[ERROR] 保存例外: {e}", flush=True)
+                        print(f"[ERROR] 例外: {e}", flush=True)
                         continue
                 
                 print(f"[{target_date.strftime('%Y-%m-%d')}] {day_saved}件保存", flush=True)
