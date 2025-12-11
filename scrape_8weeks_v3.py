@@ -113,15 +113,22 @@ def main():
         'Prefer': 'resolution-merge-duplicates'
     }
     
-    # スクレイピング前に8weeks_bookings全削除
+   # 既存データをキャッシュ（メニュー再取得をスキップするため）
+    existing_cache = {}
     try:
-        del_res = requests.delete(
-            f"{SUPABASE_URL}/rest/v1/8weeks_bookings?id=neq.00000000-0000-0000-0000-000000000000",
+        cache_res = requests.get(
+            f"{SUPABASE_URL}/rest/v1/8weeks_bookings?select=booking_id,menu",
             headers=headers
         )
-        print(f"[DELETE] 既存データ削除: {del_res.status_code}", flush=True)
+        if cache_res.status_code == 200:
+            for item in cache_res.json():
+                existing_cache[item['booking_id']] = item.get('menu', '')
+            print(f"[CACHE] 既存データ: {len(existing_cache)}件", flush=True)
     except Exception as e:
-        print(f"[DELETE] 削除エラー: {e}", flush=True)
+        print(f"[CACHE] キャッシュ取得エラー: {e}", flush=True)
+    
+    # 今回取得した予約IDを記録（最後に削除判定で使用）
+    scraped_booking_ids = []
     
     today = datetime.now(JST)
     total_saved = 0
@@ -247,8 +254,15 @@ def main():
                 # フェーズ2: 詳細ページからメニュー取得 → DB保存
                 for item in bookings_data:
                     try:
-                        menu = ''
-                        if item['href']:
+                        scraped_booking_ids.append(item['booking_id'])
+                        
+                        # キャッシュにメニューがあればスキップ
+                        cached_menu = existing_cache.get(item['booking_id'], '')
+                        if cached_menu:
+                            menu = cached_menu
+                            print(f"[CACHE] {item['customer_name']} → {menu[:30]}", flush=True)
+                        elif item['href']:
+                            menu = ''
                             try:
                                 detail_url = f"https://salonboard.com{item['href']}"
                                 page.goto(detail_url, timeout=15000)
@@ -261,6 +275,8 @@ def main():
                                     print(f"[MENU] {item['customer_name']} → {menu[:30]}", flush=True)
                             except Exception as e:
                                 print(f"[MENU] 取得スキップ: {item['customer_name']}", flush=True)
+                        else:
+                            menu = ''
                         
                         data = {
                             'booking_id': item['booking_id'],
@@ -291,6 +307,20 @@ def main():
                 print(f"[{target_date.strftime('%Y-%m-%d')}] {day_saved}件保存", flush=True)
             
             browser.close()
+            
+            # 今回取得していない予約を削除（キャンセル等）
+            if scraped_booking_ids:
+                try:
+                    for old_id in existing_cache.keys():
+                        if old_id not in scraped_booking_ids:
+                            del_res = requests.delete(
+                                f"{SUPABASE_URL}/rest/v1/8weeks_bookings?booking_id=eq.{old_id}",
+                                headers=headers
+                            )
+                            if del_res.status_code in [200, 204]:
+                                print(f"[DELETE] 削除: {old_id}", flush=True)
+                except Exception as e:
+                    print(f"[DELETE] 削除エラー: {e}", flush=True)
     except Exception as e:
         print(f"[ERROR] 致命的エラー: {e}", flush=True)
         import traceback
