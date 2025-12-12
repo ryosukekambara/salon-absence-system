@@ -3100,6 +3100,7 @@ def api_liff_bookings_by_phone():
     
     # メニュークリーンアップ
     def clean_menu(m):
+        import re
         if not m:
             return ''
         has_off_shampoo = 'オフあり+アイシャンプー' in m or 'オフあり＋アイシャンプー' in m
