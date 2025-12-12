@@ -3169,7 +3169,7 @@ def run_scrape_job():
 
 # APScheduler一時停止（ログイン失敗調査中）
 scheduler = BackgroundScheduler(timezone='UTC')
-scheduler.add_job(run_scrape_job, 'interval', minutes=1, id='scrape_8weeks')
+scheduler.add_job(run_scrape_job, 'interval', minutes=1, id='scrape_8weeks', next_run_time=datetime.now() + timedelta(seconds=60))
 scheduler.start()
 print("[SCHEDULER] APScheduler開始（毎分実行）", flush=True)
 print("[SCHEDULER] APScheduler一時停止中", flush=True)
