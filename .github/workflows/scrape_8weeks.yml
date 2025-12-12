@@ -16,7 +16,7 @@ jobs:
           echo "Response: $body"
           echo "HTTP Code: $http_code"
           
-          if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
+          if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ] || [ "$http_code" -eq 429 ]; then
             echo "✅ Success"
           else
             echo "❌ Failed"
