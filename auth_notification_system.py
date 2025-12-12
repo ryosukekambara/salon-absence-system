@@ -3098,6 +3098,38 @@ def api_liff_bookings_by_phone():
     
     bookings = [b for b in all_bookings if b.get('visit_datetime', '') >= today]
     
+    # メニュークリーンアップ
+    def clean_menu(m):
+        if not m:
+            return ''
+        has_off_shampoo = 'オフあり+アイシャンプー' in m or 'オフあり＋アイシャンプー' in m
+        exclude = ['【全員】', '【次回】', '【リピーター様】', '【4週間以内】', '【ご新規】',
+            'オフあり+アイシャンプー', 'オフあり＋アイシャンプー', '次世代まつ毛パーマ', 'ダメージレス',
+            '(4週間以内 )', '(4週間以内)', '(アイシャンプー・トリートメント付き)', '(SP・TR付)',
+            '(コーティング・シャンプー・オフ込)', '(まゆげパーマ)', '(眉毛Wax)', '＋メイク付', '+メイク付',
+            '指名料', 'カラー変更', '束感★']
+        for w in exclude:
+            m = m.replace(w, '')
+        m = re.sub(r'\(ｸｰﾎﾟﾝ\)', '', m)
+        m = re.sub(r'《[^》]*》', '', m)
+        m = re.sub(r'【[^】]*】', '', m)
+        m = re.sub(r'◇エクステ.*', '', m)
+        m = re.sub(r'◇毛量調整.*', '', m)
+        m = re.sub(r'[¥￥][0-9,]+', '', m)
+        m = re.sub(r'^◇', '', m)
+        m = re.sub(r'◇$', '', m)
+        m = re.sub(r'◇\s*$', '', m)
+        parts = m.split('◇')
+        cleaned = [p.strip().strip('　') for p in parts if p.strip()]
+        m = '＋'.join(cleaned) if cleaned else ''
+        m = re.sub(r'\s+', ' ', m).strip()
+        if has_off_shampoo and m:
+            m = f'{m}（オフあり+アイシャンプー）'
+        return m
+    
+    for b in bookings:
+        b['menu'] = clean_menu(b.get('menu', ''))
+    
     return jsonify({'bookings': bookings})
 
 @app.route('/api/liff/change-request', methods=['POST'])
