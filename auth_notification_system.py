@@ -12,6 +12,7 @@ from io import StringIO
 from bs4 import BeautifulSoup
 import schedule
 import threading
+from apscheduler.schedulers.background import BackgroundScheduler
 # from supabase import create_client の行は削除
 
 load_dotenv()
@@ -3154,3 +3155,19 @@ def api_liff_cancel_request():
     print(f"[キャンセルリクエスト] booking_id={booking_id}, line_user_id={line_user_id}")
     
     return jsonify({'success': True, 'message': 'キャンセルリクエストを受け付けました。サロンからご連絡いたします。'})
+
+# APScheduler: 毎分スクレイピング実行
+def run_scrape_job():
+    """毎分実行されるスクレイピングジョブ"""
+    try:
+        import requests as req
+        print(f"[SCHEDULER] スクレイピング開始: {datetime.now()}", flush=True)
+        res = req.post('http://localhost:10000/api/scrape_8weeks_v3', timeout=30)
+        print(f"[SCHEDULER] スクレイピング結果: {res.status_code}", flush=True)
+    except Exception as e:
+        print(f"[SCHEDULER] エラー: {e}", flush=True)
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(run_scrape_job, 'interval', minutes=1, id='scrape_8weeks')
+scheduler.start()
+print("[SCHEDULER] APScheduler開始（毎分実行）", flush=True)
