@@ -2995,28 +2995,21 @@ def liff_booking():
         }}
         
         let calendarData = {{}};
-        let currentWeek = 0;
         let currentBookingId = null;
         
         async function changeBooking(bookingId) {{
             currentBookingId = bookingId;
-            currentWeek = 0;
             document.getElementById('bookings').innerHTML = `
                 <div id="calendar-view">
                     <h3 style="margin-bottom:15px;">日時変更</h3>
                     <p style="font-size:12px;color:#666;">◯をタップして予約変更</p>
                     <div id="calendar-loading" style="text-align:center;padding:20px;">読み込み中...</div>
-                    <div id="week-nav" style="display:none;margin:10px 0;text-align:center;">
-                        <button onclick="changeWeek(-1)" style="padding:8px 15px;margin:0 5px;border:1px solid #ddd;border-radius:5px;background:#fff;">← 前の週</button>
-                        <span id="week-label" style="margin:0 10px;font-weight:bold;"></span>
-                        <button onclick="changeWeek(1)" style="padding:8px 15px;margin:0 5px;border:1px solid #ddd;border-radius:5px;background:#fff;">次の週 →</button>
-                    </div>
-                    <div id="calendar-table"></div>
+                    <div id="calendar-table" style="overflow-x:auto;"></div>
                     <button class="btn" style="background:#999;color:white;margin-top:15px;" onclick="location.reload()">戻る</button>
                 </div>
             `;
             await loadCalendarData();
-            renderWeek();
+            renderCalendar();
         }}
         
         async function loadCalendarData() {{
@@ -3030,51 +3023,39 @@ def liff_booking():
                 console.error('空き枠取得エラー', e);
             }}
             document.getElementById('calendar-loading').style.display = 'none';
-            document.getElementById('week-nav').style.display = 'block';
         }}
         
-        function changeWeek(delta) {{
-            currentWeek += delta;
-            if (currentWeek < 0) currentWeek = 0;
-            if (currentWeek > 1) currentWeek = 1;
-            renderWeek();
-        }}
-        
-        function renderWeek() {{
+        function renderCalendar() {{
             const today = new Date();
-            const startIdx = currentWeek * 7;
             const dates = [];
-            for (let i = startIdx; i < startIdx + 7 && i < 14; i++) {{
+            for (let i = 0; i < 14; i++) {{
                 const d = new Date(today);
                 d.setDate(today.getDate() + i);
                 dates.push(d);
             }}
             
-            const weekStart = dates[0];
-            const weekEnd = dates[dates.length - 1];
-            document.getElementById('week-label').innerText = `${{weekStart.getMonth()+1}}/${{weekStart.getDate()}} 〜 ${{weekEnd.getMonth()+1}}/${{weekEnd.getDate()}}`;
-            
             const timeSlots = [];
             for (let h = 9; h < 19; h++) {{
-                for (let m = 0; m < 60; m += 30) {{
+                for (let m = 0; m < 60; m += 10) {{
+                    if (h === 18 && m > 50) continue;
                     timeSlots.push(`${{h}}:${{m.toString().padStart(2, '0')}}`);
                 }}
             }}
             
             const days = ['日', '月', '火', '水', '木', '金', '土'];
             
-            let html = '<table style="border-collapse:collapse;font-size:14px;width:100%;">';
-            html += '<thead><tr><th style="border:1px solid #ddd;padding:8px;background:#f5f5f5;width:50px;"></th>';
+            let html = '<table style="border-collapse:collapse;font-size:11px;width:max-content;">';
+            html += '<thead><tr><th style="border:1px solid #ddd;padding:4px 6px;background:#f5f5f5;position:sticky;left:0;z-index:2;"></th>';
             
             dates.forEach(d => {{
                 const day = days[d.getDay()];
                 const color = d.getDay() === 0 ? 'red' : d.getDay() === 6 ? 'blue' : 'black';
-                html += `<th style="border:1px solid #ddd;padding:8px;background:#f5f5f5;color:${{color}};">${{d.getDate()}}<br><span style="font-size:11px;">(${{day}})</span></th>`;
+                html += `<th style="border:1px solid #ddd;padding:4px;background:#f5f5f5;color:${{color}};white-space:nowrap;">${{d.getMonth()+1}}/${{d.getDate()}}<br><span style="font-size:10px;">(${{day}})</span></th>`;
             }});
             html += '</tr></thead><tbody>';
             
             timeSlots.forEach(time => {{
-                html += `<tr><td style="border:1px solid #ddd;padding:6px;background:#f5f5f5;font-weight:bold;text-align:center;">${{time}}</td>`;
+                html += `<tr><td style="border:1px solid #ddd;padding:4px 6px;background:#f5f5f5;font-weight:bold;text-align:center;position:sticky;left:0;z-index:1;">${{time}}</td>`;
                 
                 dates.forEach(d => {{
                     const dateStr = `${{d.getFullYear()}}${{(d.getMonth()+1).toString().padStart(2,'0')}}${{d.getDate().toString().padStart(2,'0')}}`;
@@ -3095,13 +3076,13 @@ def liff_booking():
                             }}
                         }});
                         if (hasSlot) {{
-                            cellContent = `<a href="#" onclick="selectSlot('${{currentBookingId}}','${{dateStr}}','${{time}}','指名なし');return false;" style="color:#06c755;font-weight:bold;text-decoration:none;font-size:16px;">◯</a>`;
+                            cellContent = `<a href="#" onclick="selectSlot('${{currentBookingId}}','${{dateStr}}','${{time}}','指名なし');return false;" style="color:#06c755;font-weight:bold;text-decoration:none;">◯</a>`;
                             cellBg = '#e8f5e9';
                             cellColor = '#06c755';
                         }}
                     }}
                     
-                    html += `<td style="border:1px solid #ddd;padding:6px;text-align:center;background:${{cellBg}};color:${{cellColor}};">${{cellContent}}</td>`;
+                    html += `<td style="border:1px solid #ddd;padding:4px;text-align:center;background:${{cellBg}};color:${{cellColor}};">${{cellContent}}</td>`;
                 }});
                 html += '</tr>';
             }});
