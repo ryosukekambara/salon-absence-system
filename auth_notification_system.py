@@ -3374,151 +3374,47 @@ def api_liff_execute_change():
 
 
 # === 空き枠取得API ===
-# === 14日分空き枠一括取得API ===
-# グローバルキャッシュ（5分有効）
-_slots_cache = {'data': None, 'timestamp': None}
-
 @app.route('/api/liff/available-slots-range', methods=['GET'])
 def api_liff_available_slots_range():
-    """14日分のスタッフ空き枠を一括取得（5分キャッシュ）"""
-    from playwright.sync_api import sync_playwright
-    import re
+    """14日分の空き枠をSupabaseから取得（高速）"""
     from datetime import datetime, timedelta
     
-    global _slots_cache
-    
-    # キャッシュチェック（5分以内なら即返却）
-    now = datetime.now()
-    if _slots_cache['data'] and _slots_cache['timestamp']:
-        elapsed = (now - _slots_cache['timestamp']).total_seconds()
-        if elapsed < 300:  # 5分 = 300秒
-            print(f'[空き枠] キャッシュ返却（残り{int(300-elapsed)}秒）')
-            return jsonify(_slots_cache['data'])
-    
     try:
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            context = browser.new_context()
-            page = context.new_page()
-            
-            # ログイン
-            login_id = os.environ.get('SALONBOARD_LOGIN_ID', 'CD18317')
-            login_password = os.environ.get('SALONBOARD_LOGIN_PASSWORD', 'Ne8T2Hhi!')
-            
-            page.goto('https://salonboard.com/login/', timeout=60000)
-            page.wait_for_timeout(2000)
-            page.fill('input[name="userId"]', login_id)
-            page.fill('input[name="password"]', login_password)
-            page.evaluate("dologin(new Event('click'))")
-            page.wait_for_timeout(5000)
-            
-            if 'login' in page.url.lower():
-                browser.close()
-                return jsonify({'error': 'Login failed'}), 401
-            
-            # 14日分のデータを取得
-            all_data = {}
-            today = datetime.now()
-            
-            for i in range(14):
-                target_date = today + timedelta(days=i)
-                date_str = target_date.strftime('%Y%m%d')
-                
-                url = f'https://salonboard.com/KLP/schedule/salonSchedule/?date={date_str}'
-                page.goto(url, timeout=60000)
-                
-                try:
-                    page.wait_for_selector('.scheduleMainTableLine', timeout=15000)
-                    page.wait_for_timeout(1000)
-                except:
-                    all_data[date_str] = {'error': True, 'staff_schedules': []}
-                    continue
-                
-                # スタッフリスト取得
-                staff_list = []
-                staff_options = page.query_selector_all('#stockNameList option')
-                for opt in staff_options:
-                    value = opt.get_attribute('value') or ''
-                    name = opt.inner_text()
-                    if value.startswith('STAFF_'):
-                        staff_list.append({'id': value.split('_')[1], 'name': name})
-                
-                # 受付開始時間とスケジュール取得
-                staff_rows = page.query_selector_all('.jscScheduleMainTableStaff .scheduleMainTableLine')
-                staff_schedules = []
-                
-                for idx, row in enumerate(staff_rows):
-                    if idx >= len(staff_list):
-                        break
-                    staff_info = staff_list[idx]
-                    
-                    time_list = row.query_selector_all('.scheduleTime')
-                    start_time = 9
-                    if time_list:
-                        first_time = time_list[0].inner_text()
-                        start_time = int(first_time.split(':')[0])
-                    
-                    booked_slots = []
-                    reservations = row.query_selector_all('.scheduleReservation, .scheduleToDo')
-                    for res in reservations:
-                        time_zone = res.query_selector('.scheduleTimeZoneSetting')
-                        if time_zone:
-                            time_text = time_zone.inner_text()
-                            times = json.loads(time_text)
-                            if len(times) >= 2:
-                                start_parts = times[0].split(':')
-                                end_parts = times[1].split(':')
-                                start_h = int(start_parts[0]) + int(start_parts[1]) / 60
-                                end_h = int(end_parts[0]) + int(end_parts[1]) / 60
-                                booked_slots.append({'start': start_h, 'end': end_h})
-                    
-                    day_off = row.query_selector('.isDayOff')
-                    is_day_off = day_off is not None
-                    
-                    available_slots = []
-                    if not is_day_off:
-                        booked_slots.sort(key=lambda x: x['start'])
-                        current = start_time
-                        import math
-                        for slot in booked_slots:
-                            if slot['start'] > current:
-                                start_min = current * 60
-                                end_min = slot['start'] * 60
-                                start_min_rounded = math.ceil(start_min / 10) * 10
-                                end_min_rounded = math.floor(end_min / 10) * 10
-                                if end_min_rounded > start_min_rounded:
-                                    start_str = f"{int(start_min_rounded // 60)}:{int(start_min_rounded % 60):02d}"
-                                    end_str = f"{int(end_min_rounded // 60)}:{int(end_min_rounded % 60):02d}"
-                                    available_slots.append({'start': start_str, 'end': end_str})
-                            current = max(current, slot['end'])
-                        if current < 19:
-                            current_min = current * 60
-                            current_min_rounded = math.ceil(current_min / 10) * 10
-                            start_str = f"{int(current_min_rounded // 60)}:{int(current_min_rounded % 60):02d}"
-                            available_slots.append({'start': start_str, 'end': '19:00'})
-                    
-                    staff_schedules.append({
-                        'staff_id': staff_info['id'],
-                        'staff_name': staff_info['name'],
-                        'is_day_off': is_day_off,
-                        'available_slots': available_slots
-                    })
-                
-                all_data[date_str] = {'staff_schedules': staff_schedules}
-            
-            browser.close()
-            
-            # キャッシュ保存
-            result = {'dates': all_data}
-            _slots_cache['data'] = result
-            _slots_cache['timestamp'] = datetime.now()
-            
-            return jsonify(result)
-            
+        supabase_url = os.getenv('SUPABASE_URL')
+        supabase_key = os.getenv('SUPABASE_KEY')
+        headers = {'apikey': supabase_key, 'Authorization': f'Bearer {supabase_key}'}
+        
+        today = datetime.now()
+        dates = [(today + timedelta(days=i)).strftime('%Y%m%d') for i in range(14)]
+        
+        date_filter = ','.join(dates)
+        res = requests.get(
+            f'{supabase_url}/rest/v1/available_slots?date=in.({date_filter})',
+            headers=headers
+        )
+        
+        if res.status_code != 200:
+            return jsonify({'error': 'Database error'}), 500
+        
+        rows = res.json()
+        
+        all_data = {}
+        for date_str in dates:
+            day_rows = [r for r in rows if r['date'] == date_str]
+            staff_schedules = []
+            for r in day_rows:
+                staff_schedules.append({
+                    'staff_id': r['staff_id'],
+                    'staff_name': r['staff_name'],
+                    'is_day_off': r['is_day_off'],
+                    'available_slots': r['slots'] or []
+                })
+            all_data[date_str] = {'staff_schedules': staff_schedules}
+        
+        return jsonify({'dates': all_data})
+        
     except Exception as e:
-        print(f'[14日分空き枠取得エラー] {e}')
-        import traceback
-        traceback.print_exc()
+        print(f'[空き枠取得エラー] {e}')
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/liff/available-slots', methods=['GET'])
