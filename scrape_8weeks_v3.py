@@ -306,6 +306,109 @@ def main():
                 
                 print(f"[{target_date.strftime('%Y-%m-%d')}] {day_saved}件保存", flush=True)
             
+            # === 空き枠をSupabaseに保存 ===
+            print("\n[空き枠] 14日分の空き枠を取得・保存中...", flush=True)
+            import math
+            
+            for day_offset in range(14):
+                target_date = today + timedelta(days=day_offset)
+                date_str = target_date.strftime('%Y%m%d')
+                
+                url = f'https://salonboard.com/KLP/schedule/salonSchedule/?date={date_str}'
+                page.goto(url, timeout=60000)
+                
+                try:
+                    page.wait_for_selector('.scheduleMainTableLine', timeout=15000)
+                    page.wait_for_timeout(1000)
+                except:
+                    continue
+                
+                # スタッフリスト取得
+                staff_list = []
+                staff_options = page.query_selector_all('#stockNameList option')
+                for opt in staff_options:
+                    value = opt.get_attribute('value') or ''
+                    name = opt.inner_text()
+                    if value.startswith('STAFF_'):
+                        staff_list.append({'id': value.split('_')[1], 'name': name})
+                
+                staff_rows = page.query_selector_all('.jscScheduleMainTableStaff .scheduleMainTableLine')
+                
+                for idx, row in enumerate(staff_rows):
+                    if idx >= len(staff_list):
+                        break
+                    staff_info = staff_list[idx]
+                    
+                    time_list = row.query_selector_all('.scheduleTime')
+                    start_time = 9
+                    if time_list:
+                        first_time = time_list[0].inner_text()
+                        try:
+                            start_time = int(first_time.split(':')[0])
+                        except:
+                            pass
+                    
+                    booked_slots = []
+                    reservations = row.query_selector_all('.scheduleReservation, .scheduleToDo')
+                    for res in reservations:
+                        time_zone = res.query_selector('.scheduleTimeZoneSetting')
+                        if time_zone:
+                            try:
+                                time_text = time_zone.inner_text()
+                                times = json.loads(time_text)
+                                if len(times) >= 2:
+                                    start_parts = times[0].split(':')
+                                    end_parts = times[1].split(':')
+                                    start_h = int(start_parts[0]) + int(start_parts[1]) / 60
+                                    end_h = int(end_parts[0]) + int(end_parts[1]) / 60
+                                    booked_slots.append({'start': start_h, 'end': end_h})
+                            except:
+                                pass
+                    
+                    day_off = row.query_selector('.isDayOff')
+                    is_day_off = day_off is not None
+                    
+                    available_slots = []
+                    if not is_day_off:
+                        booked_slots.sort(key=lambda x: x['start'])
+                        current = start_time
+                        for slot in booked_slots:
+                            if slot['start'] > current:
+                                start_min = current * 60
+                                end_min = slot['start'] * 60
+                                start_min_rounded = math.ceil(start_min / 10) * 10
+                                end_min_rounded = math.floor(end_min / 10) * 10
+                                if end_min_rounded > start_min_rounded:
+                                    start_str = f"{int(start_min_rounded // 60)}:{int(start_min_rounded % 60):02d}"
+                                    end_str = f"{int(end_min_rounded // 60)}:{int(end_min_rounded % 60):02d}"
+                                    available_slots.append({'start': start_str, 'end': end_str})
+                            current = max(current, slot['end'])
+                        if current < 19:
+                            current_min = current * 60
+                            current_min_rounded = math.ceil(current_min / 10) * 10
+                            start_str = f"{int(current_min_rounded // 60)}:{int(current_min_rounded % 60):02d}"
+                            available_slots.append({'start': start_str, 'end': '19:00'})
+                    
+                    # Supabaseに保存
+                    slot_data = {
+                        'date': date_str,
+                        'staff_id': staff_info['id'],
+                        'staff_name': staff_info['name'],
+                        'is_day_off': is_day_off,
+                        'slots': available_slots,
+                        'updated_at': datetime.now().isoformat()
+                    }
+                    
+                    requests.post(
+                        f'{SUPABASE_URL}/rest/v1/available_slots?on_conflict=date,staff_id',
+                        headers={**headers, 'Prefer': 'resolution=merge-duplicates'},
+                        json=slot_data
+                    )
+                
+                print(f"[空き枠] {date_str} 完了", flush=True)
+            
+            print("[空き枠] 保存完了", flush=True)
+            
             browser.close()
             
             # 今回取得していない予約を削除（キャンセル等）
