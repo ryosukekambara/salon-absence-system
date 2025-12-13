@@ -3340,17 +3340,57 @@ def api_liff_available_slots():
             browser = p.chromium.launch(headless=True)
             context = browser.new_context()
             
-            try:
-                with open('session_cookies.json', 'r') as f:
-                    cookies = json.load(f)
-                    context.add_cookies(cookies)
-            except:
-                browser.close()
-                return jsonify({'error': 'Cookie not found'}), 500
-            
+            # Supabaseからクッキー取得を試みる
             page = context.new_page()
+            cookies_loaded = False
+            
+            try:
+                supabase_url = os.getenv('SUPABASE_URL')
+                supabase_key = os.getenv('SUPABASE_KEY')
+                if supabase_url and supabase_key:
+                    headers = {'apikey': supabase_key, 'Authorization': f'Bearer {supabase_key}'}
+                    res = requests.get(f'{supabase_url}/rest/v1/system_settings?key=eq.salonboard_cookies', headers=headers)
+                    if res.status_code == 200 and res.json():
+                        cookies = json.loads(res.json()[0]['value'])
+                        context.add_cookies(cookies)
+                        cookies_loaded = True
+            except Exception as e:
+                print(f'[空き枠] クッキー読み込みエラー: {e}')
+            
+            # ローカルファイルからも試す
+            if not cookies_loaded:
+                try:
+                    with open('session_cookies.json', 'r') as f:
+                        cookies = json.load(f)
+                        context.add_cookies(cookies)
+                        cookies_loaded = True
+                except:
+                    pass
+            
             url = f'https://salonboard.com/KLP/schedule/salonSchedule/?date={date_str}'
             page.goto(url, timeout=60000)
+            page.wait_for_timeout(3000)
+            
+            # ログインが必要な場合
+            if 'login' in page.url.lower():
+                print('[空き枠] ログイン実行中...')
+                login_id = os.environ.get('SALONBOARD_LOGIN_ID', 'CD18317')
+                login_password = os.environ.get('SALONBOARD_LOGIN_PASSWORD', 'Ne8T2Hhi!')
+                
+                page.goto('https://salonboard.com/login/', timeout=60000)
+                page.wait_for_timeout(2000)
+                page.fill('input[name="userId"]', login_id)
+                page.fill('input[name="password"]', login_password)
+                page.evaluate("dologin(new Event('click'))")
+                page.wait_for_timeout(5000)
+                
+                if 'login' in page.url.lower():
+                    browser.close()
+                    return jsonify({'error': 'Login failed'}), 401
+                
+                # 再度スケジュールページへ
+                page.goto(url, timeout=60000)
+            
             page.wait_for_selector(".scheduleMainTableLine", timeout=30000)
             page.wait_for_timeout(2000)
             
