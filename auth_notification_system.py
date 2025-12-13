@@ -3374,14 +3374,26 @@ def api_liff_execute_change():
 
 
 # === 空き枠取得API ===
-
 # === 14日分空き枠一括取得API ===
+# グローバルキャッシュ（5分有効）
+_slots_cache = {'data': None, 'timestamp': None}
+
 @app.route('/api/liff/available-slots-range', methods=['GET'])
 def api_liff_available_slots_range():
-    """14日分のスタッフ空き枠を一括取得"""
+    """14日分のスタッフ空き枠を一括取得（5分キャッシュ）"""
     from playwright.sync_api import sync_playwright
     import re
     from datetime import datetime, timedelta
+    
+    global _slots_cache
+    
+    # キャッシュチェック（5分以内なら即返却）
+    now = datetime.now()
+    if _slots_cache['data'] and _slots_cache['timestamp']:
+        elapsed = (now - _slots_cache['timestamp']).total_seconds()
+        if elapsed < 300:  # 5分 = 300秒
+            print(f'[空き枠] キャッシュ返却（残り{int(300-elapsed)}秒）')
+            return jsonify(_slots_cache['data'])
     
     try:
         with sync_playwright() as p:
@@ -3495,7 +3507,13 @@ def api_liff_available_slots_range():
                 all_data[date_str] = {'staff_schedules': staff_schedules}
             
             browser.close()
-            return jsonify({'dates': all_data})
+            
+            # キャッシュ保存
+            result = {'dates': all_data}
+            _slots_cache['data'] = result
+            _slots_cache['timestamp'] = datetime.now()
+            
+            return jsonify(result)
             
     except Exception as e:
         print(f'[14日分空き枠取得エラー] {e}')
