@@ -302,22 +302,6 @@ def send_line_message(user_id, message, token=None, max_retries=3):
     print(f"[失敗] {max_retries}回の試行後も送信失敗")
     return False
 
-
-def notify_shop_booking_change(customer_name, old_datetime, new_datetime, staff_name=""):
-    """予約変更を店舗LINEに通知"""
-    message = f"""【予約変更通知】
-お客様: {customer_name}
-変更前: {old_datetime}
-変更後: {new_datetime}
-担当: {staff_name}
-
-※お客様がLIFFから変更しました"""
-    
-    # 管理者に通知
-    admin_line_id = os.getenv('ADMIN_LINE_USER_ID')
-    if admin_line_id:
-        send_line_message(admin_line_id, message, LINE_BOT_TOKEN_STAFF)
-
 @app.route('/')
 def index():
     return redirect(url_for('login_page'))
@@ -1859,7 +1843,6 @@ def test_http_detailed():
 def test_salonboard_login():
     """SALONBOARD ログインテスト（Firefox使用）"""
     from playwright.sync_api import sync_playwright
-    import re
     
     try:
         login_id = os.getenv('SALONBOARD_LOGIN_ID')
@@ -2498,7 +2481,6 @@ def scrape_8weeks():
     """8週間分の予約をスクレイピングしてbookingsテーブルに保存"""
     from datetime import datetime, timedelta, timezone
     from playwright.sync_api import sync_playwright
-    import re
     import json
     import re
     
@@ -2608,7 +2590,6 @@ def scrape_test_1day():
     """テスト用：1日分のみスクレイピング"""
     from datetime import datetime, timedelta, timezone
     from playwright.sync_api import sync_playwright
-    import re
     import json
     import re
     
@@ -2665,7 +2646,6 @@ def scrape_test_1day_v2():
     """テスト用：1日分のみ（タイムアウト延長）"""
     from datetime import datetime, timedelta, timezone
     from playwright.sync_api import sync_playwright
-    import re
     import json
     
     JST = timezone(timedelta(hours=9))
@@ -2995,64 +2975,14 @@ def liff_booking():
         }}
         
         async function changeBooking(bookingId) {{
-            document.getElementById('bookings').innerHTML = `
-                <div id="calendar-view">
-                    <h3 style="margin-bottom:15px;">日時変更</h3>
-                    <p>希望日を選択してください</p>
-                    <input type="date" id="select-date" style="width:100%;padding:12px;font-size:16px;border:2px solid #ddd;border-radius:8px;margin:10px 0;" onchange="loadAvailableSlots('${{bookingId}}')" min="${{new Date().toISOString().split('T')[0]}}">
-                    <div id="available-slots" style="margin-top:15px;"></div>
-                    <button class="btn" style="background:#999;color:white;margin-top:15px;" onclick="location.reload()">戻る</button>
-                </div>
-            `;
-        }}
-        
-        async function loadAvailableSlots(bookingId) {{
-            const dateInput = document.getElementById('select-date').value;
-            if (!dateInput) return;
-            const dateStr = dateInput.replace(/-/g, '');
-            document.getElementById('available-slots').innerHTML = '読み込み中...';
-            
-            try {{
-                const response = await fetch(`/api/liff/available-slots?date=${{dateStr}}`);
-                const data = await response.json();
-                
-                if (data.error) {{
-                    document.getElementById('available-slots').innerHTML = `<p style="color:red;">${{data.error}}</p>`;
-                    return;
-                }}
-                
-                let html = '';
-                data.staff_schedules.forEach(staff => {{
-                    if (staff.is_day_off) {{
-                        html += `<div style="padding:10px;margin:5px 0;background:#f5f5f5;border-radius:5px;"><strong>${{staff.staff_name}}</strong>: 休日</div>`;
-                    }} else if (staff.available_slots.length === 0) {{
-                        html += `<div style="padding:10px;margin:5px 0;background:#f5f5f5;border-radius:5px;"><strong>${{staff.staff_name}}</strong>: 空きなし</div>`;
-                    }} else {{
-                        html += `<div style="padding:10px;margin:5px 0;background:#e8f5e9;border-radius:5px;"><strong>${{staff.staff_name}}</strong><br>`;
-                        staff.available_slots.forEach(slot => {{
-                            html += `<button class="btn btn-change" style="width:auto;display:inline-block;margin:5px;padding:8px 15px;" onclick="selectSlot('${{bookingId}}','${{dateStr}}','${{slot.start}}','${{staff.staff_name}}')">${{slot.start}}〜${{slot.end}}</button>`;
-                        }});
-                        html += `</div>`;
-                    }}
-                }});
-                
-                if (!html) html = '<p>空き枠がありません</p>';
-                document.getElementById('available-slots').innerHTML = html;
-            }} catch (e) {{
-                document.getElementById('available-slots').innerHTML = '<p style="color:red;">エラーが発生しました</p>';
-            }}
-        }}
-        
-        async function selectSlot(bookingId, dateStr, time, staffName) {{
-            if (confirm(`${{staffName}}の${{time}}〜に変更しますか？`)) {{
-                const response = await fetch('/api/liff/execute-change', {{
+            if (confirm('日時変更をリクエストしますか？\\nサロンからご連絡いたします。')) {{
+                const response = await fetch('/api/liff/change-request', {{
                     method: 'POST',
                     headers: {{ 'Content-Type': 'application/json' }},
-                    body: JSON.stringify({{ booking_id: bookingId, new_date: dateStr, new_time: time, line_user_id: lineUserId }})
+                    body: JSON.stringify({{ booking_id: bookingId, line_user_id: lineUserId }})
                 }});
                 const data = await response.json();
                 alert(data.message || '変更リクエストを送信しました');
-                if (data.success) location.reload();
             }}
         }}
         
@@ -3225,218 +3155,6 @@ def api_liff_cancel_request():
     print(f"[キャンセルリクエスト] booking_id={booking_id}, line_user_id={line_user_id}")
     
     return jsonify({'success': True, 'message': 'キャンセルリクエストを受け付けました。サロンからご連絡いたします。'})
-
-@app.route('/api/liff/execute-change', methods=['POST'])
-def api_liff_execute_change():
-    """予約日時を自動変更"""
-    from playwright.sync_api import sync_playwright
-    import re
-    
-    data = request.get_json()
-    booking_id = data.get('booking_id')
-    new_date = data.get('new_date')  # YYYYMMDD
-    new_time = data.get('new_time')  # HH:MM
-    line_user_id = data.get('line_user_id')
-    
-    if not all([booking_id, new_date, new_time]):
-        return jsonify({'error': 'booking_id, new_date, new_time required'}), 400
-    
-    try:
-        # 予約IDからSalonBoard用IDを取得
-        supabase_url = os.getenv('SUPABASE_URL')
-        supabase_key = os.getenv('SUPABASE_KEY')
-        headers = {'apikey': supabase_key, 'Authorization': f'Bearer {supabase_key}'}
-        
-        # 8weeks_bookingsから予約情報取得
-        res = requests.get(
-            f'{supabase_url}/rest/v1/8weeks_bookings?booking_id=eq.{booking_id}',
-            headers=headers
-        )
-        bookings = res.json()
-        if not bookings:
-            return jsonify({'error': 'Booking not found'}), 404
-        
-        booking = bookings[0]
-        old_datetime = booking.get('date_time', '')
-        customer_name = booking.get('customer_name', '')
-        
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            context = browser.new_context()
-            
-            with open('session_cookies.json', 'r') as f:
-                cookies = json.load(f)
-                context.add_cookies(cookies)
-            
-            page = context.new_page()
-            url = f'https://salonboard.com/KLP/reserve/ext/extReserveChange/?reserveId={booking_id}'
-            page.goto(url, timeout=60000)
-            page.wait_for_timeout(5000)
-            
-            # 1. 日付変更
-            current_date = page.query_selector('input[name="rsvDate"]').get_attribute('value')
-            if current_date != new_date:
-                cal_input = page.query_selector('.calendar_readonly')
-                if cal_input:
-                    cal_input.click()
-                    page.wait_for_timeout(1000)
-                    
-                    target_day = new_date[-2:]  # 日だけ取得
-                    if target_day.startswith('0'):
-                        target_day = target_day[1:]
-                    
-                    calendar = page.query_selector('.mod_popup_02.js_calendar')
-                    if calendar:
-                        tds = calendar.query_selector_all('td')
-                        for td in tds:
-                            if td.is_visible() and td.inner_text().strip() == target_day:
-                                td.click()
-                                page.wait_for_timeout(1000)
-                                break
-            
-            # 2. 時間変更
-            hour, minute = new_time.split(':')
-            page.select_option('#rsvHour', hour)
-            page.select_option('#rsvMinute', minute)
-            page.wait_for_timeout(500)
-            
-            # 3. 確定ボタンクリック
-            confirm_btn = page.query_selector('button:has-text("確定する"), a:has-text("確定する")')
-            if confirm_btn:
-                confirm_btn.click()
-                page.wait_for_timeout(3000)
-            
-            browser.close()
-        
-        # 新しい日時文字列
-        new_datetime = f'{new_date[:4]}/{new_date[4:6]}/{new_date[6:]} {new_time}'
-        
-        # 店舗に通知
-        notify_shop_booking_change(customer_name, old_datetime, new_datetime)
-        
-        return jsonify({'success': True, 'message': f'予約を{new_datetime}に変更しました'})
-        
-    except Exception as e:
-        print(f'[予約変更エラー] {e}')
-        import traceback
-        traceback.print_exc()
-        return jsonify({'error': str(e)}), 500
-
-
-# === 空き枠取得API ===
-@app.route('/api/liff/available-slots', methods=['GET'])
-def api_liff_available_slots():
-    """指定日のスタッフ空き枠を取得"""
-    from playwright.sync_api import sync_playwright
-    import re
-    
-    date_str = request.args.get('date')  # YYYYMMDD形式
-    
-    if not date_str:
-        return jsonify({'error': 'date parameter required'}), 400
-    
-    try:
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            context = browser.new_context()
-            
-            try:
-                with open('session_cookies.json', 'r') as f:
-                    cookies = json.load(f)
-                    context.add_cookies(cookies)
-            except:
-                browser.close()
-                return jsonify({'error': 'Cookie not found'}), 500
-            
-            page = context.new_page()
-            url = f'https://salonboard.com/KLP/schedule/salonSchedule/?date={date_str}'
-            page.goto(url, timeout=60000)
-            page.wait_for_selector(".scheduleMainTableLine", timeout=30000)
-            page.wait_for_timeout(2000)
-            
-            if 'login' in page.url.lower() or 'エラー' in page.content():
-                browser.close()
-                return jsonify({'error': 'Login required'}), 401
-            
-            staff_list = []
-            staff_options = page.query_selector_all('#stockNameList option')
-            for opt in staff_options:
-                value = opt.get_attribute('value') or ''
-                name = opt.inner_text()
-                if value.startswith('STAFF_'):
-                    staff_list.append({'id': value.split('_')[1], 'name': name})
-            
-            PX_PER_HOUR = 132
-            START_HOUR = 9
-            staff_schedules = []
-            staff_rows = page.query_selector_all('.scheduleMainTableLine.jscScheduleMainTableLine')
-            
-            for i, row in enumerate(staff_rows):
-                if i >= len(staff_list):
-                    break
-                staff_info = staff_list[i]
-                booked_slots = []
-                # 受付開始時間を取得
-                time_list = row.query_selector_all('.scheduleTime')
-                start_time = 9  # デフォルト
-                if time_list:
-                    first_time = time_list[0].inner_text()
-                    start_time = int(first_time.split(':')[0])
-                
-                # 予約の時間帯を取得（scheduleTimeZoneSettingから）
-                reservations = row.query_selector_all('.scheduleReservation, .scheduleToDo')
-                for res in reservations:
-                    time_zone = res.query_selector('.scheduleTimeZoneSetting')
-                    if time_zone:
-                        time_text = time_zone.inner_text()
-                        times = json.loads(time_text)
-                        if len(times) >= 2:
-                            start_parts = times[0].split(':')
-                            end_parts = times[1].split(':')
-                            start_h = int(start_parts[0]) + int(start_parts[1]) / 60
-                            end_h = int(end_parts[0]) + int(end_parts[1]) / 60
-                            booked_slots.append({'start': start_h, 'end': end_h})
-                
-                day_off = row.query_selector('.isDayOff')
-                is_day_off = day_off is not None
-                available_slots = []
-                if not is_day_off:
-                    booked_slots.sort(key=lambda x: x['start'])
-                    current = start_time
-                    for slot in booked_slots:
-                        if slot['start'] > current:
-                            import math
-                            start_min = current * 60
-                            end_min = slot['start'] * 60
-                            start_min_rounded = math.ceil(start_min / 10) * 10
-                            end_min_rounded = math.floor(end_min / 10) * 10
-                            if end_min_rounded > start_min_rounded:
-                                start_str = f"{int(start_min_rounded // 60)}:{int(start_min_rounded % 60):02d}"
-                                end_str = f"{int(end_min_rounded // 60)}:{int(end_min_rounded % 60):02d}"
-                                available_slots.append({'start': start_str, 'end': end_str})
-                        current = max(current, slot['end'])
-                    if current < 19:
-                        import math
-                        current_min = current * 60
-                        current_min_rounded = math.ceil(current_min / 10) * 10
-                        start_str = f"{int(current_min_rounded // 60)}:{int(current_min_rounded % 60):02d}"
-                        available_slots.append({'start': start_str, 'end': '19:00'})
-                
-                staff_schedules.append({
-                    'staff_id': staff_info['id'],
-                    'staff_name': staff_info['name'],
-                    'is_day_off': is_day_off,
-                    'available_slots': available_slots
-                })
-            
-            browser.close()
-            return jsonify({'date': date_str, 'staff_schedules': staff_schedules})
-    except Exception as e:
-        print(f'[空き枠取得エラー] {e}')
-        import traceback
-        traceback.print_exc()
-        return jsonify({'error': str(e)}), 500
-
 
 # APScheduler: 毎分スクレイピング実行
 def run_scrape_job():

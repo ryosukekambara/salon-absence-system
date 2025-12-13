@@ -1,0 +1,135 @@
+# === 空き枠取得API ===
+@app.route('/api/liff/available-slots', methods=['GET'])
+def api_liff_available_slots():
+    """指定日のスタッフ空き枠を取得"""
+    from playwright.sync_api import sync_playwright
+    
+    date_str = request.args.get('date')  # YYYYMMDD形式
+    staff_id = request.args.get('staff_id')  # オプション
+    
+    if not date_str:
+        return jsonify({'error': 'date parameter required'}), 400
+    
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            context = browser.new_context()
+            
+            # クッキー読み込み
+            try:
+                with open('session_cookies.json', 'r') as f:
+                    cookies = json.load(f)
+                    context.add_cookies(cookies)
+            except:
+                browser.close()
+                return jsonify({'error': 'Cookie not found'}), 500
+            
+            page = context.new_page()
+            url = f'https://salonboard.com/KLP/schedule/salonSchedule/?date={date_str}'
+            page.goto(url, timeout=60000)
+            page.wait_for_timeout(8000)  # JS描画待機
+            
+            # ログインチェック
+            if 'login' in page.url.lower() or 'エラー' in page.content():
+                browser.close()
+                return jsonify({'error': 'Login required'}), 401
+            
+            # スタッフリスト取得
+            staff_list = []
+            staff_options = page.query_selector_all('#stockNameList option')
+            for opt in staff_options:
+                value = opt.get_attribute('value') or ''
+                name = opt.inner_text()
+                if value.startswith('STAFF_'):
+                    staff_list.append({
+                        'id': value.split('_')[1],
+                        'name': name,
+                        'full_value': value
+                    })
+            
+            # 営業時間（9:00-19:00）
+            business_hours = list(range(9, 19))
+            
+            # 予約情報取得（CSSのleft/widthから時間を計算）
+            # 1時間 ≒ 110px
+            PX_PER_HOUR = 110
+            START_HOUR = 9
+            
+            staff_schedules = []
+            staff_rows = page.query_selector_all('.scheduleMainTableLine.jscScheduleMainTableLine')
+            
+            for i, row in enumerate(staff_rows):
+                if i >= len(staff_list):
+                    break
+                    
+                staff_info = staff_list[i]
+                booked_slots = []
+                
+                # 予約枠を取得
+                reservations = row.query_selector_all('.scheduleReservation')
+                for res in reservations:
+                    style = res.get_attribute('style') or ''
+                    # left: Xpx; width: Ypx を抽出
+                    left_match = re.search(r'left:\s*(\d+)px', style)
+                    width_match = re.search(r'width:\s*(\d+)px', style)
+                    
+                    if left_match and width_match:
+                        left_px = int(left_match.group(1))
+                        width_px = int(width_match.group(1))
+                        
+                        start_hour = START_HOUR + (left_px / PX_PER_HOUR)
+                        duration_hours = width_px / PX_PER_HOUR
+                        end_hour = start_hour + duration_hours
+                        
+                        booked_slots.append({
+                            'start': round(start_hour, 1),
+                            'end': round(end_hour, 1)
+                        })
+                
+                # 休日チェック
+                day_off = row.query_selector('.isDayOff')
+                is_day_off = day_off is not None
+                
+                # 空き枠を計算
+                available_slots = []
+                if not is_day_off:
+                    # 予約をソート
+                    booked_slots.sort(key=lambda x: x['start'])
+                    
+                    current = START_HOUR
+                    for slot in booked_slots:
+                        if slot['start'] > current:
+                            available_slots.append({
+                                'start': f"{int(current)}:{int((current % 1) * 60):02d}",
+                                'end': f"{int(slot['start'])}:{int((slot['start'] % 1) * 60):02d}"
+                            })
+                        current = max(current, slot['end'])
+                    
+                    # 最後の空き
+                    if current < 19:
+                        available_slots.append({
+                            'start': f"{int(current)}:{int((current % 1) * 60):02d}",
+                            'end': "19:00"
+                        })
+                
+                staff_schedules.append({
+                    'staff_id': staff_info['id'],
+                    'staff_name': staff_info['name'],
+                    'is_day_off': is_day_off,
+                    'booked_slots': booked_slots,
+                    'available_slots': available_slots
+                })
+            
+            browser.close()
+            
+            return jsonify({
+                'date': date_str,
+                'staff_schedules': staff_schedules
+            })
+            
+    except Exception as e:
+        print(f"[空き枠取得エラー] {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
