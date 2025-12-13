@@ -2998,53 +2998,97 @@ def liff_booking():
             document.getElementById('bookings').innerHTML = `
                 <div id="calendar-view">
                     <h3 style="margin-bottom:15px;">日時変更</h3>
-                    <p>希望日を選択してください</p>
-                    <input type="date" id="select-date" style="width:100%;padding:12px;font-size:16px;border:2px solid #ddd;border-radius:8px;margin:10px 0;" onchange="loadAvailableSlots('${{bookingId}}')" min="${{new Date().toISOString().split('T')[0]}}">
-                    <div id="available-slots" style="margin-top:15px;"></div>
+                    <p style="font-size:12px;color:#666;">◯をタップして予約変更</p>
+                    <div id="calendar-loading" style="text-align:center;padding:20px;">読み込み中...</div>
+                    <div id="calendar-table" style="overflow-x:auto;"></div>
                     <button class="btn" style="background:#999;color:white;margin-top:15px;" onclick="location.reload()">戻る</button>
                 </div>
             `;
+            loadCalendar(bookingId);
         }}
         
-        async function loadAvailableSlots(bookingId) {{
-            const dateInput = document.getElementById('select-date').value;
-            if (!dateInput) return;
-            const dateStr = dateInput.replace(/-/g, '');
-            document.getElementById('available-slots').innerHTML = '読み込み中...';
-            
-            try {{
-                const response = await fetch(`/api/liff/available-slots?date=${{dateStr}}`);
-                const data = await response.json();
-                
-                if (data.error) {{
-                    document.getElementById('available-slots').innerHTML = `<p style="color:red;">${{data.error}}</p>`;
-                    return;
-                }}
-                
-                let html = '';
-                data.staff_schedules.forEach(staff => {{
-                    if (staff.is_day_off) {{
-                        html += `<div style="padding:10px;margin:5px 0;background:#f5f5f5;border-radius:5px;"><strong>${{staff.staff_name}}</strong>: 休日</div>`;
-                    }} else if (staff.available_slots.length === 0) {{
-                        html += `<div style="padding:10px;margin:5px 0;background:#f5f5f5;border-radius:5px;"><strong>${{staff.staff_name}}</strong>: 空きなし</div>`;
-                    }} else {{
-                        html += `<div style="padding:10px;margin:5px 0;background:#e8f5e9;border-radius:5px;"><strong>${{staff.staff_name}}</strong><br>`;
-                        staff.available_slots.forEach(slot => {{
-                            html += `<button class="btn btn-change" style="width:auto;display:inline-block;margin:5px;padding:8px 15px;" onclick="selectSlot('${{bookingId}}','${{dateStr}}','${{slot.start}}','${{staff.staff_name}}')">${{slot.start}}〜${{slot.end}}</button>`;
-                        }});
-                        html += `</div>`;
-                    }}
-                }});
-                
-                if (!html) html = '<p>空き枠がありません</p>';
-                document.getElementById('available-slots').innerHTML = html;
-            }} catch (e) {{
-                document.getElementById('available-slots').innerHTML = '<p style="color:red;">エラーが発生しました</p>';
+        async function loadCalendar(bookingId) {{
+            const today = new Date();
+            const dates = [];
+            for (let i = 0; i < 14; i++) {{
+                const d = new Date(today);
+                d.setDate(today.getDate() + i);
+                dates.push(d);
             }}
+            
+            const timeSlots = [];
+            for (let h = 9; h < 19; h++) {{
+                for (let m = 0; m < 60; m += 10) {{
+                    timeSlots.push(`${{h}}:${{m.toString().padStart(2, '0')}}`);
+                }}
+            }}
+            
+            const allData = {{}};
+            const days = ['日', '月', '火', '水', '木', '金', '土'];
+            
+            for (const date of dates) {{
+                const dateStr = `${{date.getFullYear()}}${{(date.getMonth()+1).toString().padStart(2,'0')}}${{date.getDate().toString().padStart(2,'0')}}`;
+                try {{
+                    const res = await fetch(`/api/liff/available-slots?date=${{dateStr}}`);
+                    const data = await res.json();
+                    allData[dateStr] = data;
+                }} catch (e) {{
+                    allData[dateStr] = {{ error: true }};
+                }}
+            }}
+            
+            let html = '<table style="border-collapse:collapse;font-size:12px;width:100%;min-width:600px;">';
+            html += '<thead><tr><th style="border:1px solid #ddd;padding:5px;background:#f5f5f5;position:sticky;left:0;z-index:1;"></th>';
+            
+            dates.forEach(d => {{
+                const day = days[d.getDay()];
+                const color = d.getDay() === 0 ? 'red' : d.getDay() === 6 ? 'blue' : 'black';
+                html += `<th style="border:1px solid #ddd;padding:5px;background:#f5f5f5;color:${{color}};min-width:40px;">${{d.getDate()}}<br><span style="font-size:10px;">(${{day}})</span></th>`;
+            }});
+            html += '</tr></thead><tbody>';
+            
+            timeSlots.forEach(time => {{
+                html += `<tr><td style="border:1px solid #ddd;padding:5px;background:#f5f5f5;font-weight:bold;position:sticky;left:0;z-index:1;">${{time}}</td>`;
+                
+                dates.forEach(d => {{
+                    const dateStr = `${{d.getFullYear()}}${{(d.getMonth()+1).toString().padStart(2,'0')}}${{d.getDate().toString().padStart(2,'0')}}`;
+                    const dayData = allData[dateStr];
+                    let cellContent = '×';
+                    let cellStyle = 'color:#ccc;';
+                    
+                    if (dayData && !dayData.error && dayData.staff_schedules) {{
+                        let hasSlot = false;
+                        dayData.staff_schedules.forEach(staff => {{
+                            if (!staff.is_day_off && staff.available_slots) {{
+                                staff.available_slots.forEach(slot => {{
+                                    const slotStart = slot.start;
+                                    const slotEnd = slot.end;
+                                    if (time >= slotStart && time < slotEnd) {{
+                                        hasSlot = true;
+                                    }}
+                                }});
+                            }}
+                        }});
+                        if (hasSlot) {{
+                            cellContent = `<a href="#" onclick="selectSlot('${{bookingId}}','${{dateStr}}','${{time}}','指名なし');return false;" style="color:#06c755;font-weight:bold;text-decoration:none;">◯</a>`;
+                            cellStyle = '';
+                        }}
+                    }}
+                    
+                    html += `<td style="border:1px solid #ddd;padding:5px;text-align:center;${{cellStyle}}">${{cellContent}}</td>`;
+                }});
+                html += '</tr>';
+            }});
+            
+            html += '</tbody></table>';
+            document.getElementById('calendar-loading').style.display = 'none';
+            document.getElementById('calendar-table').innerHTML = html;
         }}
         
         async function selectSlot(bookingId, dateStr, time, staffName) {{
-            if (confirm(`${{staffName}}の${{time}}〜に変更しますか？`)) {{
+            const dateFormatted = `${{dateStr.slice(0,4)}}/${{dateStr.slice(4,6)}}/${{dateStr.slice(6,8)}}`;
+            if (confirm(`${{dateFormatted}} ${{time}}〜 に変更しますか？`)) {{
+                document.getElementById('calendar-table').innerHTML = '<p style="text-align:center;">変更処理中...</p>';
                 const response = await fetch('/api/liff/execute-change', {{
                     method: 'POST',
                     headers: {{ 'Content-Type': 'application/json' }},
